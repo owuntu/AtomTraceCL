@@ -6,6 +6,9 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AtomMathCL", "AtomMathCL\AtomMathCL.vcxproj", "{9EE50054-7A2D-435A-8E31-D6B343AB48B8}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AtomTraceCL", "AtomTraceCL\AtomTraceCL.vcxproj", "{8319F006-774C-4B85-8A37-687720340166}"
+	ProjectSection(ProjectDependencies) = postProject
+		{9EE50054-7A2D-435A-8E31-D6B343AB48B8} = {9EE50054-7A2D-435A-8E31-D6B343AB48B8}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
