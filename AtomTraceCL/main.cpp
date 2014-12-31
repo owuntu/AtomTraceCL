@@ -65,7 +65,7 @@ int main(int argc, char** argv)
     }
 
     // Create a command queue to communicate with the device
-    cl_command_queue cq = clCreateCommandQueue(context, device, NULL, &error);
+    cl_command_queue cq = clCreateCommandQueueWithProperties(context, device, NULL, &error);
     if (!CheckError(error))
     {
         std::cerr << "create command queue fail\n";
