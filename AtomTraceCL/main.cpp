@@ -2,6 +2,7 @@
 #include <iostream>
 #include <opencl.h>
 
+#include "Utilities.h"
 
 #define STR(x) #x
 
@@ -28,9 +29,12 @@ bool CheckError(cl_int error)
 int main(int argc, char** argv)
 {
     using namespace std;
-    cout << gs_SAMPLE_KERNEL;
-    //using namespace AtomTrace;
-    // Sample code from Google code: https://code.google.com/p/simple-opencl/
+
+    string kernelStr;
+    ReadFileToString("kernel\\example.cl", kernelStr);
+    cout << kernelStr << "\n";
+
+    // Original sample code from Google code: https://code.google.com/p/simple-opencl/
     char buf[] = "Hello World!";
 
     size_t srcsize, worksize = strlen(buf);
@@ -47,11 +51,45 @@ int main(int argc, char** argv)
         std::cerr << "GetPlatformID fail\n";
     }
 
+    {
+        // Fetch the OpenCL version
+        const size_t BUF_SIZE = 256;
+        char vBuf[BUF_SIZE] = { 0 };
+        size_t actSize = 0;
+        error = clGetPlatformInfo(platform, CL_PLATFORM_VERSION, BUF_SIZE, vBuf, &actSize);
+        cout << "OpenCL platform version:\t" << vBuf << "\n";
+
+        error = clGetPlatformInfo(platform, CL_PLATFORM_PROFILE, BUF_SIZE, vBuf, &actSize);
+        cout << vBuf << "\n";
+
+        error = clGetPlatformInfo(platform, CL_PLATFORM_VENDOR, BUF_SIZE, vBuf, &actSize);
+        cout << vBuf << "\n";
+
+        error = clGetPlatformInfo(platform, CL_PLATFORM_NAME, BUF_SIZE, vBuf, &actSize);
+        cout << vBuf << "\n";
+
+        error = clGetPlatformInfo(platform, CL_PLATFORM_EXTENSIONS, BUF_SIZE, vBuf, &actSize);
+        cout << vBuf << "\n";
+    }
+
     // Fetch the Devices for this platform
     error = clGetDeviceIDs(platform, CL_DEVICE_TYPE_ALL, 1, &device, &devices);
     if (!CheckError(error))
     {
         std::cerr << "Get Device ID fail\n";
+    }
+
+    {
+        // Fetch the device name
+        const size_t BUF_SIZE = 256;
+        char vBuf[BUF_SIZE] = { 0 };
+        size_t actSize = 0;
+        error = clGetDeviceInfo(device, CL_DEVICE_NAME, BUF_SIZE, vBuf, &actSize);
+        cout << vBuf << "\n";
+        error = clGetDeviceInfo(device, CL_DEVICE_VENDOR, BUF_SIZE, vBuf, &actSize);
+        cout << vBuf << "\n";
+        error = clGetDeviceInfo(device, CL_DEVICE_VERSION, BUF_SIZE, vBuf, &actSize);
+        cout << vBuf << "\n";
     }
 
     // Create a memory context for the device we want to use
@@ -74,11 +112,13 @@ int main(int argc, char** argv)
     // Read the source kernel code in sampleKernel
     
     // Submit the source code of the kernel to OpenCL, and create a program object with it
-    srcsize = strlen(gs_SAMPLE_KERNEL);
+    const char* kernelSrc = kernelStr.c_str();
+    // srcsize = strlen(gs_SAMPLE_KERNEL);
+    srcsize = kernelStr.size();
     cout << "Kernel source size: " << srcsize << "\n";
     cl_program prog = clCreateProgramWithSource(context, 
                                                 1, 
-                                                &gs_SAMPLE_KERNEL, 
+                                                &kernelSrc, 
                                                 &srcsize, 
                                                 &error);
     if (!CheckError(error))
