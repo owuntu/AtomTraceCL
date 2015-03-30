@@ -68,7 +68,7 @@ namespace AtomMathCL
 
         inline void Set(const cl_float i_x, const cl_float i_y, const cl_float i_z);
 
-	};
+	}; // AtomMathCL
 }
 
 #endif // __ATOMMATH_AM_VECTOR3_H_

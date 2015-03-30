@@ -83,7 +83,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)External\OpenCL</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)External\OpenCL;$(SolutionDir)AtomMathCL\</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -125,9 +125,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="main_cl.cpp" />
+    <ClCompile Include="Ray.cpp" />
     <ClCompile Include="Utilities.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Ray.h" />
     <ClInclude Include="Utilities.h" />
   </ItemGroup>
   <ItemGroup>
