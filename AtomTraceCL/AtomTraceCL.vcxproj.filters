@@ -30,6 +30,9 @@
     <ClCompile Include="Ray.cpp">
       <Filter>Geometry</Filter>
     </ClCompile>
+    <ClCompile Include="Sphere.cpp">
+      <Filter>Geometry</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Utilities.h">
@@ -38,9 +41,15 @@
     <ClInclude Include="Ray.h">
       <Filter>Geometry</Filter>
     </ClInclude>
+    <ClInclude Include="Sphere.h">
+      <Filter>Geometry</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="kernel\example.cl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="SphereIntersection.cl">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

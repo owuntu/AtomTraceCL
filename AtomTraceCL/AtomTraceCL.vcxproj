@@ -127,14 +127,17 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="main_cl.cpp" />
     <ClCompile Include="Ray.cpp" />
+    <ClCompile Include="Sphere.cpp" />
     <ClCompile Include="Utilities.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Ray.h" />
+    <ClInclude Include="Sphere.h" />
     <ClInclude Include="Utilities.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="kernel\example.cl" />
+    <None Include="SphereIntersection.cl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
