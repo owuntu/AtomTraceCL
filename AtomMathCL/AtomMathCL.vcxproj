@@ -128,6 +128,9 @@
   <ItemGroup>
     <ClCompile Include="Vector3.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Vector3.inl" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

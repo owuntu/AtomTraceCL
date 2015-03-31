@@ -10,6 +10,12 @@ Sphere::Sphere() :
 
 }
 
+Sphere::Sphere(cl_float r, const AtomMathCL::Vector3& orig) :
+    m_orig(orig),
+    m_radius(r)
+{
+}
+
 bool Sphere::Intersect(const Ray& ray)
 {
     Vector3 p = m_orig - ray.m_orig;

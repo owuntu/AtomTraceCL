@@ -9,6 +9,7 @@ class Sphere
 {
 public:
     Sphere();
+    Sphere(cl_float r, const AtomMathCL::Vector3& orig);
 
     bool Intersect(const Ray& ray);
 

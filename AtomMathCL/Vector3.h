@@ -71,4 +71,6 @@ namespace AtomMathCL
 	}; // AtomMathCL
 }
 
+#include "Vector3.inl"
+
 #endif // __ATOMMATH_AM_VECTOR3_H_
