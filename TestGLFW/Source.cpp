@@ -34,17 +34,23 @@ int main()
 
     glfwSetKeyCallback(window, key_callback);
 
+    const unsigned int WIDTH = 100;
+    const unsigned int HEIGHT = 100;
+    const unsigned char rawImage[WIDTH*HEIGHT*3] = { 255 };
+
     while (!glfwWindowShouldClose(window))
     {
-        float ratio;
-        int width, height;
+        //float ratio;
+        //int width, height;
 
-        glfwGetFramebufferSize(window, &width, &height);
-        ratio = width / (float)height;
+        //glfwGetFramebufferSize(window, &width, &height);
+        //ratio = width / (float)height;
 
-        glViewport(0, 0, width, height);
-        glClear(GL_COLOR_BUFFER_BIT);
-
+        //glViewport(0, 0, width, height);
+        //glClear(GL_COLOR_BUFFER_BIT);
+        glDrawPixels(WIDTH, HEIGHT, GL_RGB, GL_UNSIGNED_BYTE, rawImage);
+        
+#if 0
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
         glOrtho(-ratio, ratio, -1.f, 1.f, 1.f, -1.f);
@@ -61,7 +67,7 @@ int main()
         glColor3f(0.f, 0.f, 1.f);
         glVertex3f(0.f, 0.6f, 0.f);
         glEnd();
-
+#endif
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
