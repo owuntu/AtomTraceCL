@@ -36,7 +36,17 @@ int main()
 
     const unsigned int WIDTH = 100;
     const unsigned int HEIGHT = 100;
-    const unsigned char rawImage[WIDTH*HEIGHT*3] = { 255 };
+    const unsigned int IMG_SIZE = WIDTH*HEIGHT * 3;
+    unsigned char rawImage[IMG_SIZE] = { 255 };
+
+    for (unsigned int i = 0; i < IMG_SIZE; ++i)
+    {
+        rawImage[i] = 255;
+        if (i % 3 == 0)
+        {
+            rawImage[i] = 0;
+        }
+    }
 
     while (!glfwWindowShouldClose(window))
     {
