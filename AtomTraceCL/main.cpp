@@ -1,5 +1,5 @@
 #include <cstdlib>
-#include "GL\glut.h"
+#include <glfw3.h>
 
 #include "Ray.h"
 #include "SimpleImage.h"
@@ -7,16 +7,18 @@
 
 using namespace AtomMathCL;
 
-void GlutDisplay();
-
 static SimpleImage* gs_pImage;
+
+static void error_callback(int error, const char* description);
+
+static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
 int main()
 {
     Sphere s0(1.0f, Vector3::ZERO);
 
-    const unsigned int IMAGE_WIDTH = 128;
-    const unsigned int IMAGE_HEIGHT = 128;
+    const unsigned int IMAGE_WIDTH = 512;
+    const unsigned int IMAGE_HEIGHT = 512;
 
     SimpleImage image(IMAGE_WIDTH, IMAGE_HEIGHT);
 
@@ -46,43 +48,54 @@ int main()
         }
     }
 
-    image.SavePPM("image.ppm");
-#if 0
-    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
+    GLFWwindow* window;
 
-    if (glutGet(GLUT_SCREEN_WIDTH) > 0 && glutGet(GLUT_SCREEN_HEIGHT) > 0){
-        glutInitWindowPosition((glutGet(GLUT_SCREEN_WIDTH) - IMAGE_WIDTH) / 2, (glutGet(GLUT_SCREEN_HEIGHT) - IMAGE_HEIGHT) / 2);
+    glfwSetErrorCallback(error_callback);
+
+    if (!glfwInit())
+    {
+        std::cerr << "Error in main(): error in glfwInit() call.\n";
+        return 1;
     }
-    else
-        glutInitWindowPosition(50, 50);
-    glutInitWindowSize(IMAGE_WIDTH, IMAGE_HEIGHT);
+    window = glfwCreateWindow(IMAGE_WIDTH, IMAGE_HEIGHT, "AtaomTraceCL", NULL, NULL);
+    if (!window)
+    {
+        glfwTerminate();
+        return 1;
+    }
 
-    glutCreateWindow("AtomTraceCL");
+    glfwMakeContextCurrent(window);
+    glfwSwapInterval(1);
 
-    glutDisplayFunc(GlutDisplay);
+    glfwSetKeyCallback(window, key_callback);
 
-    glClearColor(0, 0, 0, 0);
+    while (!glfwWindowShouldClose(window))
+    {
+        glDrawPixels(IMAGE_WIDTH, IMAGE_HEIGHT, GL_RGB, GL_UNSIGNED_BYTE, image.GetRawData());
 
-    //glPointSize(3.0);
-    //glEnable(GL_CULL_FACE);
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
 
-    float zero[] = { 0.2f, 0.2f, 0.2f, 1.0f };
-    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, zero);
+    glfwDestroyWindow(window);
 
-    glEnable(GL_NORMALIZE);
+    image.SavePPM("image.ppm");
 
-    glLineWidth(2);
+    glfwTerminate();
 
+    std::cout << "All done\n";
 
-    glutMainLoop();
-
-#endif
     return 0;
 }
 
-void GlutDisplay()
-{
-    glDrawPixels(gs_pImage->Width(), gs_pImage->Height(), GL_RGB, GL_UNSIGNED_BYTE, gs_pImage->GetRawData());
 
-    glutPostRedisplay();
+void error_callback(int error, const char* description)
+{
+    fputs(description, stderr);
+}
+
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, GL_TRUE);
 }
