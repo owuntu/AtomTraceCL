@@ -50,17 +50,17 @@ int main()
 
     while (!glfwWindowShouldClose(window))
     {
-        //float ratio;
-        //int width, height;
+        float ratio;
+        int width, height;
 
-        //glfwGetFramebufferSize(window, &width, &height);
-        //ratio = width / (float)height;
+        glfwGetFramebufferSize(window, &width, &height);
+        ratio = width / (float)height;
 
-        //glViewport(0, 0, width, height);
-        //glClear(GL_COLOR_BUFFER_BIT);
+        glViewport(0, 0, width, height);
+        glClear(GL_COLOR_BUFFER_BIT);
         glDrawPixels(WIDTH, HEIGHT, GL_RGB, GL_UNSIGNED_BYTE, rawImage);
         
-#if 0
+#if 1
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
         glOrtho(-ratio, ratio, -1.f, 1.f, 1.f, -1.f);
