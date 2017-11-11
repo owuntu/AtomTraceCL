@@ -3,3 +3,6 @@ Debug/
 *.sdf
 *.opensdf
 AtomTraceCL.VC.db
+TestGLFW/Release/
+x64/
+*.opendb

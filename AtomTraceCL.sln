@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AtomMathCL", "AtomMathCL\AtomMathCL.vcxproj", "{9EE50054-7A2D-435A-8E31-D6B343AB48B8}"
 EndProject
@@ -9,8 +9,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AtomTraceCL", "AtomTraceCL\
 	ProjectSection(ProjectDependencies) = postProject
 		{9EE50054-7A2D-435A-8E31-D6B343AB48B8} = {9EE50054-7A2D-435A-8E31-D6B343AB48B8}
 	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestPNG", "TestPNG\TestPNG.vcxproj", "{B0D3C24A-F408-4324-A6D2-BBFFEE88E53B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{B21A5FB0-5906-49F2-AFAE-BDB86D3E6A68}"
 EndProject
@@ -56,18 +54,6 @@ Global
 		{8319F006-774C-4B85-8A37-687720340166}.Release|Win32.Build.0 = Release|Win32
 		{8319F006-774C-4B85-8A37-687720340166}.Release|x64.ActiveCfg = Release|x64
 		{8319F006-774C-4B85-8A37-687720340166}.Release|x64.Build.0 = Release|x64
-		{B0D3C24A-F408-4324-A6D2-BBFFEE88E53B}.Debug|ARM.ActiveCfg = Debug|Win32
-		{B0D3C24A-F408-4324-A6D2-BBFFEE88E53B}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
-		{B0D3C24A-F408-4324-A6D2-BBFFEE88E53B}.Debug|Mixed Platforms.Build.0 = Debug|Win32
-		{B0D3C24A-F408-4324-A6D2-BBFFEE88E53B}.Debug|Win32.ActiveCfg = Debug|Win32
-		{B0D3C24A-F408-4324-A6D2-BBFFEE88E53B}.Debug|Win32.Build.0 = Debug|Win32
-		{B0D3C24A-F408-4324-A6D2-BBFFEE88E53B}.Debug|x64.ActiveCfg = Debug|Win32
-		{B0D3C24A-F408-4324-A6D2-BBFFEE88E53B}.Release|ARM.ActiveCfg = Release|Win32
-		{B0D3C24A-F408-4324-A6D2-BBFFEE88E53B}.Release|Mixed Platforms.ActiveCfg = Release|Win32
-		{B0D3C24A-F408-4324-A6D2-BBFFEE88E53B}.Release|Mixed Platforms.Build.0 = Release|Win32
-		{B0D3C24A-F408-4324-A6D2-BBFFEE88E53B}.Release|Win32.ActiveCfg = Release|Win32
-		{B0D3C24A-F408-4324-A6D2-BBFFEE88E53B}.Release|Win32.Build.0 = Release|Win32
-		{B0D3C24A-F408-4324-A6D2-BBFFEE88E53B}.Release|x64.ActiveCfg = Release|Win32
 		{82105436-C728-496B-BBD2-39409BEE43A0}.Debug|ARM.ActiveCfg = Debug|Win32
 		{82105436-C728-496B-BBD2-39409BEE43A0}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
 		{82105436-C728-496B-BBD2-39409BEE43A0}.Debug|Mixed Platforms.Build.0 = Debug|Win32
@@ -80,13 +66,13 @@ Global
 		{82105436-C728-496B-BBD2-39409BEE43A0}.Release|Mixed Platforms.Build.0 = Release|Win32
 		{82105436-C728-496B-BBD2-39409BEE43A0}.Release|Win32.ActiveCfg = Release|Win32
 		{82105436-C728-496B-BBD2-39409BEE43A0}.Release|Win32.Build.0 = Release|Win32
-		{82105436-C728-496B-BBD2-39409BEE43A0}.Release|x64.ActiveCfg = Release|Win32
+		{82105436-C728-496B-BBD2-39409BEE43A0}.Release|x64.ActiveCfg = Release|x64
+		{82105436-C728-496B-BBD2-39409BEE43A0}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{B0D3C24A-F408-4324-A6D2-BBFFEE88E53B} = {B21A5FB0-5906-49F2-AFAE-BDB86D3E6A68}
 		{82105436-C728-496B-BBD2-39409BEE43A0} = {B21A5FB0-5906-49F2-AFAE-BDB86D3E6A68}
 	EndGlobalSection
 EndGlobal
