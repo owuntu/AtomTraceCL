@@ -16,6 +16,9 @@
     <Filter Include="Geometry">
       <UniqueIdentifier>{9bc62434-9183-401e-94d3-4ae5bfcfeeb0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="OpenCL_kernels">
+      <UniqueIdentifier>{167243b5-2511-47c4-813e-6442e1e6e637}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Utilities.cpp">
@@ -52,11 +55,11 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="kernel\example.cl">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="SphereIntersection.cl">
-      <Filter>Resource Files</Filter>
+      <Filter>OpenCL_kernels</Filter>
+    </None>
+    <None Include="kernel\example.cl">
+      <Filter>OpenCL_kernels</Filter>
     </None>
   </ItemGroup>
 </Project>

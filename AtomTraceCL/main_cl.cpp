@@ -1,6 +1,8 @@
 #include <cstdlib>
 #include <iostream>
-#include <CL\opencl.h>
+
+//#define CL_HPP_TARGET_OPENCL_VERSION 200
+#include <CL\cl2.hpp> // main OpenCL include file 
 
 #include "Utilities.h"
 
@@ -40,81 +42,54 @@ int main(int argc, char** argv)
     size_t srcsize, worksize = strlen(buf);
     cout << "Worksize: " << worksize << "\n";
     cl_int error;
-    cl_platform_id* platform = nullptr;
-    cl_device_id device;
-    cl_uint numPlf, devices;
+    std::vector<cl::Platform> platforms;
+    std::vector<cl::Device> devices;
 
     // Fetch number of available OpenCL platform
-    error = clGetPlatformIDs(0, nullptr, &numPlf);
+    error = cl::Platform::get(&platforms);
     if (!CheckError(error))
     {
         std::cerr << "GetPlatformID number of platform fail\n";
     }
 
-    if (0 != numPlf)
+    for (std::size_t i = 0; i < platforms.size(); i++)
     {
-        platform = new cl_platform_id[numPlf];
-        // Fetch the Platforms
-        error = clGetPlatformIDs(numPlf, platform, &numPlf);
-        if (!CheckError(error))
-        {
-            std::cerr << "GetPlatformID fail\n";
-        }
+        std::cout << i << ": Platform name:" << platforms[i].getInfo<CL_PLATFORM_NAME>() << std::endl;
+        std::cout << "   OpenCL version: " << platforms[i].getInfo<CL_PLATFORM_VERSION>() << std::endl;
+        std::cout << "   Platform profile: " << platforms[i].getInfo<CL_PLATFORM_PROFILE>() << std::endl;
+        std::cout << "   Vendor: " << platforms[i].getInfo<CL_PLATFORM_VENDOR>() << std::endl;
+        std::cout << "   Extensions: " << platforms[i].getInfo<CL_PLATFORM_EXTENSIONS>() << std::endl;
     }
 
-    {
-        // Fetch the OpenCL version
-        const size_t BUF_SIZE = 256;
-        char vBuf[BUF_SIZE] = { 0 };
-        size_t actSize = 0;
-        error = clGetPlatformInfo(platform[0], CL_PLATFORM_VERSION, BUF_SIZE, vBuf, &actSize);
-        cout << "OpenCL platform version:\t" << vBuf << "\n";
-
-        error = clGetPlatformInfo(platform[0], CL_PLATFORM_PROFILE, BUF_SIZE, vBuf, &actSize);
-        cout << "OpenCL platform profile: " << vBuf << "\n";
-
-        error = clGetPlatformInfo(platform[0], CL_PLATFORM_VENDOR, BUF_SIZE, vBuf, &actSize);
-        cout << "Vendor: " << vBuf << "\n";
-
-        error = clGetPlatformInfo(platform[0], CL_PLATFORM_NAME, BUF_SIZE, vBuf, &actSize);
-        cout << "Platform name: " << vBuf << "\n";
-
-        error = clGetPlatformInfo(platform[0], CL_PLATFORM_EXTENSIONS, BUF_SIZE, vBuf, &actSize);
-        cout << "Platform extensions: " << vBuf << "\n";
-    }
+    cl::Platform platform = platforms[0]; // pick the first platform by default
 
     // Fetch the Devices for this platform
-    error = clGetDeviceIDs(platform[0], CL_DEVICE_TYPE_ALL, 1, &device, &devices);
+    error = platform.getDevices(CL_DEVICE_TYPE_ALL, &devices);
     if (!CheckError(error))
     {
         std::cerr << "Get Device ID fail\n";
     }
 
+    for (std::size_t i = 0; i < devices.size(); ++i)
     {
-        // Fetch the device name
-        const size_t BUF_SIZE = 256;
-        char vBuf[BUF_SIZE] = { 0 };
-        size_t actSize = 0;
-        error = clGetDeviceInfo(device, CL_DEVICE_NAME, BUF_SIZE, vBuf, &actSize);
-        cout << "Device name: " << vBuf << "\n";
-        error = clGetDeviceInfo(device, CL_DEVICE_VENDOR, BUF_SIZE, vBuf, &actSize);
-        cout << "Device vendor: " << vBuf << "\n";
-        error = clGetDeviceInfo(device, CL_DEVICE_VERSION, BUF_SIZE, vBuf, &actSize);
-        cout << "Device version: " << vBuf << "\n";
+        std::cout << i << ": Device name: " << devices[i].getInfo<CL_DEVICE_NAME>() << std::endl;
+        std::cout << "   Vendor: " << devices[i].getInfo<CL_DEVICE_VENDOR>() << std::endl;
+        std::cout << "   Version: " << devices[i].getInfo<CL_DEVICE_VERSION>() << std::endl;
     }
 
-    // Create a memory context for the device we want to use
-    cl_context_properties properties[] = { CL_CONTEXT_PLATFORM, (cl_context_properties)platform[0], 0 };
+    cl::Device device = devices[0]; // choose the first device by default
 
-    // Note that nVidia's OpenCL requires the platform property
-    cl_context context = clCreateContext(properties, 1, &device, NULL, NULL, &error);
+    // Create a memory context for the device we want to use
+    //cl_context_properties properties[] = { CL_CONTEXT_PLATFORM, (cl_context_properties)platform(), 0 };
+
+    cl::Context context = cl::Context(device, nullptr, nullptr, nullptr, &error);
     if (!CheckError(error))
     {
         std::cerr << "Create context fail\n";
     }
 
     // Create a command queue to communicate with the device
-    cl_command_queue cq = clCreateCommandQueueWithProperties(context, device, NULL, &error);
+    cl::CommandQueue cq = cl::CommandQueue(context, device, 0, &error);
     if (!CheckError(error))
     {
         std::cerr << "create command queue fail\n";
@@ -123,22 +98,14 @@ int main(int argc, char** argv)
     // Read the source kernel code in sampleKernel
     
     // Submit the source code of the kernel to OpenCL, and create a program object with it
-    const char* kernelSrc = kernelStr.c_str();
-    // srcsize = strlen(gs_SAMPLE_KERNEL);
-    srcsize = kernelStr.size();
-    cout << "Kernel source size: " << srcsize << "\n";
-    cl_program prog = clCreateProgramWithSource(context, 
-                                                1, 
-                                                &kernelSrc, 
-                                                &srcsize, 
-                                                &error);
+    cl::Program program = cl::Program(context, kernelStr.c_str(), false, &error);
     if (!CheckError(error))
     {
         std::cerr << "create program fail\n";
     }
 
     // Compile the kernel code (after this we could extract the compiled version)
-    error = clBuildProgram(prog, 1, &device, "", NULL, NULL);
+    error = program.build({device});
     if (!CheckError(error))
     {
         std::cerr << "build program fail\n";
@@ -146,69 +113,67 @@ int main(int argc, char** argv)
 
     // Create memory buffers in the Context where the desired Device is. 
     // These will be the pointer parameters on the kernel.
-    cl_mem mem1, mem2;
-    mem1 = clCreateBuffer(context, CL_MEM_READ_ONLY, worksize, NULL, &error);
+    cl::Buffer mem1, mem2;
+    mem1 = cl::Buffer(context, CL_MEM_READ_ONLY, worksize, nullptr, &error);
     if (!CheckError(error))
     {
         std::cerr << "create mem1 fail\n";
     }
 
-    mem2 = clCreateBuffer(context, CL_MEM_READ_ONLY, worksize, NULL, &error);
+    mem2 = cl::Buffer(context, CL_MEM_READ_ONLY, worksize, nullptr, &error);
     if (!CheckError(error))
     {
         std::cerr << "create mem2 fail\n";
     }
 
     // Create a kernel object with the compiled program
-    cl_kernel k_example = clCreateKernel(prog, "example", &error);
+    cl::Kernel k_example = cl::Kernel(program, "example", &error);
     if (!CheckError(error))
     {
         std::cerr << "create kernel fail\n";
     }
 
     // Set the kernel parameters
-    error = clSetKernelArg(k_example, 0, sizeof(mem1), &mem1);
+    error = k_example.setArg(0, mem1);
     if (!CheckError(error))
     {
         std::cerr << "set kernel args fail\n";
     }
 
-    error = clSetKernelArg(k_example, 1, sizeof(mem2), &mem2);
+    error = k_example.setArg(1, mem2);
     if (!CheckError(error))
     {
         std::cerr << "set kernel args2 fail\n";
     }
 
     // Create a char array in where to store the results of the kernel
-    char buf2[sizeof buf];
+    char buf2[sizeof buf] = { 0 };
     buf2[0] = '?';
     buf2[worksize] = 0;
 
-    cout << sizeof(buf2) << "\n";
-
     // Send input data to OpenCL (async, don't alter the buffer!)
-    error = clEnqueueWriteBuffer(cq, mem1, CL_FALSE, 0, worksize, buf, 0, NULL, NULL);
+    error = cq.enqueueWriteBuffer(mem1, CL_FALSE, 0, worksize, buf);
     if (!CheckError(error))
     {
         std::cerr << "enqueue write buffer fail\n";
     }
 
     // Tell the device, through the command queue, to execute que Kernel
-    error = clEnqueueNDRangeKernel(cq, k_example, 1, NULL, &worksize, &worksize, 0, NULL, NULL);
+    error = cq.enqueueNDRangeKernel(k_example, 0, worksize, worksize);
     if (!CheckError(error))
     {
         std::cerr << "enqueue NDRange kernel fail\n";
     }
 
     // Read the result back into buf2
-    error = clEnqueueReadBuffer(cq, mem2, CL_FALSE, 0, worksize, buf2, 0, NULL, NULL);
+    error = cq.enqueueReadBuffer(mem2, CL_FALSE, 0, worksize, buf2);
     if (!CheckError(error))
     {
         std::cerr << "enqueue read buffer fail\n";
     }
 
     // Await completion of all the above
-    error = clFinish(cq);
+    error = cq.finish();
     if (!CheckError(error))
     {
         std::cerr << "clFinish(cq) fail\n";
@@ -220,12 +185,6 @@ int main(int argc, char** argv)
         cout << buf2[i];
     }
     cout << "]\n";
-
-    if (nullptr != platform)
-    {
-        delete[] platform;
-        platform = nullptr;
-    }
 
     system("pause");
 
