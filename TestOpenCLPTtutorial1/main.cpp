@@ -1,74 +1,73 @@
 // Getting started with OpenCL tutorial 
 // by Sam Lapere, 2016, http://raytracey.blogspot.com
 // Code based on http://simpleopencl.blogspot.com/2013/06/tutorial-simple-start-with-opencl-and-c.html
-#define CL_USE_DEPRECATED_OPENCL_2_0_APIS
+
 #include <iostream>
 #include <vector>
-#include <CL\cl.hpp> // main OpenCL include file 
 
-using namespace cl;
-using namespace std;
+#define CL_HPP_TARGET_OPENCL_VERSION 200
+#include <CL\cl2.hpp> // main OpenCL include file 
 
 void main()
 {
     // Find all available OpenCL platforms (e.g. AMD OpenCL, Nvidia CUDA, Intel OpenCL)
-    vector<Platform> platforms;
-    Platform::get(&platforms);
+    std::vector<cl::Platform> platforms;
+    cl::Platform::get(&platforms);
 
     // Show the names of all available OpenCL platforms
-    cout << "Available OpenCL platforms: \n\n";
+    std::cout << "Available OpenCL platforms: \n\n";
     for (unsigned int i = 0; i < platforms.size(); i++)
     {
-        cout << "\t" << i + 1 << ": " << platforms[i].getInfo<CL_PLATFORM_NAME>() << endl;
-        cout << "\t" << "   " << platforms[i].getInfo<CL_PLATFORM_VERSION>() << endl;
+        std::cout << "\t" << i + 1 << ": " << platforms[i].getInfo<CL_PLATFORM_NAME>() << std::endl;
+        std::cout << "\t" << "   " << platforms[i].getInfo<CL_PLATFORM_VERSION>() << std::endl;
     }
 
     // Choose and create an OpenCL platform
-    cout << endl << "Enter the number of the OpenCL platform you want to use: ";
+    std::cout << std::endl << "Enter the number of the OpenCL platform you want to use: ";
     unsigned int input = 0;
-    cin >> input;
+    std::cin >> input;
     // Handle incorrect user input
     while (input < 1 || input > platforms.size()) {
-        cin.clear(); //clear errors/bad flags on cin
-        cin.ignore(cin.rdbuf()->in_avail(), '\n'); // ignores exact number of chars in cin buffer
-        cout << "No such platform." << endl << "Enter the number of the OpenCL platform you want to use: ";
-        cin >> input;
+        std::cin.clear(); //clear errors/bad flags on std::cin
+        std::cin.ignore(std::cin.rdbuf()->in_avail(), '\n'); // ignores exact number of chars in std::cin buffer
+        std::cout << "No such platform." << std::endl << "Enter the number of the OpenCL platform you want to use: ";
+        std::cin >> input;
     }
 
-    Platform platform = platforms[input - 1];
+    cl::Platform platform = platforms[input - 1];
 
     // Print the name of chosen OpenCL platform
-    cout << "Using OpenCL platform: \t" << platform.getInfo<CL_PLATFORM_NAME>() << endl;
+    std::cout << "Using OpenCL platform: \t" << platform.getInfo<CL_PLATFORM_NAME>() << std::endl;
 
     // Find all available OpenCL devices (e.g. CPU, GPU or integrated GPU)
-    vector<Device> devices;
+    std::vector<cl::Device> devices;
     platform.getDevices(CL_DEVICE_TYPE_ALL, &devices);
 
     // Print the names of all available OpenCL devices on the chosen platform
-    cout << "Available OpenCL devices on this platform: " << endl << endl;
+    std::cout << "Available OpenCL devices on this platform: " << std::endl << std::endl;
     for (unsigned int i = 0; i < devices.size(); i++)
-        cout << "\t" << i + 1 << ": " << devices[i].getInfo<CL_DEVICE_NAME>() << endl;
+        std::cout << "\t" << i + 1 << ": " << devices[i].getInfo<CL_DEVICE_NAME>() << std::endl;
 
     // Choose an OpenCL device 
-    cout << endl << "Enter the number of the OpenCL device you want to use: ";
+    std::cout << std::endl << "Enter the number of the OpenCL device you want to use: ";
     input = 0;
-    cin >> input;
+    std::cin >> input;
     // Handle incorrect user input
     while (input < 1 || input > devices.size()) {
-        cin.clear(); //clear errors/bad flags on cin
-        cin.ignore(cin.rdbuf()->in_avail(), '\n'); // ignores exact number of chars in cin buffer
-        cout << "No such device. Enter the number of the OpenCL device you want to use: ";
-        cin >> input;
+        std::cin.clear(); //clear errors/bad flags on std::cin
+        std::cin.ignore(std::cin.rdbuf()->in_avail(), '\n'); // ignores exact number of chars in std::cin buffer
+        std::cout << "No such device. Enter the number of the OpenCL device you want to use: ";
+        std::cin >> input;
     }
 
-    Device device = devices[input - 1];
+    cl::Device device = devices[input - 1];
 
     // Print the name of the chosen OpenCL device
-    cout << endl << "Using OpenCL device: \t" << device.getInfo<CL_DEVICE_NAME>() << endl << endl;
+    std::cout << std::endl << "Using OpenCL device: \t" << device.getInfo<CL_DEVICE_NAME>() << std::endl << std::endl;
 
     // Create an OpenCL context on that device.
     // the context is the interface between host and device and manages all the OpenCL resources 
-    Context context = Context(device);
+    cl::Context context = cl::Context(device);
 
     ///////////////////
     // OPENCL KERNEL //
@@ -88,17 +87,17 @@ void main()
 
 
     // Create an OpenCL program by performing runtime source compilation
-    Program program = Program(context, source_string);
+    cl::Program program = cl::Program(context, source_string);
 
     // Build the program and check for compilation errors 
     cl_int result = program.build({ device }, "");
-    if (result) cout << "Error during compilation! (" << result << ")" << endl;
+    if (result) std::cout << "Error during compilation! (" << result << ")" << std::endl;
 
     // Create a kernel (entry point in the OpenCL program)
     // kernels are the basic units of executable code that run on the OpenCL device
     // the kernel forms the starting point into the OpenCL program, analogous to main() in CPU code
     // kernels can be called from the host (CPU)
-    Kernel kernel = Kernel(program, "parallel_add");
+    cl::Kernel kernel = cl::Kernel(program, "parallel_add");
 
     // Create input data arrays on the host (= CPU)
     const int numElements = 10;
@@ -108,9 +107,9 @@ void main()
 
                                        // Create buffers (memory objects) on the OpenCL device, allocate memory and copy input data to device.
                                        // Flags indicate how the buffer should be used e.g. read-only, write-only, read-write
-    Buffer clBufferA = Buffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, numElements * sizeof(cl_int), cpuArrayA);
-    Buffer clBufferB = Buffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, numElements * sizeof(cl_int), cpuArrayB);
-    Buffer clOutput = Buffer(context, CL_MEM_WRITE_ONLY, numElements * sizeof(cl_int), NULL);
+    cl::Buffer clBufferA = cl::Buffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, numElements * sizeof(cl_int), cpuArrayA);
+    cl::Buffer clBufferB = cl::Buffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, numElements * sizeof(cl_int), cpuArrayB);
+    cl::Buffer clOutput = cl::Buffer(context, CL_MEM_WRITE_ONLY, numElements * sizeof(cl_int), NULL);
 
     // Specify the arguments for the OpenCL kernel
     // (the arguments are __global float* x, __global float* y and __global float* z)
@@ -120,7 +119,7 @@ void main()
 
                                  // Create a command queue for the OpenCL device
                                  // the command queue allows kernel execution commands to be sent to the device
-    CommandQueue queue = CommandQueue(context, device);
+    cl::CommandQueue queue = cl::CommandQueue(context, device);
 
     // Determine the global and local number of "work items"
     // The global work size is the total number of work items (threads) that execute in parallel
@@ -140,7 +139,7 @@ void main()
 
     // Print results to console
     for (int i = 0; i < numElements; i++)
-        cout << cpuArrayA[i] << " + " << cpuArrayB[i] << " = " << cpuOutput[i] << endl;
+        std::cout << cpuArrayA[i] << " + " << cpuArrayB[i] << " = " << cpuOutput[i] << std::endl;
 
     queue.finish();
 
