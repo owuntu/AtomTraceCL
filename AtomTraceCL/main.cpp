@@ -13,7 +13,7 @@ static void error_callback(int error, const char* description);
 
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
-int main()
+int main_rt()
 {
     Sphere s0(1.0f, Vector3::ZERO);
 

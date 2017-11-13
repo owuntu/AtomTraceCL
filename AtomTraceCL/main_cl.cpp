@@ -1,6 +1,6 @@
 #include <cstdlib>
 #include <iostream>
-#include <opencl.h>
+#include <CL\opencl.h>
 
 #include "Utilities.h"
 
@@ -26,7 +26,7 @@ bool CheckError(cl_int error)
     return ret;
 }
 
-int main_cl(int argc, char** argv)
+int main(int argc, char** argv)
 {
     using namespace std;
 
@@ -40,15 +40,26 @@ int main_cl(int argc, char** argv)
     size_t srcsize, worksize = strlen(buf);
     cout << "Worksize: " << worksize << "\n";
     cl_int error;
-    cl_platform_id platform;
+    cl_platform_id* platform = nullptr;
     cl_device_id device;
-    cl_uint platforms, devices;
+    cl_uint numPlf, devices;
 
-    // Fetch the Platforms
-    error = clGetPlatformIDs(1, &platform, &platforms);
+    // Fetch number of available OpenCL platform
+    error = clGetPlatformIDs(0, nullptr, &numPlf);
     if (!CheckError(error))
     {
-        std::cerr << "GetPlatformID fail\n";
+        std::cerr << "GetPlatformID number of platform fail\n";
+    }
+
+    if (0 != numPlf)
+    {
+        platform = new cl_platform_id[numPlf];
+        // Fetch the Platforms
+        error = clGetPlatformIDs(numPlf, platform, &numPlf);
+        if (!CheckError(error))
+        {
+            std::cerr << "GetPlatformID fail\n";
+        }
     }
 
     {
@@ -56,24 +67,24 @@ int main_cl(int argc, char** argv)
         const size_t BUF_SIZE = 256;
         char vBuf[BUF_SIZE] = { 0 };
         size_t actSize = 0;
-        error = clGetPlatformInfo(platform, CL_PLATFORM_VERSION, BUF_SIZE, vBuf, &actSize);
+        error = clGetPlatformInfo(platform[0], CL_PLATFORM_VERSION, BUF_SIZE, vBuf, &actSize);
         cout << "OpenCL platform version:\t" << vBuf << "\n";
 
-        error = clGetPlatformInfo(platform, CL_PLATFORM_PROFILE, BUF_SIZE, vBuf, &actSize);
-        cout << vBuf << "\n";
+        error = clGetPlatformInfo(platform[0], CL_PLATFORM_PROFILE, BUF_SIZE, vBuf, &actSize);
+        cout << "OpenCL platform profile: " << vBuf << "\n";
 
-        error = clGetPlatformInfo(platform, CL_PLATFORM_VENDOR, BUF_SIZE, vBuf, &actSize);
-        cout << vBuf << "\n";
+        error = clGetPlatformInfo(platform[0], CL_PLATFORM_VENDOR, BUF_SIZE, vBuf, &actSize);
+        cout << "Vendor: " << vBuf << "\n";
 
-        error = clGetPlatformInfo(platform, CL_PLATFORM_NAME, BUF_SIZE, vBuf, &actSize);
-        cout << vBuf << "\n";
+        error = clGetPlatformInfo(platform[0], CL_PLATFORM_NAME, BUF_SIZE, vBuf, &actSize);
+        cout << "Platform name: " << vBuf << "\n";
 
-        error = clGetPlatformInfo(platform, CL_PLATFORM_EXTENSIONS, BUF_SIZE, vBuf, &actSize);
-        cout << vBuf << "\n";
+        error = clGetPlatformInfo(platform[0], CL_PLATFORM_EXTENSIONS, BUF_SIZE, vBuf, &actSize);
+        cout << "Platform extensions: " << vBuf << "\n";
     }
 
     // Fetch the Devices for this platform
-    error = clGetDeviceIDs(platform, CL_DEVICE_TYPE_ALL, 1, &device, &devices);
+    error = clGetDeviceIDs(platform[0], CL_DEVICE_TYPE_ALL, 1, &device, &devices);
     if (!CheckError(error))
     {
         std::cerr << "Get Device ID fail\n";
@@ -85,15 +96,15 @@ int main_cl(int argc, char** argv)
         char vBuf[BUF_SIZE] = { 0 };
         size_t actSize = 0;
         error = clGetDeviceInfo(device, CL_DEVICE_NAME, BUF_SIZE, vBuf, &actSize);
-        cout << vBuf << "\n";
+        cout << "Device name: " << vBuf << "\n";
         error = clGetDeviceInfo(device, CL_DEVICE_VENDOR, BUF_SIZE, vBuf, &actSize);
-        cout << vBuf << "\n";
+        cout << "Device vendor: " << vBuf << "\n";
         error = clGetDeviceInfo(device, CL_DEVICE_VERSION, BUF_SIZE, vBuf, &actSize);
-        cout << vBuf << "\n";
+        cout << "Device version: " << vBuf << "\n";
     }
 
     // Create a memory context for the device we want to use
-    cl_context_properties properties[] = { CL_CONTEXT_PLATFORM, (cl_context_properties)platform, 0 };
+    cl_context_properties properties[] = { CL_CONTEXT_PLATFORM, (cl_context_properties)platform[0], 0 };
 
     // Note that nVidia's OpenCL requires the platform property
     cl_context context = clCreateContext(properties, 1, &device, NULL, NULL, &error);
@@ -209,6 +220,12 @@ int main_cl(int argc, char** argv)
         cout << buf2[i];
     }
     cout << "]\n";
+
+    if (nullptr != platform)
+    {
+        delete[] platform;
+        platform = nullptr;
+    }
 
     system("pause");
 
