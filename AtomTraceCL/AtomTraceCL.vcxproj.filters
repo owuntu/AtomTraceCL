@@ -70,5 +70,8 @@
     <None Include="kernel\example.cl">
       <Filter>OpenCL_kernels</Filter>
     </None>
+    <None Include="kernel\renderer.cl">
+      <Filter>OpenCL_kernels</Filter>
+    </None>
   </ItemGroup>
 </Project>

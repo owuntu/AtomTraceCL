@@ -4,18 +4,10 @@
 //#define CL_HPP_TARGET_OPENCL_VERSION 200
 #include <CL\cl2.hpp> // main OpenCL include file 
 
+#include "lodepng.h"
+
 #include "Utilities.h"
 
-#define STR(x) #x
-
-static const char* gs_SAMPLE_KERNEL = STR(\
-    __kernel void example(__global char* buf,   \n
-                          __global char* buf2)  \n
-    {                                           \n
-        int x = get_global_id(0);               \n
-        buf2[x] = buf[x];                       \n
-    }                                           \n
-);
 
 bool CheckError(cl_int error)
 {
@@ -31,14 +23,14 @@ bool CheckError(cl_int error)
 int main(int argc, char** argv)
 {
     std::string kernelStr;
-    ReadFileToString("kernel\\example.cl", kernelStr);
-    std::cout << kernelStr << "\n";
+    ReadFileToString("kernel\\renderer.cl", kernelStr);
+    //std::cout << kernelStr << "\n";
 
-    // Original sample code from Google code: https://code.google.com/p/simple-opencl/
-    char buf[] = "Hello World!";
+    int width = 800;
+    int height = 600;
+    size_t worksize = width * height;
+    unsigned char* pImg = new unsigned char[worksize * 3];
 
-    size_t worksize = strlen(buf);
-    std::cout << "Worksize: " << worksize << "\n";
     cl_int error;
     std::vector<cl::Platform> platforms;
     std::vector<cl::Device> devices;
@@ -107,62 +99,58 @@ int main(int argc, char** argv)
     if (!CheckError(error))
     {
         std::cerr << "build program fail\n";
+        char msg[1024] = { 0 };
+        //program.getBuildInfo(device, CL_PROGRAM_BUILD_LOG, msg);
+        clGetProgramBuildInfo(program(), device(), CL_PROGRAM_BUILD_LOG, sizeof(msg), msg, nullptr);
+        std::cout << msg << std::endl;
     }
 
     // Create memory buffers in the Context where the desired Device is. 
     // These will be the pointer parameters on the kernel.
-    cl::Buffer mem1, mem2;
-    mem1 = cl::Buffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, worksize, buf, &error);
+    cl::Buffer mem1;
+    mem1 = cl::Buffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
+                      worksize * 3 * sizeof(unsigned char), pImg, &error);
     if (!CheckError(error))
     {
         std::cerr << "create mem1 fail\n";
     }
 
-    mem2 = cl::Buffer(context, CL_MEM_WRITE_ONLY, worksize, nullptr, &error);
-    if (!CheckError(error))
-    {
-        std::cerr << "create mem2 fail\n";
-    }
-
     // Create a kernel object with the compiled program
-    cl::Kernel k_example = cl::Kernel(program, "example", &error);
+    cl::Kernel kernel = cl::Kernel(program, "render", &error);
     if (!CheckError(error))
     {
         std::cerr << "create kernel fail\n";
     }
 
     // Set the kernel parameters
-    error = k_example.setArg(0, mem1);
+    error = kernel.setArg(0, mem1);
     if (!CheckError(error))
     {
-        std::cerr << "set kernel args fail\n";
+        std::cerr << "set kernel args0 fail\n";
     }
 
-    error = k_example.setArg(1, mem2);
+    error = kernel.setArg(1, width);
+    if (!CheckError(error))
+    {
+        std::cerr << "set kernel args1 fail\n";
+    }
+
+    error = kernel.setArg(2, height);
     if (!CheckError(error))
     {
         std::cerr << "set kernel args2 fail\n";
     }
 
-    // Create a char array in where to store the results of the kernel
-    char buf2[sizeof buf] = { 0 };
-
-    std::cout << "buf2: [";
-    for (int i = 0; i < sizeof(buf2); ++i) {
-        std::cout << buf2[i];
-    }
-    std::cout << "]\n";
-
     // Tell the device, through the command queue, to execute queue Kernel
-    error = cq.enqueueNDRangeKernel(k_example, 0, worksize, worksize);
+    error = cq.enqueueNDRangeKernel(kernel, 0, worksize, 256);
     if (!CheckError(error))
     {
         std::cerr << "enqueue NDRange kernel fail\n";
     }
 
-    // Read the result back into buf2
+    // Read the result back into pImg
     // the "CL_TRUE" flag blocks the read operation until all work items have finished their computation
-    error = cq.enqueueReadBuffer(mem2, CL_TRUE, 0, worksize, buf2);
+    error = cq.enqueueReadBuffer(mem1, CL_TRUE, 0, worksize*3, pImg);
     if (!CheckError(error))
     {
         std::cerr << "enqueue read buffer fail\n";
@@ -172,16 +160,15 @@ int main(int argc, char** argv)
     error = cq.finish();
     if (!CheckError(error))
     {
-        std::cerr << "clFinish(cq) fail\n";
+        std::cerr << "cq.finish() fail\n";
     }
 
-    // Finally, output the result
-    std::cout << "buf2: ["; 
-    for (int i = 0; i < sizeof(buf2); ++i){
-        std::cout << buf2[i];
-    }
-    std::cout << "]\n";
+    lodepng::encode("image.png", pImg, width, height, LCT_RGB, 8);
 
+    if (nullptr != pImg)
+    {
+        delete[] pImg;
+    }
     system("pause");
 
     return 0;
