@@ -19,6 +19,9 @@
     <Filter Include="OpenCL_kernels">
       <UniqueIdentifier>{167243b5-2511-47c4-813e-6442e1e6e637}</UniqueIdentifier>
     </Filter>
+    <Filter Include="lodePNG">
+      <UniqueIdentifier>{848c48a8-9a73-43db-b216-56d65e4f4c63}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Utilities.cpp">
@@ -39,6 +42,9 @@
     <ClCompile Include="SimpleImage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\External\lodePNG\lodepng.cpp">
+      <Filter>lodePNG</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Utilities.h">
@@ -52,6 +58,9 @@
     </ClInclude>
     <ClInclude Include="SimpleImage.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\External\lodePNG\lodepng.h">
+      <Filter>lodePNG</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

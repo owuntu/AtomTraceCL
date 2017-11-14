@@ -1,6 +1,8 @@
 #include <cstdlib>
 #include <iostream>
 
+#include "lodepng.h"
+
 #include "SimpleImage.h"
 
 
@@ -69,4 +71,10 @@ bool SimpleImage::SavePPM(const char *filename) const
         
     fclose(fp);
     return true;
+}
+
+bool SimpleImage::SavePNG(const char* filename) const
+{
+    unsigned int err = lodepng::encode(filename, m_pData, m_width, m_height, LCT_RGB, 8);
+    return (0 == err);
 }

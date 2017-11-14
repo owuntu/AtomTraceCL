@@ -84,7 +84,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)External\lightOCLSDK\include;$(SolutionDir)External\GLFW3\include;$(SolutionDir)AtomMathCL\;$(SolutionDir)External\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)External\lightOCLSDK\include;$(SolutionDir)External\GLFW3\include;$(SolutionDir)AtomMathCL\;$(SolutionDir)External\;$(SolutionDir)External\lodePNG</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -114,7 +114,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)External\lightOCLSDK\include;$(SolutionDir)External\GLFW3\include;$(SolutionDir)AtomMathCL\;$(SolutionDir)External\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)External\lightOCLSDK\include;$(SolutionDir)External\GLFW3\include;$(SolutionDir)AtomMathCL\;$(SolutionDir)External\;$(SolutionDir)External\lodePNG</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -125,6 +125,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\External\lodePNG\lodepng.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="main_cl.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
@@ -136,6 +137,7 @@
     <ClCompile Include="Utilities.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\External\lodePNG\lodepng.h" />
     <ClInclude Include="Ray.h" />
     <ClInclude Include="SimpleImage.h" />
     <ClInclude Include="Sphere.h" />

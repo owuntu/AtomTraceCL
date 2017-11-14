@@ -79,7 +79,7 @@ int main_rt()
 
     glfwDestroyWindow(window);
 
-    image.SavePPM("image.ppm");
+    image.SavePNG("image.png");
 
     glfwTerminate();
 

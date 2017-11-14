@@ -175,7 +175,7 @@ int main(int argc, char** argv)
         std::cerr << "clFinish(cq) fail\n";
     }
 
-    // Finally, ouput the result
+    // Finally, output the result
     std::cout << "buf2: ["; 
     for (int i = 0; i < sizeof(buf2); ++i){
         std::cout << buf2[i];

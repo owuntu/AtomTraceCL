@@ -17,6 +17,7 @@ public:
     unsigned int Height() const;
 
     bool SavePPM(const char* filename) const;
+    bool SavePNG(const char* filename) const;
 
 private:
     unsigned char* m_pData; // 3 channel color, RGB
