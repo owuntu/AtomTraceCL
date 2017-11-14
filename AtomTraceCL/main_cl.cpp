@@ -30,17 +30,15 @@ bool CheckError(cl_int error)
 
 int main(int argc, char** argv)
 {
-    using namespace std;
-
-    string kernelStr;
+    std::string kernelStr;
     ReadFileToString("kernel\\example.cl", kernelStr);
-    cout << kernelStr << "\n";
+    std::cout << kernelStr << "\n";
 
     // Original sample code from Google code: https://code.google.com/p/simple-opencl/
     char buf[] = "Hello World!";
 
-    size_t srcsize, worksize = strlen(buf);
-    cout << "Worksize: " << worksize << "\n";
+    size_t worksize = strlen(buf);
+    std::cout << "Worksize: " << worksize << "\n";
     cl_int error;
     std::vector<cl::Platform> platforms;
     std::vector<cl::Device> devices;
@@ -114,13 +112,13 @@ int main(int argc, char** argv)
     // Create memory buffers in the Context where the desired Device is. 
     // These will be the pointer parameters on the kernel.
     cl::Buffer mem1, mem2;
-    mem1 = cl::Buffer(context, CL_MEM_READ_ONLY, worksize, nullptr, &error);
+    mem1 = cl::Buffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, worksize, buf, &error);
     if (!CheckError(error))
     {
         std::cerr << "create mem1 fail\n";
     }
 
-    mem2 = cl::Buffer(context, CL_MEM_READ_ONLY, worksize, nullptr, &error);
+    mem2 = cl::Buffer(context, CL_MEM_WRITE_ONLY, worksize, nullptr, &error);
     if (!CheckError(error))
     {
         std::cerr << "create mem2 fail\n";
@@ -148,17 +146,14 @@ int main(int argc, char** argv)
 
     // Create a char array in where to store the results of the kernel
     char buf2[sizeof buf] = { 0 };
-    buf2[0] = '?';
-    buf2[worksize] = 0;
 
-    // Send input data to OpenCL (async, don't alter the buffer!)
-    error = cq.enqueueWriteBuffer(mem1, CL_FALSE, 0, worksize, buf);
-    if (!CheckError(error))
-    {
-        std::cerr << "enqueue write buffer fail\n";
+    std::cout << "buf2: [";
+    for (int i = 0; i < sizeof(buf2); ++i) {
+        std::cout << buf2[i];
     }
+    std::cout << "]\n";
 
-    // Tell the device, through the command queue, to execute que Kernel
+    // Tell the device, through the command queue, to execute queue Kernel
     error = cq.enqueueNDRangeKernel(k_example, 0, worksize, worksize);
     if (!CheckError(error))
     {
@@ -166,7 +161,8 @@ int main(int argc, char** argv)
     }
 
     // Read the result back into buf2
-    error = cq.enqueueReadBuffer(mem2, CL_FALSE, 0, worksize, buf2);
+    // the "CL_TRUE" flag blocks the read operation until all work items have finished their computation
+    error = cq.enqueueReadBuffer(mem2, CL_TRUE, 0, worksize, buf2);
     if (!CheckError(error))
     {
         std::cerr << "enqueue read buffer fail\n";
@@ -180,11 +176,11 @@ int main(int argc, char** argv)
     }
 
     // Finally, ouput the result
-    cout << "buf2: ["; 
+    std::cout << "buf2: ["; 
     for (int i = 0; i < sizeof(buf2); ++i){
-        cout << buf2[i];
+        std::cout << buf2[i];
     }
-    cout << "]\n";
+    std::cout << "]\n";
 
     system("pause");
 
