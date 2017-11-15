@@ -24,7 +24,6 @@ int main(int argc, char** argv)
 {
     std::string kernelStr;
     ReadFileToString("kernel\\renderer.cl", kernelStr);
-    //std::cout << kernelStr << "\n";
 
     int width = 800;
     int height = 600;
@@ -84,8 +83,6 @@ int main(int argc, char** argv)
     {
         std::cerr << "create command queue fail\n";
     }
-
-    // Read the source kernel code in sampleKernel
     
     // Submit the source code of the kernel to OpenCL, and create a program object with it
     cl::Program program = cl::Program(context, kernelStr.c_str(), false, &error);
