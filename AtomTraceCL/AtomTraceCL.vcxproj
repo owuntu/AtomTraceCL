@@ -126,6 +126,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\External\lodePNG\lodepng.cpp" />
+    <ClCompile Include="CLResourceManager.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="main_cl.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
@@ -138,6 +139,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\External\lodePNG\lodepng.h" />
+    <ClInclude Include="CLResourceManager.h" />
     <ClInclude Include="Ray.h" />
     <ClInclude Include="SimpleImage.h" />
     <ClInclude Include="Sphere.h" />

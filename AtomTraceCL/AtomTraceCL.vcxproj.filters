@@ -45,6 +45,9 @@
     <ClCompile Include="..\External\lodePNG\lodepng.cpp">
       <Filter>lodePNG</Filter>
     </ClCompile>
+    <ClCompile Include="CLResourceManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Utilities.h">
@@ -61,6 +64,9 @@
     </ClInclude>
     <ClInclude Include="..\External\lodePNG\lodepng.h">
       <Filter>lodePNG</Filter>
+    </ClInclude>
+    <ClInclude Include="CLResourceManager.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
