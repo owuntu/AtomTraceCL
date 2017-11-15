@@ -17,12 +17,15 @@ public:
 
     bool Init();
 
+    // Accessor
+    const cl::Device& Device() const;
+    const cl::Context& Context() const;
+    const cl::CommandQueue& CommandQueue() const;
+
 private:
     cl::Platform m_platform;
     cl::Device m_device;
     cl::Context m_context;
-    cl::Program m_program;
-    cl::Kernel m_kernel;
     cl::CommandQueue m_cq;
 };
 

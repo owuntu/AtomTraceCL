@@ -6,6 +6,7 @@
 
 #include "lodepng.h"
 
+#include "CLResourceManager.h"
 #include "Utilities.h"
 
 
@@ -31,58 +32,12 @@ int main(int argc, char** argv)
     unsigned char* pImg = new unsigned char[worksize * 3];
 
     cl_int error;
-    std::vector<cl::Platform> platforms;
-    std::vector<cl::Device> devices;
+    CLResourceManager myOpenCL;
+    myOpenCL.Init();
 
-    // Fetch number of available OpenCL platform
-    error = cl::Platform::get(&platforms);
-    if (!CheckError(error))
-    {
-        std::cerr << "GetPlatformID number of platform fail\n";
-    }
-
-    for (std::size_t i = 0; i < platforms.size(); i++)
-    {
-        std::cout << i << ": Platform name:" << platforms[i].getInfo<CL_PLATFORM_NAME>() << std::endl;
-        std::cout << "   OpenCL version: " << platforms[i].getInfo<CL_PLATFORM_VERSION>() << std::endl;
-        std::cout << "   Platform profile: " << platforms[i].getInfo<CL_PLATFORM_PROFILE>() << std::endl;
-        std::cout << "   Vendor: " << platforms[i].getInfo<CL_PLATFORM_VENDOR>() << std::endl;
-        std::cout << "   Extensions: " << platforms[i].getInfo<CL_PLATFORM_EXTENSIONS>() << std::endl;
-    }
-
-    cl::Platform platform = platforms[0]; // pick the first platform by default
-
-    // Fetch the Devices for this platform
-    error = platform.getDevices(CL_DEVICE_TYPE_ALL, &devices);
-    if (!CheckError(error))
-    {
-        std::cerr << "Get Device ID fail\n";
-    }
-
-    for (std::size_t i = 0; i < devices.size(); ++i)
-    {
-        std::cout << i << ": Device name: " << devices[i].getInfo<CL_DEVICE_NAME>() << std::endl;
-        std::cout << "   Vendor: " << devices[i].getInfo<CL_DEVICE_VENDOR>() << std::endl;
-        std::cout << "   Version: " << devices[i].getInfo<CL_DEVICE_VERSION>() << std::endl;
-    }
-
-    cl::Device device = devices[0]; // choose the first device by default
-
-    // Create a memory context for the device we want to use
-    //cl_context_properties properties[] = { CL_CONTEXT_PLATFORM, (cl_context_properties)platform(), 0 };
-
-    cl::Context context = cl::Context(device, nullptr, nullptr, nullptr, &error);
-    if (!CheckError(error))
-    {
-        std::cerr << "Create context fail\n";
-    }
-
-    // Create a command queue to communicate with the device
-    cl::CommandQueue cq = cl::CommandQueue(context, device, 0, &error);
-    if (!CheckError(error))
-    {
-        std::cerr << "create command queue fail\n";
-    }
+    cl::Device device = myOpenCL.Device();
+    cl::Context context = myOpenCL.Context();
+    cl::CommandQueue cq = myOpenCL.CommandQueue();
     
     // Submit the source code of the kernel to OpenCL, and create a program object with it
     cl::Program program = cl::Program(context, kernelStr.c_str(), false, &error);

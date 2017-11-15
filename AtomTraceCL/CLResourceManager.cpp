@@ -115,5 +115,34 @@ bool CLResourceManager::Init()
 
     std::cout << "Using OpenCL device: " << m_device.getInfo<CL_DEVICE_NAME>() << std::endl;
 
+    // Create OpenCL context
+    m_context = cl::Context(m_device, nullptr, nullptr, nullptr, &errCode);
+    if (!CheckError(errCode, "Create context"))
+    {
+        return false;
+    }
+
+    // Create command queue
+    m_cq = cl::CommandQueue(m_context, m_device, 0, &errCode);
+    if (!CheckError(errCode, "Create command queue"))
+    {
+        return false;
+    }
+
     return true;
+}
+
+const cl::Device& CLResourceManager::Device() const
+{
+    return m_device;
+}
+
+const cl::Context& CLResourceManager::Context() const
+{
+    return m_context;
+}
+
+const cl::CommandQueue& CLResourceManager::CommandQueue() const
+{
+    return m_cq;
 }
