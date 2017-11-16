@@ -73,9 +73,13 @@ __kernel void render(__global uchar* pOutput, int width, int height, __constant 
         s0.radius = 0.1f;
 
         bool bHit = intersectSphere(&s0, &cRay);
-        uchar val = bHit * 255;
-        pOutput[pid * 3] = val;
-        pOutput[pid * 3 + 1] = val;
-        pOutput[pid * 3 + 2] = val;
+
+        //for (unsigned int i = 0; true; ++i)
+        {
+            uchar val = bHit * 255;
+            pOutput[pid * 3] = val;
+            pOutput[pid * 3 + 1] = val;
+            pOutput[pid * 3 + 2] = val;
+        }
     }
 }
