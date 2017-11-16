@@ -35,9 +35,6 @@
     <ClCompile Include="Sphere.cpp">
       <Filter>Geometry</Filter>
     </ClCompile>
-    <ClCompile Include="SimpleImage.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\External\lodePNG\lodepng.cpp">
       <Filter>lodePNG</Filter>
     </ClCompile>
@@ -45,6 +42,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Camera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderImage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -64,10 +64,10 @@
     <ClInclude Include="CLResourceManager.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="SimpleImage.h">
+    <ClInclude Include="Utilities.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="Utilities.h">
+    <ClInclude Include="RenderImage.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

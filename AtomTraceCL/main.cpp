@@ -2,12 +2,12 @@
 #include <glfw3.h>
 
 #include "Ray.h"
-#include "SimpleImage.h"
+#include "RenderImage.h"
 #include "Sphere.h"
 
 using namespace AtomMathCL;
 
-static SimpleImage* gs_pImage;
+static RenderImage* gs_pImage;
 
 static void error_callback(int error, const char* description);
 
@@ -20,7 +20,7 @@ int main_rt()
     const unsigned int IMAGE_WIDTH = 512;
     const unsigned int IMAGE_HEIGHT = 512;
 
-    SimpleImage image(IMAGE_WIDTH, IMAGE_HEIGHT);
+    RenderImage image(IMAGE_WIDTH, IMAGE_HEIGHT);
 
     gs_pImage = &image;
 

@@ -9,6 +9,7 @@
 #include "Vector3.h"
 #include "Camera.h"
 #include "CLResourceManager.h"
+#include "RenderImage.h"
 #include "Utilities.h"
 
 
@@ -28,10 +29,11 @@ int main(int argc, char** argv)
     std::string kernelStr;
     ReadFileToString("kernel\\renderer.cl", kernelStr);
 
-    int width = 800;
-    int height = 600;
-    size_t worksize = width * height;
-    unsigned char* pImg = new unsigned char[worksize * 3];
+    const int IMAGE_WIDTH = 800;
+    const int IMAGE_HEIGHT = 600;
+    size_t worksize = IMAGE_WIDTH * IMAGE_HEIGHT;
+    //unsigned char* pImg = new unsigned char[worksize * 3];
+    RenderImage image(IMAGE_WIDTH, IMAGE_HEIGHT);
 
     cl_int error;
     CLResourceManager myOpenCL;
@@ -63,7 +65,7 @@ int main(int argc, char** argv)
     // These will be the pointer parameters on the kernel.
     cl::Buffer mem1;
     mem1 = cl::Buffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
-                      worksize * 3 * sizeof(unsigned char), pImg, &error);
+                      worksize * 3 * sizeof(unsigned char), image.GetRawData(), &error);
     if (!CheckError(error))
     {
         std::cerr << "create mem1 fail\n";
@@ -71,7 +73,7 @@ int main(int argc, char** argv)
 
     cl::Buffer clCam;
     AtomTraceCL::Camera cam;
-    cam.Init(AtomMathCL::Vector3::UNIT_Z, AtomMathCL::Vector3::ZERO, 30.f, width, height);
+    cam.Init(AtomMathCL::Vector3::UNIT_Z, AtomMathCL::Vector3::ZERO, 30.f, IMAGE_WIDTH, IMAGE_HEIGHT);
     clCam = cl::Buffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(AtomTraceCL::Camera), &cam, &error);
     if (!CheckError(error))
     {
@@ -92,13 +94,13 @@ int main(int argc, char** argv)
         std::cerr << "set kernel args0 fail\n";
     }
 
-    error = kernel.setArg(1, width);
+    error = kernel.setArg(1, IMAGE_WIDTH);
     if (!CheckError(error))
     {
         std::cerr << "set kernel args1 fail\n";
     }
 
-    error = kernel.setArg(2, height);
+    error = kernel.setArg(2, IMAGE_HEIGHT);
     if (!CheckError(error))
     {
         std::cerr << "set kernel args2 fail\n";
@@ -119,7 +121,7 @@ int main(int argc, char** argv)
 
     // Read the result back into pImg
     // the "CL_TRUE" flag blocks the read operation until all work items have finished their computation
-    error = cq.enqueueReadBuffer(mem1, CL_TRUE, 0, worksize*3, pImg);
+    error = cq.enqueueReadBuffer(mem1, CL_TRUE, 0, worksize*3, image.GetRawData());
     if (!CheckError(error))
     {
         std::cerr << "enqueue read buffer fail\n";
@@ -132,12 +134,9 @@ int main(int argc, char** argv)
         std::cerr << "cq.finish() fail\n";
     }
 
-    lodepng::encode("image.png", pImg, width, height, LCT_RGB, 8);
+    image.SavePNG("image.png");
+    image.Release();
 
-    if (nullptr != pImg)
-    {
-        delete[] pImg;
-    }
     system("pause");
 
     return 0;

@@ -1,17 +1,21 @@
 #ifndef __ATOM_TRACE_CL_SIMPLE_IMAGE_H_
 #define __ATOM_TRACE_CL_SIMPLE_IMAGE_H_
 
-class SimpleImage
+class RenderImage
 {
 public:
-    SimpleImage();
-    SimpleImage(unsigned int w, unsigned int h);
-    ~SimpleImage();
+    RenderImage();
+    RenderImage(unsigned int w, unsigned int h);
+    ~RenderImage();
+
+    bool Init(unsigned int w, unsigned int h);
+    bool Release();
 
     //unsigned char GetChannelAt(unsigned int pixel, unsigned int channelIndex);
     bool SetChannelAt(unsigned int pixel, unsigned int channelIndex, unsigned char value);
 
     const unsigned char* GetRawData() const;
+    unsigned char* GetRawData();
 
     unsigned int Width() const;
     unsigned int Height() const;

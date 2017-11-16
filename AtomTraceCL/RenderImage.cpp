@@ -3,35 +3,64 @@
 
 #include "lodepng.h"
 
-#include "SimpleImage.h"
+#include "RenderImage.h"
 
 
-SimpleImage::SimpleImage() : 
+RenderImage::RenderImage() : 
     m_pData(NULL),
     m_width(0),
     m_height(0)
 {
 }
 
-SimpleImage::SimpleImage(unsigned int w, unsigned int h) :
+RenderImage::RenderImage(unsigned int w, unsigned int h) :
     m_pData(NULL),
     m_width(w),
     m_height(h)
 {
     m_pData = new unsigned char[w*h * 3]();
+    memset(m_pData, 0, w*h * 3);
 }
 
 
-SimpleImage::~SimpleImage()
+RenderImage::~RenderImage()
 {
-    if (NULL != m_pData)
-    {
-        delete m_pData;
-        m_pData = NULL;
-    }
+    this->Release();
 }
 
-bool SimpleImage::SetChannelAt(unsigned int pixel, unsigned int channelIndex, unsigned char value)
+bool RenderImage::Init(unsigned int w, unsigned int h)
+{
+    if (0 == w || 0 == h)
+    {
+        return false;
+    }
+
+    if (nullptr != m_pData)
+    {
+        delete[] m_pData;
+    }
+
+    m_width = w;
+    m_height = h;
+    m_pData = new unsigned char[w * h * 3];
+    memset(m_pData, 0, w * h * 3);
+    return true;
+}
+
+bool RenderImage::Release()
+{
+    if (nullptr != m_pData)
+    {
+        delete[] m_pData;
+        m_pData = nullptr;
+        m_width = 0;
+        m_height = 0;
+    }
+
+    return true;
+}
+
+bool RenderImage::SetChannelAt(unsigned int pixel, unsigned int channelIndex, unsigned char value)
 {
     using namespace std;
     if (NULL == m_pData)
@@ -45,22 +74,27 @@ bool SimpleImage::SetChannelAt(unsigned int pixel, unsigned int channelIndex, un
     return true;
 }
 
-const unsigned char* SimpleImage::GetRawData() const
+const unsigned char* RenderImage::GetRawData() const
 {
     return m_pData;
 }
 
-unsigned int SimpleImage::Width() const
+unsigned char* RenderImage::GetRawData()
+{
+    return m_pData;
+}
+
+unsigned int RenderImage::Width() const
 {
     return m_width;
 }
 
-unsigned int SimpleImage::Height() const
+unsigned int RenderImage::Height() const
 {
     return m_height;
 }
 
-bool SimpleImage::SavePPM(const char *filename) const
+bool RenderImage::SavePPM(const char *filename) const
 {
     FILE *fp = NULL;
     fopen_s(&fp, filename, "wb");
@@ -73,8 +107,13 @@ bool SimpleImage::SavePPM(const char *filename) const
     return true;
 }
 
-bool SimpleImage::SavePNG(const char* filename) const
+bool RenderImage::SavePNG(const char* filename) const
 {
+    if (nullptr == m_pData || 0 == m_width || 0 == m_height)
+    {
+        return false;
+    }
+
     unsigned int err = lodepng::encode(filename, m_pData, m_width, m_height, LCT_RGB, 8);
     return (0 == err);
 }
