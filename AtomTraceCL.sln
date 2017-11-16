@@ -14,8 +14,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{B21A5FB0-5
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestGLFW", "TestGLFW\TestGLFW.vcxproj", "{82105436-C728-496B-BBD2-39409BEE43A0}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestOpenCLPTtutorial1", "TestOpenCLPTtutorial1\TestOpenCLPTtutorial1.vcxproj", "{8D2136B0-26FE-4BD3-8578-24D5FBCA8DA8}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM = Debug|ARM
@@ -70,26 +68,11 @@ Global
 		{82105436-C728-496B-BBD2-39409BEE43A0}.Release|Win32.Build.0 = Release|Win32
 		{82105436-C728-496B-BBD2-39409BEE43A0}.Release|x64.ActiveCfg = Release|x64
 		{82105436-C728-496B-BBD2-39409BEE43A0}.Release|x64.Build.0 = Release|x64
-		{8D2136B0-26FE-4BD3-8578-24D5FBCA8DA8}.Debug|ARM.ActiveCfg = Debug|Win32
-		{8D2136B0-26FE-4BD3-8578-24D5FBCA8DA8}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
-		{8D2136B0-26FE-4BD3-8578-24D5FBCA8DA8}.Debug|Mixed Platforms.Build.0 = Debug|Win32
-		{8D2136B0-26FE-4BD3-8578-24D5FBCA8DA8}.Debug|Win32.ActiveCfg = Debug|Win32
-		{8D2136B0-26FE-4BD3-8578-24D5FBCA8DA8}.Debug|Win32.Build.0 = Debug|Win32
-		{8D2136B0-26FE-4BD3-8578-24D5FBCA8DA8}.Debug|x64.ActiveCfg = Debug|x64
-		{8D2136B0-26FE-4BD3-8578-24D5FBCA8DA8}.Debug|x64.Build.0 = Debug|x64
-		{8D2136B0-26FE-4BD3-8578-24D5FBCA8DA8}.Release|ARM.ActiveCfg = Release|Win32
-		{8D2136B0-26FE-4BD3-8578-24D5FBCA8DA8}.Release|Mixed Platforms.ActiveCfg = Release|Win32
-		{8D2136B0-26FE-4BD3-8578-24D5FBCA8DA8}.Release|Mixed Platforms.Build.0 = Release|Win32
-		{8D2136B0-26FE-4BD3-8578-24D5FBCA8DA8}.Release|Win32.ActiveCfg = Release|Win32
-		{8D2136B0-26FE-4BD3-8578-24D5FBCA8DA8}.Release|Win32.Build.0 = Release|Win32
-		{8D2136B0-26FE-4BD3-8578-24D5FBCA8DA8}.Release|x64.ActiveCfg = Release|x64
-		{8D2136B0-26FE-4BD3-8578-24D5FBCA8DA8}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{82105436-C728-496B-BBD2-39409BEE43A0} = {B21A5FB0-5906-49F2-AFAE-BDB86D3E6A68}
-		{8D2136B0-26FE-4BD3-8578-24D5FBCA8DA8} = {B21A5FB0-5906-49F2-AFAE-BDB86D3E6A68}
 	EndGlobalSection
 EndGlobal
