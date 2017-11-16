@@ -74,11 +74,14 @@ __kernel void render(__global uchar* pOutput, int width, int height, __constant 
 
         bool bHit = intersectSphere(&s0, &cRay);
 
+        float fx = (float)px / (float)(width - 1);
+        float fy = (float)py / (float)(height - 1);
+
         //for (unsigned int i = 0; true; ++i)
         {
             uchar val = bHit * 255;
-            pOutput[pid * 3] = val;
-            pOutput[pid * 3 + 1] = val;
+            pOutput[pid * 3] = val * fx;
+            pOutput[pid * 3 + 1] = val * fy;
             pOutput[pid * 3 + 2] = val;
         }
     }

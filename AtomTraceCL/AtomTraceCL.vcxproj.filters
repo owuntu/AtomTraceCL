@@ -26,9 +26,6 @@
     <ClCompile Include="main_cl.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Ray.cpp">
       <Filter>Geometry</Filter>
     </ClCompile>
