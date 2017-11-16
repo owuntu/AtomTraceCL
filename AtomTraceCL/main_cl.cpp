@@ -3,6 +3,7 @@
 
 //#define CL_HPP_TARGET_OPENCL_VERSION 200
 #include <CL\cl2.hpp> // main OpenCL include file 
+#include <glfw3.h>
 
 #include "lodepng.h"
 
@@ -12,6 +13,22 @@
 #include "RenderImage.h"
 #include "Utilities.h"
 
+
+static GLFWwindow* gs_pWindow;
+
+namespace GLFWFunc
+{
+    void error_callback(int error, const char* description)
+    {
+        fputs(description, stderr);
+    }
+
+    void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+    {
+        if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+            glfwSetWindowShouldClose(window, GL_TRUE);
+    }
+} // namespace GLFWFunc
 
 bool CheckError(cl_int error)
 {
@@ -24,6 +41,41 @@ bool CheckError(cl_int error)
     return ret;
 }
 
+bool InitGLFWWindow(int width, int height)
+{
+    using namespace GLFWFunc;
+    glfwSetErrorCallback(error_callback);
+
+    if (!glfwInit())
+    {
+        std::cerr << "Error in glfwInit() call.\n";
+        return false;
+    }
+
+    gs_pWindow = glfwCreateWindow(width, height, "AtomTraceCL", nullptr, nullptr);
+    if (nullptr == gs_pWindow)
+    {
+        std::cerr << "Error in glfwCreateWindow().\n";
+        glfwTerminate();
+        return false;
+    }
+
+    glfwMakeContextCurrent(gs_pWindow);
+    glfwSwapInterval(1);
+    glfwSetKeyCallback(gs_pWindow, key_callback);
+    return true;
+}
+
+void ShutDownGLFW()
+{
+    if (nullptr != gs_pWindow)
+    {
+        glfwDestroyWindow(gs_pWindow);
+        glfwTerminate();
+        gs_pWindow = nullptr;
+    }
+}
+
 int main(int argc, char** argv)
 {
     std::string kernelStr;
@@ -31,8 +83,10 @@ int main(int argc, char** argv)
 
     const int IMAGE_WIDTH = 800;
     const int IMAGE_HEIGHT = 600;
+
+    InitGLFWWindow(IMAGE_WIDTH, IMAGE_HEIGHT);
+
     size_t worksize = IMAGE_WIDTH * IMAGE_HEIGHT;
-    //unsigned char* pImg = new unsigned char[worksize * 3];
     RenderImage image(IMAGE_WIDTH, IMAGE_HEIGHT);
 
     cl_int error;
@@ -119,12 +173,20 @@ int main(int argc, char** argv)
         std::cerr << "enqueue NDRange kernel fail\n";
     }
 
-    // Read the result back into pImg
-    // the "CL_TRUE" flag blocks the read operation until all work items have finished their computation
-    error = cq.enqueueReadBuffer(mem1, CL_TRUE, 0, worksize*3, image.GetRawData());
+    // Read the result back into image
+    error = cq.enqueueReadBuffer(mem1, CL_TRUE, 0, worksize * 3, image.GetRawData());
     if (!CheckError(error))
     {
         std::cerr << "enqueue read buffer fail\n";
+    }
+
+    while (!glfwWindowShouldClose(gs_pWindow))
+    {
+
+        glDrawPixels(IMAGE_WIDTH, IMAGE_HEIGHT, GL_RGB, GL_UNSIGNED_BYTE, image.GetRawData());
+
+        glfwSwapBuffers(gs_pWindow);
+        glfwPollEvents();
     }
 
     // Await completion of all the above
@@ -134,10 +196,10 @@ int main(int argc, char** argv)
         std::cerr << "cq.finish() fail\n";
     }
 
+    ShutDownGLFW();
+
     image.SavePNG("image.png");
     image.Release();
-
-    system("pause");
 
     return 0;
 }
