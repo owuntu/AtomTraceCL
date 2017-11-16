@@ -12,11 +12,14 @@
     <Filter Include="Geometry">
       <UniqueIdentifier>{9bc62434-9183-401e-94d3-4ae5bfcfeeb0}</UniqueIdentifier>
     </Filter>
-    <Filter Include="OpenCL_kernels">
-      <UniqueIdentifier>{167243b5-2511-47c4-813e-6442e1e6e637}</UniqueIdentifier>
-    </Filter>
     <Filter Include="lodePNG">
       <UniqueIdentifier>{848c48a8-9a73-43db-b216-56d65e4f4c63}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="CL_GL">
+      <UniqueIdentifier>{140be90a-1fca-471c-9836-e8892ed71d45}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="CL_GL\OpenCL_kernels">
+      <UniqueIdentifier>{167243b5-2511-47c4-813e-6442e1e6e637}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -35,14 +38,14 @@
     <ClCompile Include="..\External\lodePNG\lodepng.cpp">
       <Filter>lodePNG</Filter>
     </ClCompile>
-    <ClCompile Include="CLResourceManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Camera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="RenderImage.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CLResourceManager.cpp">
+      <Filter>CL_GL</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -58,25 +61,25 @@
     <ClInclude Include="Camera.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="CLResourceManager.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="Utilities.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="RenderImage.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="CLResourceManager.h">
+      <Filter>CL_GL</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="SphereIntersection.cl">
-      <Filter>OpenCL_kernels</Filter>
+      <Filter>CL_GL\OpenCL_kernels</Filter>
     </None>
     <None Include="kernel\example.cl">
-      <Filter>OpenCL_kernels</Filter>
+      <Filter>CL_GL\OpenCL_kernels</Filter>
     </None>
     <None Include="kernel\renderer.cl">
-      <Filter>OpenCL_kernels</Filter>
+      <Filter>CL_GL\OpenCL_kernels</Filter>
     </None>
   </ItemGroup>
 </Project>

@@ -54,16 +54,12 @@ bool intersectSphere(const Sphere* obj, const Ray* ray)
     return true;
 }
 
-__kernel void render(__global uchar* pOutput, int width, int height, __constant const Camera* cam)
+__kernel void render(__global uchar* pOutput, int width, int height, __constant Camera* cam, __global float* counter)
 {
     int pid = get_global_id(0);
     
     if (pid < width * height)
     {
-        pOutput[pid * 3] = 0;
-        pOutput[pid * 3 + 1] = 0;
-        pOutput[pid * 3 + 2] = 0;
-
         int px = pid % width;
         int py = pid / width;
 
@@ -77,12 +73,11 @@ __kernel void render(__global uchar* pOutput, int width, int height, __constant 
         float fx = (float)px / (float)(width - 1);
         float fy = (float)py / (float)(height - 1);
 
-        //for (unsigned int i = 0; true; ++i)
-        {
-            uchar val = bHit * 255;
-            pOutput[pid * 3] = val * fx;
-            pOutput[pid * 3 + 1] = val * fy;
-            pOutput[pid * 3 + 2] = val;
-        }
+        uchar val = bHit * 255;
+        float sc = 100.0f;
+        pOutput[pid * 3] = val * cos(fx * sc + *counter);
+        pOutput[pid * 3 + 1] = val * sin(fy * sc + *counter*2);
+        pOutput[pid * 3 + 2] = val * cos(fx * sc - *counter*3);
+
     }
 }

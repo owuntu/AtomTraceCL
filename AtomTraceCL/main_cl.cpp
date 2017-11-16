@@ -1,8 +1,9 @@
 #include <cstdlib>
 #include <iostream>
 
-//#define CL_HPP_TARGET_OPENCL_VERSION 200
+#define CL_HPP_TARGET_OPENCL_VERSION 200
 #include <CL\cl2.hpp> // main OpenCL include file 
+
 #include <glfw3.h>
 
 #include "lodepng.h"
@@ -125,6 +126,14 @@ int main(int argc, char** argv)
         std::cerr << "create mem1 fail\n";
     }
 
+    cl::Buffer clCounter;
+    float counter = 0.f;
+    clCounter = cl::Buffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, sizeof(float), &counter, &error);
+    if (!CheckError(error))
+    {
+        std::cerr << "create clCounter fail\n";
+    }
+
     cl::Buffer clCam;
     AtomTraceCL::Camera cam;
     cam.Init(AtomMathCL::Vector3::UNIT_Z, AtomMathCL::Vector3::ZERO, 30.f, IMAGE_WIDTH, IMAGE_HEIGHT);
@@ -166,27 +175,47 @@ int main(int argc, char** argv)
         std::cerr << "set kernel args3 fail\n";
     }
 
-    // Tell the device, through the command queue, to execute queue Kernel
-    error = cq.enqueueNDRangeKernel(kernel, 0, worksize, 256);
+    error = kernel.setArg(4, clCounter);
     if (!CheckError(error))
     {
-        std::cerr << "enqueue NDRange kernel fail\n";
-    }
-
-    // Read the result back into image
-    error = cq.enqueueReadBuffer(mem1, CL_TRUE, 0, worksize * 3, image.GetRawData());
-    if (!CheckError(error))
-    {
-        std::cerr << "enqueue read buffer fail\n";
+        std::cerr << "set kernel args4 fail\n";
     }
 
     while (!glfwWindowShouldClose(gs_pWindow))
     {
+        error = cq.enqueueWriteBuffer(clCounter, CL_TRUE, 0, sizeof(int), &counter);
+        if (!CheckError(error))
+        {
+            std::cerr << "enqueue write buffer fail\n";
+        }
+
+        // Tell the device, through the command queue, to execute queue Kernel
+        error = cq.enqueueNDRangeKernel(kernel, 0, worksize, 256);
+        if (!CheckError(error))
+        {
+            std::cerr << "enqueue NDRange kernel fail\n";
+        }
+
+        // Read the result back into image
+        error = cq.enqueueReadBuffer(mem1, CL_FALSE, 0, worksize * 3, image.GetRawData());
+        if (!CheckError(error))
+        {
+            std::cerr << "enqueue read buffer fail\n";
+        }
 
         glDrawPixels(IMAGE_WIDTH, IMAGE_HEIGHT, GL_RGB, GL_UNSIGNED_BYTE, image.GetRawData());
 
         glfwSwapBuffers(gs_pWindow);
         glfwPollEvents();
+
+        counter+=0.01f;
+    }
+
+    // Read the FINAL result back into image
+    error = cq.enqueueReadBuffer(mem1, CL_TRUE, 0, worksize * 3, image.GetRawData());
+    if (!CheckError(error))
+    {
+        std::cerr << "enqueue read buffer fail\n";
     }
 
     // Await completion of all the above
@@ -195,7 +224,6 @@ int main(int argc, char** argv)
     {
         std::cerr << "cq.finish() fail\n";
     }
-
     ShutDownGLFW();
 
     image.SavePNG("image.png");
