@@ -71,7 +71,7 @@ int main(int argc, char** argv)
 
     cl::Buffer clCam;
     AtomTraceCL::Camera cam;
-    cam.Init(AtomMathCL::Vector3::UNIT_Z, AtomMathCL::Vector3::ZERO, 90.f, width, height);
+    cam.Init(AtomMathCL::Vector3::UNIT_Z, AtomMathCL::Vector3::ZERO, 30.f, width, height);
     clCam = cl::Buffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(AtomTraceCL::Camera), &cam, &error);
     if (!CheckError(error))
     {
