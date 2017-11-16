@@ -123,6 +123,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="MathConstant.h" />
     <ClInclude Include="Vector3.h" />
   </ItemGroup>
   <ItemGroup>
