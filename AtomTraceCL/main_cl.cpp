@@ -6,6 +6,8 @@
 
 #include "lodepng.h"
 
+#include "Vector3.h"
+#include "Camera.h"
 #include "CLResourceManager.h"
 #include "Utilities.h"
 
@@ -67,6 +69,15 @@ int main(int argc, char** argv)
         std::cerr << "create mem1 fail\n";
     }
 
+    cl::Buffer clCam;
+    AtomTraceCL::Camera cam;
+    cam.Init(AtomMathCL::Vector3::UNIT_Z, AtomMathCL::Vector3::ZERO, 90.f, width, height);
+    clCam = cl::Buffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(AtomTraceCL::Camera), &cam, &error);
+    if (!CheckError(error))
+    {
+        std::cerr << "create clCam fail\n";
+    }
+
     // Create a kernel object with the compiled program
     cl::Kernel kernel = cl::Kernel(program, "render", &error);
     if (!CheckError(error))
@@ -91,6 +102,12 @@ int main(int argc, char** argv)
     if (!CheckError(error))
     {
         std::cerr << "set kernel args2 fail\n";
+    }
+
+    error = kernel.setArg(3, clCam);
+    if (!CheckError(error))
+    {
+        std::cerr << "set kernel args3 fail\n";
     }
 
     // Tell the device, through the command queue, to execute queue Kernel

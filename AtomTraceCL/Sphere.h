@@ -9,13 +9,13 @@ class Sphere
 {
 public:
     Sphere();
-    Sphere(cl_float r, const AtomMathCL::Vector3& orig);
+    Sphere(float r, const AtomMathCL::Vector3& orig);
 
     bool Intersect(const Ray& ray);
 
 private:
     AtomMathCL::Vector3 m_orig;
-    cl_float            m_radius;
+    float            m_radius;
 };
 
 #endif // __ATOM_TRACE_CL_SPHERE_H_

@@ -9,13 +9,13 @@ namespace AtomMathCL
         m_z(0.0f)
     {}
 
-    Vector3::Vector3(cl_float s) :
+    Vector3::Vector3(float s) :
         m_x(s),
         m_y(s),
         m_z(s)
     {}
 
-    Vector3::Vector3(cl_float x, cl_float y, cl_float z) :
+    Vector3::Vector3(float x, float y, float z) :
         m_x(x),
         m_y(y),
         m_z(z)
@@ -30,28 +30,51 @@ namespace AtomMathCL
     Vector3::~Vector3()
     {}
 
-    const cl_float Vector3::LengthSq() const
+    const float Vector3::Length() const
+    {
+        return sqrt(this->LengthSq());
+    }
+
+    const float Vector3::LengthSq() const
     {
         return (m_x*m_x + m_y*m_y + m_z*m_z);
     }
 
+    const Vector3 Vector3::GetNormalize() const
+    {
+        Vector3 ret;
+        float l = this->Length();
+        ret.m_x = m_x / l;
+        ret.m_y = m_y / l;
+        ret.m_z = m_z / l;
+        return ret;
+    }
+
+    void Vector3::Normalized()
+    {
+        float l = this->Length();
+        m_x /= l;
+        m_y /= l;
+        m_z /= l;
+    }
+
     // Accessors
-    const cl_float Vector3::X() const
+    const float Vector3::X() const
     {
         return m_x;
     }
 
-    const cl_float Vector3::Y() const
+    const float Vector3::Y() const
     {
         return m_y;
     }
 
-    const cl_float Vector3::Z() const
+    const float Vector3::Z() const
     {
         return m_z;
     }
 
-    const cl_float& Vector3::operator[](const std::size_t& index) const
+    const float& Vector3::operator[](const std::size_t& index) const
     {
         if (index >= 3)
         {
@@ -60,9 +83,9 @@ namespace AtomMathCL
         return (&m_x)[index];
     }
 
-    cl_float& Vector3::operator[](const std::size_t& index)
+    float& Vector3::operator[](const std::size_t& index)
     {
-        return const_cast<cl_float&>
+        return const_cast<float&>
             (
             (static_cast<const Vector3*>(this))->
             operator[](index)
@@ -77,22 +100,22 @@ namespace AtomMathCL
         return *this;
     }
 
-    void Vector3::X(const cl_float in_x)
+    void Vector3::X(const float in_x)
     {
         m_x = in_x;
     }
 
-    void Vector3::Y(const cl_float in_y)
+    void Vector3::Y(const float in_y)
     {
         m_y = in_y;
     }
 
-    void Vector3::Z(const cl_float in_z)
+    void Vector3::Z(const float in_z)
     {
         m_z = in_z;
     }
 
-    void Vector3::Set(const cl_float i_x, const cl_float i_y, const cl_float i_z)
+    void Vector3::Set(const float i_x, const float i_y, const float i_z)
     {
         m_x = i_x;
         m_y = i_y;

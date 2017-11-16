@@ -10,7 +10,7 @@ Sphere::Sphere() :
 
 }
 
-Sphere::Sphere(cl_float r, const AtomMathCL::Vector3& orig) :
+Sphere::Sphere(float r, const AtomMathCL::Vector3& orig) :
     m_orig(orig),
     m_radius(r)
 {
@@ -19,11 +19,11 @@ Sphere::Sphere(cl_float r, const AtomMathCL::Vector3& orig) :
 bool Sphere::Intersect(const Ray& ray)
 {
     Vector3 p = m_orig - ray.m_orig;
-    cl_float a = 1.0f;
-    cl_float b = -2.f * (p * ray.m_dir);
-    cl_float c = p.LengthSq() - m_radius * m_radius;
+    float a = 1.0f;
+    float b = -2.f * (p * ray.m_dir);
+    float c = p.LengthSq() - m_radius * m_radius;
 
-    cl_float h = b*b - 4.f * a * c;
+    float h = b*b - 4.f * a * c;
 
     if (h < 0.0f) return false;
 
