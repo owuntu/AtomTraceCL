@@ -2,19 +2,9 @@
 #include <string>
 #include <vector>
 #include <CL\cl2.hpp>
-#include "CLResourceManager.h"
 
-static bool CheckError(cl_int error, const std::string& msg)
-{
-    bool ret = true;
-    if (CL_SUCCESS != error)
-    {
-        std::cerr << msg << " failed,\t";
-        std::cerr << "error code: " << error << "\n";
-        ret = false;
-    }
-    return ret;
-}
+#include "CLResourceManager.h"
+#include "Utilities.h"
 
 CLResourceManager::CLResourceManager()
 {}
