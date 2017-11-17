@@ -14,9 +14,6 @@ typedef struct
 
 typedef struct
 {
-    //float3 lookat;
-    //float3 right;
-    //float3 up;
     float3 pos;
     float3 upLeftPix;
     float3 dx; // camera right direction, per-pixel width
@@ -24,7 +21,7 @@ typedef struct
 }Camera;
 
 // fov is the vertial fov angle
-Ray castCamRay(int px, int py, __constant Camera* cam)
+Ray CastCamRay(int px, int py, __constant Camera* cam)
 {
     float fx = (float)px;
     float fy = (float)py;
@@ -41,7 +38,7 @@ Ray castCamRay(int px, int py, __constant Camera* cam)
     return ray;
 }
 
-bool intersectSphere(const Sphere* obj, const Ray* ray)
+bool IntersectSphere(const Sphere* obj, const Ray* ray, float* t)
 {
     bool res = false;
     float3 po = obj->pos - ray->origin;
@@ -51,7 +48,28 @@ bool intersectSphere(const Sphere* obj, const Ray* ray)
     {
         return false;
     }
-    return true;
+    else
+    {
+        float eps = 1e-4;
+        float lt = *t;
+        det = sqrt(det);
+        lt = b - det;
+        if (lt > eps) res = true;
+        else
+        {
+            lt = b + det;
+            if (lt > eps)
+                res = true;
+            else
+            {
+                lt = 0.0;
+                res = false;
+            }
+        }
+
+        *t = lt;
+    }
+    return res;
 }
 
 __kernel void render(__global uchar* pOutput, int width, int height, __constant Camera* cam, __global float* counter)
@@ -63,13 +81,26 @@ __kernel void render(__global uchar* pOutput, int width, int height, __constant 
         int px = pid % width;
         int py = pid / width;
 
-        Ray cRay = castCamRay(px, py, cam);
+        Ray cRay = CastCamRay(px, py, cam);
         Sphere s0;
         s0.pos = (float3)(0.0f, 0.0f, -2.0f);
         s0.radius = 0.1f;
 
-        bool bHit = intersectSphere(&s0, &cRay);
+        float t = FLT_MAX;
+        bool bHit = IntersectSphere(&s0, &cRay, &t);
 
+        if (bHit)
+        {
+            float3 hitP = cRay.origin + cRay.direction * t;
+            float3 hitN = normalize(hitP - s0.pos);
+            //hitN = hitN * 0.5f + (float3)(0.5f);
+            float d = dot(cRay.direction * -1.0f, hitN);
+            pOutput[pid * 3] = d * 255;
+            pOutput[pid * 3 + 1] = d * 255;
+            pOutput[pid * 3 + 2] = d * 255;
+        }
+
+#if 0
         float fx = (float)px / (float)(width - 1);
         float fy = (float)py / (float)(height - 1);
 
@@ -78,6 +109,7 @@ __kernel void render(__global uchar* pOutput, int width, int height, __constant 
         pOutput[pid * 3] = val * cos(fx * sc + *counter);
         pOutput[pid * 3 + 1] = val * sin(fy * sc + *counter*2);
         pOutput[pid * 3 + 2] = val * cos(fx * sc - *counter*3);
+#endif
 
     }
 }
