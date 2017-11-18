@@ -147,9 +147,7 @@
     <ClInclude Include="Utilities.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="kernel\example.cl" />
     <None Include="kernel\renderer.cl" />
-    <None Include="SphereIntersection.cl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

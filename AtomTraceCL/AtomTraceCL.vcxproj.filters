@@ -72,12 +72,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="SphereIntersection.cl">
-      <Filter>CL_GL\OpenCL_kernels</Filter>
-    </None>
-    <None Include="kernel\example.cl">
-      <Filter>CL_GL\OpenCL_kernels</Filter>
-    </None>
     <None Include="kernel\renderer.cl">
       <Filter>CL_GL\OpenCL_kernels</Filter>
     </None>
