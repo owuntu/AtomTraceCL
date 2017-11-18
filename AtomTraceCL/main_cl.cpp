@@ -139,6 +139,7 @@ int main(int argc, char** argv)
     error = kernel.setArg(4, clCounter);
     CheckError(error, "Set kernel args4");
 
+    // OpenGL viewport loop
     while (!glfwWindowShouldClose(gs_pWindow))
     {
         error = cq.enqueueWriteBuffer(clCounter, CL_TRUE, 0, sizeof(int), &counter);
