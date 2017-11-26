@@ -9,13 +9,13 @@ namespace AtomTraceCL
     {
     public:
         AtomMathCL::Vector3 m_position;
-        float padding0; // alignment for OpenCL float3, since float3 and float4 are idendical.
+        //float padding0; // alignment for OpenCL float3, since float3 and float4 are identical.
         AtomMathCL::Vector3 m_upLeftPix;
-        float padding1;
+        //float padding1;
         AtomMathCL::Vector3 m_dx;
-        float padding2;
+        //float padding2;
         AtomMathCL::Vector3 m_dy;
-        float padding3;
+        //float padding3;
 
     public:
         // Using default constructor and destructor should be fine.

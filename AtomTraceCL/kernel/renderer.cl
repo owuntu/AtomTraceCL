@@ -14,6 +14,16 @@ typedef struct
 
 typedef struct
 {
+    uint size;
+    enum {
+        T_SPHERE,
+        T_TRIANGLE
+    }type;
+    void* pObj;
+}Object;
+
+typedef struct
+{
     float3 pos;
     float3 upLeftPix;
     float3 dx; // camera right direction, per-pixel width
@@ -72,7 +82,7 @@ bool IntersectSphere(const Sphere* obj, const Ray* ray, float* t)
     return res;
 }
 
-__kernel void render(__global uchar* pOutput, int width, int height, __constant Camera* cam, __global float* counter)
+__kernel void RenderKernel(__global uchar* pOutput, int width, int height, __constant Camera* cam, __global const Sphere* pSpheres)
 {
     int pid = get_global_id(0);
     
@@ -99,17 +109,5 @@ __kernel void render(__global uchar* pOutput, int width, int height, __constant 
             pOutput[pid * 3 + 1] = d * 255;
             pOutput[pid * 3 + 2] = d * 255;
         }
-
-#if 0
-        float fx = (float)px / (float)(width - 1);
-        float fy = (float)py / (float)(height - 1);
-
-        uchar val = bHit * 255;
-        float sc = 100.0f;
-        pOutput[pid * 3] = val * cos(fx * sc + *counter);
-        pOutput[pid * 3 + 1] = val * sin(fy * sc + *counter*2);
-        pOutput[pid * 3 + 2] = val * cos(fx * sc - *counter*3);
-#endif
-
     }
 }

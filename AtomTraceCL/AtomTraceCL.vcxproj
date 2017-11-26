@@ -141,6 +141,7 @@
     <ClInclude Include="..\External\lodePNG\lodepng.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="CLResourceManager.h" />
+    <ClInclude Include="ObjectList.h" />
     <ClInclude Include="Ray.h" />
     <ClInclude Include="RenderImage.h" />
     <ClInclude Include="Sphere.h" />

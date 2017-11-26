@@ -108,11 +108,6 @@ int main(int argc, char** argv)
                       worksize * 3 * sizeof(unsigned char), image.GetRawData(), &error);
     CheckError(error, "Create mem1");
 
-    cl::Buffer clCounter;
-    float counter = 0.f;
-    clCounter = cl::Buffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, sizeof(float), &counter, &error);
-    CheckError(error, "Create clCounter");
-
     cl::Buffer clCam;
     AtomTraceCL::Camera cam;
     cam.Init(AtomMathCL::Vector3::UNIT_Z, AtomMathCL::Vector3::ZERO, 30.f, IMAGE_WIDTH, IMAGE_HEIGHT);
@@ -120,7 +115,7 @@ int main(int argc, char** argv)
     CheckError(error, "Create clCam");
 
     // Create a kernel object with the compiled program
-    cl::Kernel kernel = cl::Kernel(program, "render", &error);
+    cl::Kernel kernel = cl::Kernel(program, "RenderKernel", &error);
     CheckError(error, "Create kernel");
 
     // Set the kernel parameters
@@ -136,15 +131,9 @@ int main(int argc, char** argv)
     error = kernel.setArg(3, clCam);
     CheckError(error, "Set kernel args3");
 
-    error = kernel.setArg(4, clCounter);
-    CheckError(error, "Set kernel args4");
-
     // OpenGL viewport loop
     while (!glfwWindowShouldClose(gs_pWindow))
     {
-        error = cq.enqueueWriteBuffer(clCounter, CL_TRUE, 0, sizeof(int), &counter);
-        CheckError(error, "Enqueue write buffer");
-
         // Tell the device, through the command queue, to execute queue Kernel
         error = cq.enqueueNDRangeKernel(kernel, 0, worksize, 256);
         CheckError(error,"Enqueue NDRange kernel");
@@ -157,8 +146,6 @@ int main(int argc, char** argv)
 
         glfwSwapBuffers(gs_pWindow);
         glfwPollEvents();
-
-        counter+=0.01f;
     }
 
     // Read the FINAL result back into image

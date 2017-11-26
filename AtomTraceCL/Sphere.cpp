@@ -16,6 +16,11 @@ Sphere::Sphere(float r, const AtomMathCL::Vector3& orig) :
 {
 }
 
+unsigned __int32 Sphere::GetSize() const
+{
+    return sizeof(*this);
+}
+
 bool Sphere::Intersect(const Ray& ray)
 {
     Vector3 p = m_orig - ray.m_orig;
