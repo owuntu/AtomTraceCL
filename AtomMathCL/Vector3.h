@@ -15,7 +15,7 @@ namespace AtomMathCL
         float m_x;
         float m_y;
         float m_z;
-        float padding; // alignment for OpenCL float3, since float3 and float4 are identical.
+        float m_padding; // alignment for OpenCL float3, since float3 and float4 are identical.
     public:
         static const Vector3 ZERO;
         static const Vector3 UNIT_X;

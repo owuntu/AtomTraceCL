@@ -1,7 +1,9 @@
+#define MAX_DEPTH 6
+
 typedef struct
 {
-    float3 origin;
-    float3 direction;
+    float3 orig;
+    float3 dir;
 }Ray;
 
 typedef struct
@@ -78,6 +80,125 @@ bool IntersectSphere(const Sphere* obj, const Ray* ray, float* t)
     return res;
 }
 
+bool IntersectP(__constant char* pObj, int numObjs, const Ray* ray, const float maxt)
+{
+    __constant char* pCurr = pObjs;
+    bool bHit = false;
+    float t = maxt;
+    for (int i = 0; i < numObjs; ++i)
+    {
+        uint gtype = *((__constant uint*)pCurr);
+        pCurr += sizeof(uint);
+        uint gsize = *((__constant uint*)pCurr);
+        pCurr += sizeof(uint);
+
+        if (gtype == 1) // SPHERE
+        {
+            Sphere sp = *(__constant Sphere*)pCurr;
+            bHit |= IntersectSphere(&sp, &ray, &t);
+        }
+    }
+    return bHit;
+}
+
+void SampleLights(__constant char* pObj, int numObjs,
+                  const float3* pHitP, const float3* pN, float3* result)
+{
+    __constant char* pCurr = pObjs;
+    for(int i = 0; i < numObjs; ++i)
+    {
+        uint gtype = *((__constant uint*)pCurr);
+        pCurr += sizeof(uint);
+        uint gsize = *((__constant uint*)pCurr);
+        pCurr += sizeof(uint);
+
+        if (gtype == 1) // SPHERE
+        {
+            Sphere sp = *(__constant Sphere*)pCurr;
+            if (fast_length(sp.emission) > 0.01f)
+            {
+                // assuming point light for now
+                // cast shadow ray
+                Ray shadowRay;
+                shadowRay.orig = *pHitP;
+                shadowRay.dir = sp.pos - shadowRay.orig;
+                float len = fast_length(shadowRay.dir);
+                len -= sp.radius;
+                shadowRay.dir = normalize(shadowRay.dir);
+                if (!IntersectP(pObj, numObjs, shadowRay, len - 0.01f)
+                {
+                    // add light contribution
+                    *result += sp.emission * dot(*pN, shadowRay.dir);
+                }
+            }
+        }
+    }
+
+}
+
+float3 Radiance(const Ray& ray, __constant char* pObj, int numObjs)
+{
+    Ray currentRay;
+    currentRay.orig = ray.orig;
+    currentRay.dir = ray.dir;
+    int d = 0;
+    float3 throughput = float3(1.f);
+    float3 rad = float3(0.f);
+    
+    while(d < MAX_DEPTH)
+    {
+        __constant char* pCurr = pObjs;
+        float t = FLT_MAX;
+        bool bHit = false;
+        Sphere sHit;
+        uint hType;
+        for (int i = 0; i < numObjs; ++i)
+        {
+            uint gtype = *((__constant uint*)pCurr);
+            pCurr += sizeof(uint);
+            uint gsize = *((__constant uint*)pCurr);
+            pCurr += sizeof(uint);
+
+            if (gtype == 1) // SPHERE
+            {
+                Sphere sp1 = *((__constant Sphere*)pCurr);
+                pCurr += gsize;
+                bool tHit = IntersectSphere(&sp1, &currentRay, &t);
+                if (tHit)
+                {
+                    bHit = true;
+                    sHit = sp1;
+                    hType = 1;
+                }
+            }
+        }
+
+        if (bHit)
+        {
+            if (hType == 1) // SPHERE
+            {
+                // Direct illumination
+                throughput *= sHit.color;
+                float3 Ld;
+                float3 hitP = currentRay.orig + currentRay.dir * t;
+                float3 hitN = hitP - sHit.orig;
+                hitN = normalize(hitN);
+                SampleLights(pObjs, numObjs, &hitP, &hitN, &Ld);
+                Ld *= throughput;
+                rad += Ld;
+
+                // TODO: Indirect illumination
+            }
+        }
+        else
+        {
+            break;
+        }
+        ++d;
+    }
+
+}
+
 __kernel void RenderKernel(__global uchar* pOutput, int width, int height,
                            __constant Camera* cam,
                            __constant char* pObjs, int objsSize, int numObjs)
@@ -90,12 +211,11 @@ __kernel void RenderKernel(__global uchar* pOutput, int width, int height,
         int py = pid / width;
 
         Ray cRay = CastCamRay(px, py, cam);
-        Sphere s0;
-        s0.pos = (float3)(0.0f, 0.0f, -2.0f);
-        s0.radius = 0.1f;
 
         __constant char* pCurr = pObjs;
         float t = FLT_MAX;
+        bool bHit = false;
+        Sphere sHit;
         for (int i = 0; i < numObjs; ++i)
         {
             uint gtype = *((__constant uint*)pCurr);
@@ -103,23 +223,27 @@ __kernel void RenderKernel(__global uchar* pOutput, int width, int height,
             uint gsize = *((__constant uint*)pCurr);
             pCurr += sizeof(uint);
             
-            bool bHit = false;
             if (gtype == 1) // SPHERE
             {
-                Sphere s1 = *((__constant Sphere*)pCurr);
+                Sphere sp1 = *((__constant Sphere*)pCurr);
                 pCurr += gsize;
-                bHit = IntersectSphere(&s1, &cRay, &t);
+                bool tHit = IntersectSphere(&sp1, &cRay, &t);
+                if (tHit)
+                {
+                    bHit = true;
+                    sHit = sp1;
+                }
             }
-            if (bHit)
-            {
-                float3 hitP = cRay.origin + cRay.direction * t;
-                float3 hitN = normalize(hitP - s0.pos);
-                //hitN = hitN * 0.5f + (float3)(0.5f);
-                float d = dot(cRay.direction * -1.0f, hitN);
-                pOutput[pid * 3] = d * 255;
-                pOutput[pid * 3 + 1] = d * 255;
-                pOutput[pid * 3 + 2] = d * 255;
-            }
+        }
+
+        if (bHit)
+        {
+            float3 hitP = cRay.origin + cRay.direction * t;
+            float3 hitN = normalize(hitP - sHit.pos);
+            float d = dot(cRay.direction * -1.0f, hitN);
+            pOutput[pid * 3] = d * 255;
+            pOutput[pid * 3 + 1] = d * 255;
+            pOutput[pid * 3 + 2] = d * 255;
         }
     }
 }

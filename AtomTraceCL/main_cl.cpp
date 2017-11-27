@@ -101,7 +101,10 @@ int main(int argc, char** argv)
         char msg[1024] = { 0 };
         //program.getBuildInfo(device, CL_PROGRAM_BUILD_LOG, msg);
         clGetProgramBuildInfo(program(), device(), CL_PROGRAM_BUILD_LOG, sizeof(msg), msg, nullptr);
-        std::cout << msg << std::endl;
+        std::cerr << msg << std::endl;
+        ShutDownGLFW();
+        system("pause");
+        return 1;
     }
 
     // Create memory buffers in the Context where the desired Device is. 
@@ -122,8 +125,10 @@ int main(int argc, char** argv)
     // Load scene
     {
         Sphere s1(0.1f, AtomMathCL::Vector3(0.f, 0.f, -2.0f));
+        s1.SetEmission(AtomMathCL::Vector3(100.0f));
         oList.AddObject(s1);
         Sphere s0(0.1f, AtomMathCL::Vector3(-0.1f, 0.f, -2.0f));
+        s0.SetColor(AtomMathCL::Vector3(1.0f, 0.75f, 0.75f));
         oList.AddObject(s0);
     }
     cl::Buffer clScene;
