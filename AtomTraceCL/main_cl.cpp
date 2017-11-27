@@ -12,6 +12,8 @@
 #include "Camera.h"
 #include "CLResourceManager.h"
 #include "RenderImage.h"
+#include "Sphere.h"
+#include "ObjectList.h"
 #include "Utilities.h"
 
 
@@ -68,6 +70,7 @@ void ShutDownGLFW()
 
 int main(int argc, char** argv)
 {
+    using namespace AtomTraceCL;
     std::string kernelStr;
     ReadFileToString("kernel\\renderer.cl", kernelStr);
 
@@ -114,6 +117,18 @@ int main(int argc, char** argv)
     clCam = cl::Buffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(AtomTraceCL::Camera), &cam, &error);
     CheckError(error, "Create clCam");
 
+    // Create the scene
+    ObjectList oList;
+    // Load scene
+    {
+        Sphere s1(0.1f, AtomMathCL::Vector3(0.f, 0.f, -2.0f));
+        oList.AddObject(s1);
+        Sphere s0(0.1f, AtomMathCL::Vector3(-0.1f, 0.f, -2.0f));
+        oList.AddObject(s0);
+    }
+    cl::Buffer clScene;
+    clScene = cl::Buffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, oList.m_size, oList.m_pData);
+
     // Create a kernel object with the compiled program
     cl::Kernel kernel = cl::Kernel(program, "RenderKernel", &error);
     CheckError(error, "Create kernel");
@@ -130,6 +145,10 @@ int main(int argc, char** argv)
 
     error = kernel.setArg(3, clCam);
     CheckError(error, "Set kernel args3");
+
+    error = kernel.setArg(4, clScene);
+    error = kernel.setArg(5, oList.m_size);
+    error = kernel.setArg(6, oList.m_numObj);
 
     // OpenGL viewport loop
     while (!glfwWindowShouldClose(gs_pWindow))

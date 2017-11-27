@@ -132,6 +132,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="ObjectList.cpp" />
     <ClCompile Include="Ray.cpp" />
     <ClCompile Include="RenderImage.cpp" />
     <ClCompile Include="Sphere.cpp" />
@@ -141,6 +142,7 @@
     <ClInclude Include="..\External\lodePNG\lodepng.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="CLResourceManager.h" />
+    <ClInclude Include="Geometry.h" />
     <ClInclude Include="ObjectList.h" />
     <ClInclude Include="Ray.h" />
     <ClInclude Include="RenderImage.h" />

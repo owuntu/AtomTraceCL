@@ -15,11 +15,6 @@ typedef struct
 typedef struct
 {
     uint size;
-    enum {
-        T_SPHERE,
-        T_TRIANGLE
-    }type;
-    void* pObj;
 }Object;
 
 typedef struct
@@ -64,25 +59,28 @@ bool IntersectSphere(const Sphere* obj, const Ray* ray, float* t)
         float lt = *t;
         det = sqrt(det);
         lt = b - det;
-        if (lt > eps) res = true;
-        else
+        if (lt <= eps)
         {
             lt = b + det;
-            if (lt > eps)
-                res = true;
-            else
+            if (lt <= eps)
             {
                 lt = 0.0;
-                res = false;
+                return false;
             }
         }
 
-        *t = lt;
+        if (lt < *t)
+        {
+            *t = lt;
+            res = true;
+        }
     }
     return res;
 }
 
-__kernel void RenderKernel(__global uchar* pOutput, int width, int height, __constant Camera* cam, __global const Sphere* pSpheres)
+__kernel void RenderKernel(__global uchar* pOutput, int width, int height,
+                           __constant Camera* cam,
+                           __constant char* pObjs, int objsSize, int numObjs)
 {
     int pid = get_global_id(0);
     
@@ -96,18 +94,32 @@ __kernel void RenderKernel(__global uchar* pOutput, int width, int height, __con
         s0.pos = (float3)(0.0f, 0.0f, -2.0f);
         s0.radius = 0.1f;
 
+        __constant char* pCurr = pObjs;
         float t = FLT_MAX;
-        bool bHit = IntersectSphere(&s0, &cRay, &t);
-
-        if (bHit)
+        for (int i = 0; i < numObjs; ++i)
         {
-            float3 hitP = cRay.origin + cRay.direction * t;
-            float3 hitN = normalize(hitP - s0.pos);
-            //hitN = hitN * 0.5f + (float3)(0.5f);
-            float d = dot(cRay.direction * -1.0f, hitN);
-            pOutput[pid * 3] = d * 255;
-            pOutput[pid * 3 + 1] = d * 255;
-            pOutput[pid * 3 + 2] = d * 255;
+            uint gtype = *((__constant uint*)pCurr);
+            pCurr += sizeof(uint);
+            uint gsize = *((__constant uint*)pCurr);
+            pCurr += sizeof(uint);
+            
+            bool bHit = false;
+            if (gtype == 1) // SPHERE
+            {
+                Sphere s1 = *((__constant Sphere*)pCurr);
+                pCurr += gsize;
+                bHit = IntersectSphere(&s1, &cRay, &t);
+            }
+            if (bHit)
+            {
+                float3 hitP = cRay.origin + cRay.direction * t;
+                float3 hitN = normalize(hitP - s0.pos);
+                //hitN = hitN * 0.5f + (float3)(0.5f);
+                float d = dot(cRay.direction * -1.0f, hitN);
+                pOutput[pid * 3] = d * 255;
+                pOutput[pid * 3 + 1] = d * 255;
+                pOutput[pid * 3 + 2] = d * 255;
+            }
         }
     }
 }

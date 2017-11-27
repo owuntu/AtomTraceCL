@@ -6,21 +6,31 @@
 
 struct Ray;
 
-class Sphere : public AtomTraceCL::Geometry
+namespace AtomTraceCL
 {
-public:
-    Sphere();
-    Sphere(float r, const AtomMathCL::Vector3& orig);
 
-    unsigned __int32 GetSize() const;
+    class Sphere : public AtomTraceCL::Geometry
+    {
+    public:
+        Sphere();
+        Sphere(float r, const AtomMathCL::Vector3& orig);
 
-    bool Intersect(const Ray& ray);
+        unsigned __int32 GetSize() const;
+        GeometryType GetType() const;
+        const void* GetData() const;
 
-private:
-    float               m_radius;
-    AtomMathCL::Vector3 m_orig;
-    AtomMathCL::Vector3 m_emission;
-    AtomMathCL::Vector3 m_color;
-};
+        bool Intersect(const Ray& ray);
+
+    private:
+        float               m_radius;
+        float padding1;
+        float padding2;
+        float padding3;
+        AtomMathCL::Vector3 m_orig;
+        AtomMathCL::Vector3 m_emission;
+        AtomMathCL::Vector3 m_color;
+    };
+
+} // namespace AtomTraceCL
 
 #endif // __ATOM_TRACE_CL_SPHERE_H_

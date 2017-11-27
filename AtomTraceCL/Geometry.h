@@ -13,6 +13,7 @@ namespace AtomTraceCL
     public:
         virtual unsigned __int32 GetSize() const = 0;
         virtual GeometryType GetType() const = 0;
+        virtual const void* GetData() const = 0;
     };
 
 } // namespace AtomTraceCL

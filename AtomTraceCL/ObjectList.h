@@ -4,12 +4,8 @@
 
 namespace AtomTraceCL
 {
-    typedef struct
-    {
-        unsigned __int32 m_size; // size include m_size, m_type, and all data point from m_pData
-        __int32 m_type;
-        void* m_pData;
-    }Object;
+    class Geometry;
+    class Sphere;
 
     class ObjectList
     {
@@ -19,7 +15,12 @@ namespace AtomTraceCL
         void* m_pData;
 
     public:
-        void LoadScene();
+        ObjectList();
+        ~ObjectList();
+
+        //void LoadScene();
+        bool AddObject(const Geometry&);
+        bool AddSphere(const Sphere&);
     };
 
 } // namespace AtomTraceCL
