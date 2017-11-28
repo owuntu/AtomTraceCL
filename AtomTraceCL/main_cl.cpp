@@ -77,8 +77,6 @@ int main(int argc, char** argv)
     const int IMAGE_WIDTH = 800;
     const int IMAGE_HEIGHT = 600;
 
-    InitGLFWWindow(IMAGE_WIDTH, IMAGE_HEIGHT);
-
     size_t worksize = IMAGE_WIDTH * IMAGE_HEIGHT;
     RenderImage image(IMAGE_WIDTH, IMAGE_HEIGHT);
 
@@ -125,10 +123,10 @@ int main(int argc, char** argv)
     // Load scene
     {
         Sphere s1(0.1f, AtomMathCL::Vector3(0.f, 0.f, -2.0f));
-        s1.SetEmission(AtomMathCL::Vector3(100.0f));
+        s1.SetEmission(AtomMathCL::Vector3(1.0f));
         oList.AddObject(s1);
-        Sphere s0(0.1f, AtomMathCL::Vector3(-0.1f, 0.f, -2.0f));
-        s0.SetColor(AtomMathCL::Vector3(1.0f, 0.75f, 0.75f));
+        Sphere s0(0.1f, AtomMathCL::Vector3(-0.3f, 0.f, -2.0f));
+        s0.SetColor(AtomMathCL::Vector3(0.75f, 0.25f, .25f));
         oList.AddObject(s0);
     }
     cl::Buffer clScene;
@@ -154,6 +152,8 @@ int main(int argc, char** argv)
     error = kernel.setArg(4, clScene);
     error = kernel.setArg(5, oList.m_size);
     error = kernel.setArg(6, oList.m_numObj);
+
+    InitGLFWWindow(IMAGE_WIDTH, IMAGE_HEIGHT);
 
     // OpenGL viewport loop
     while (!glfwWindowShouldClose(gs_pWindow))
