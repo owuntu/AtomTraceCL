@@ -1,4 +1,5 @@
 #define MAX_DEPTH 1
+#define PI_F 3.14159265358979323846f
 
 typedef struct
 {
@@ -27,14 +28,42 @@ typedef struct
     float3 dy; // camera up direction, per-pixel height
 }Camera;
 
+// This function is copy from: http://davibu.interfree.it/opencl/smallptgpu2/smallptGPU2.html
+float GetRandom01(uint *pSeed0, uint *pSeed1) {
+    *pSeed0 = 36969 * ((*pSeed0) & 65535) + ((*pSeed0) >> 16);
+    *pSeed1 = 18000 * ((*pSeed1) & 65535) + ((*pSeed1) >> 16);
+
+    unsigned int ires = ((*pSeed0) << 16) + (*pSeed1);
+
+    // Convert to float
+    union {
+        float f;
+        unsigned int ui;
+    } res;
+    res.ui = (ires & 0x007fffff) | 0x40000000;
+
+    return (res.f - 2.f) / 2.f;
+}
+
+void UniformSampleSphere(float u1, float u2, float3* p)
+{
+    // TODO: apply importance sampling
+    float theta = 0.5f * PI_F*(1.f - u1 * 2.f);
+    p->z = sin(theta);
+    float r = cos(theta);
+    float phi = 2.0f * PI_F * u2;
+    p->x = r * cos(phi);
+    p->y = r * sin(phi);
+}
+
 // fov is the vertial fov angle
-Ray CastCamRay(int px, int py, __constant Camera* cam)
+Ray CastCamRay(int px, int py, __constant Camera* cam, uint* pSeed0, uint* pSeed1)
 {
     float fx = (float)px;
     float fy = (float)py;
     float3 tar = cam->upLeftPix 
-                 + cam->dx * fx
-                 - cam->dy * fy;
+                 + cam->dx * (fx - 0.5f + GetRandom01(pSeed0, pSeed1))
+                 - cam->dy * (fy - 0.5f + GetRandom01(pSeed0, pSeed1));
 
     float3 orig = cam->pos;
 
@@ -102,7 +131,7 @@ bool IntersectP(__constant char* pObj, int numObjs, const Ray* ray, const float 
 }
 
 void SampleLights(__constant char* pObj, int numObjs,
-                  const float3* pHitP, const float3* pN, float3* result)
+                  const float3* pHitP, const float3* pN, float3* result, uint* pSeed0, uint* pSeed1)
 {
     __constant char* pCurr = pObj;
     for(int i = 0; i < numObjs; ++i)
@@ -114,21 +143,24 @@ void SampleLights(__constant char* pObj, int numObjs,
 
         if (gtype == 1) // SPHERE
         {
-            Sphere sp = *(__constant Sphere*)pCurr;
-            if (fast_length(sp.emission) > 0.01f)
+            Sphere light = *(__constant Sphere*)pCurr;
+            if (fast_length(light.emission) > 0.01f)
             {
-                // assuming point light for now
                 // cast shadow ray
+                float3 sampP = (float3)(0.f);
+                UniformSampleSphere(GetRandom01(pSeed0, pSeed1),
+                                    GetRandom01(pSeed0, pSeed1),
+                                    &sampP);
                 Ray shadowRay;
                 shadowRay.orig = *pHitP;
-                shadowRay.dir = sp.pos - shadowRay.orig;
+                shadowRay.dir = light.pos + sampP * light.radius - shadowRay.orig;
                 float len = fast_length(shadowRay.dir);
-                len -= sp.radius;
+                len -= light.radius;
                 shadowRay.dir = normalize(shadowRay.dir);
                 if (!IntersectP(pObj, numObjs, &shadowRay, len - 0.01f))
                 {
                     // add light contribution
-                    *result += sp.emission * max(0.0f, dot(*pN, shadowRay.dir));
+                    *result += light.emission * max(0.0f, dot(*pN, shadowRay.dir));
                 }
             }
         }
@@ -136,7 +168,7 @@ void SampleLights(__constant char* pObj, int numObjs,
 
 }
 
-float3 Radiance(const Ray* ray, __constant char* pObj, int numObjs)
+float3 Radiance(const Ray* ray, __constant char* pObj, int numObjs, uint* pSeed0, uint* pSeed1)
 {
     Ray currentRay;
     currentRay.orig = ray->orig;
@@ -183,7 +215,7 @@ float3 Radiance(const Ray* ray, __constant char* pObj, int numObjs)
                 float3 hitP = currentRay.orig + currentRay.dir * t;
                 float3 hitN = hitP - sHit.pos;
                 hitN = normalize(hitN);
-                SampleLights(pObj, numObjs, &hitP, &hitN, &Ld);
+                SampleLights(pObj, numObjs, &hitP, &hitN, &Ld, pSeed0, pSeed1);
                 Ld *= throughput;
                 rad += Ld + sHit.emission;
 
@@ -201,21 +233,33 @@ float3 Radiance(const Ray* ray, __constant char* pObj, int numObjs)
 
 __kernel void RenderKernel(__global uchar* pOutput, int width, int height,
                            __constant Camera* cam,
-                           __constant char* pObjs, int objsSize, int numObjs)
+                           __constant char* pObjs, int objsSize, int numObjs,
+                           __global uint* pSeeds, __global float* color, const uint currentSample)
 {
     int pid = get_global_id(0);
-    
+    int worksize = width*height;
     if (pid < width * height)
     {
         int px = pid % width;
         int py = pid / width;
 
-        Ray cRay = CastCamRay(px, py, cam);
+        uint seed0 = pSeeds[pid];
+        uint seed1 = pSeeds[worksize + pid];
 
-        float3 rad = Radiance(&cRay, pObjs, numObjs);
-        
-        pOutput[pid * 3] = rad.x * 255;
-        pOutput[pid * 3 + 1] = rad.y * 255;
-        pOutput[pid * 3 + 2] = rad.z * 255;
+        Ray cRay = CastCamRay(px, py, cam, &seed0, &seed1);
+
+        float3 rad = Radiance(&cRay, pObjs, numObjs, &seed0, &seed1);
+        float invNs = 1.0f / (currentSample + 1);
+        float sNs = (float)currentSample * invNs;
+        color[pid * 3]     = sNs * color[pid*3    ] + rad.x * invNs;
+        color[pid * 3 + 1] = sNs * color[pid*3 + 1] + rad.y * invNs;
+        color[pid * 3 + 2] = sNs * color[pid*3 + 2] + rad.z * invNs;
+
+        pOutput[pid * 3] = color[pid * 3] * 255;
+        pOutput[pid * 3 + 1 ] = color[pid * 3 + 1 ] * 255;
+        pOutput[pid * 3 + 2 ] = color[pid * 3 + 2 ] * 255;
+
+        pSeeds[pid] = seed0;
+        pSeeds[worksize + pid] = seed1;
     }
 }

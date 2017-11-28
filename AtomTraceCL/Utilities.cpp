@@ -1,6 +1,7 @@
 #include <sstream>
 #include <fstream>
 #include <iostream>
+#include <random>
 
 #include <cl\cl.h>
 
@@ -37,4 +38,12 @@ void ReadFileToString(const std::string& name, std::string& out)
     out = sstr.str();
 
     file.close();
+}
+
+float GetRandomNumber01()
+{
+    static std::random_device s_rd;
+    static std::mt19937 s_randEngine(s_rd());
+    static std::uniform_real_distribution<float> s_distr(0.0f, 1.0f);
+    return s_distr(s_randEngine);
 }

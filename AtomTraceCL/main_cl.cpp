@@ -107,14 +107,14 @@ int main(int argc, char** argv)
 
     // Create memory buffers in the Context where the desired Device is. 
     // These will be the pointer parameters on the kernel.
-    cl::Buffer mem1;
-    mem1 = cl::Buffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
+    cl::Buffer pixelBuffer;
+    pixelBuffer = cl::Buffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
                       worksize * 3 * sizeof(unsigned char), image.GetRawData(), &error);
     CheckError(error, "Create mem1");
 
     cl::Buffer clCam;
     AtomTraceCL::Camera cam;
-    cam.Init(AtomMathCL::Vector3::UNIT_Z, AtomMathCL::Vector3::ZERO, 30.f, IMAGE_WIDTH, IMAGE_HEIGHT);
+    cam.Init(AtomMathCL::Vector3::UNIT_Z, AtomMathCL::Vector3::ZERO, 40.f, IMAGE_WIDTH, IMAGE_HEIGHT);
     clCam = cl::Buffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(AtomTraceCL::Camera), &cam, &error);
     CheckError(error, "Create clCam");
 
@@ -122,22 +122,36 @@ int main(int argc, char** argv)
     ObjectList oList;
     // Load scene
     {
-        Sphere s1(0.1f, AtomMathCL::Vector3(0.f, 0.f, -2.0f));
-        s1.SetEmission(AtomMathCL::Vector3(1.0f));
+        Sphere s1(1.f, AtomMathCL::Vector3(1.f, 0.f, -2.0f));
+        s1.SetEmission(AtomMathCL::Vector3(2.0f));
         oList.AddObject(s1);
-        Sphere s0(0.1f, AtomMathCL::Vector3(-0.3f, 0.f, -2.0f));
+        Sphere s0(0.2f, AtomMathCL::Vector3(-0.5f, 0.f, -2.0f));
         s0.SetColor(AtomMathCL::Vector3(0.75f, 0.25f, .25f));
         oList.AddObject(s0);
     }
     cl::Buffer clScene;
     clScene = cl::Buffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, oList.m_size, oList.m_pData);
+    CheckError(error, "Create clScene");
+
+    unsigned __int32* pSeeds = new unsigned __int32[worksize * 2];
+    for (int i = 0; i < worksize * 2; ++i)
+    {
+        pSeeds[i] = GetRandomNumber01() * 0xfffffffd + 2;
+    }
+    cl::Buffer clSeeds = cl::Buffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, worksize * 2 * sizeof(unsigned __int32), pSeeds);
+    CheckError(error, "Create clSeeds");
+
+
+    float *pColor = new float[worksize * 3];
+    memset(pColor, 0, worksize * 3 * sizeof(float));
+    cl::Buffer clColor = cl::Buffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, worksize * 3 * sizeof(float), pColor);
 
     // Create a kernel object with the compiled program
     cl::Kernel kernel = cl::Kernel(program, "RenderKernel", &error);
     CheckError(error, "Create kernel");
 
     // Set the kernel parameters
-    error = kernel.setArg(0, mem1);
+    error = kernel.setArg(0, pixelBuffer);
     CheckError(error, "Set kernel args0");
 
     error = kernel.setArg(1, IMAGE_WIDTH);
@@ -152,18 +166,30 @@ int main(int argc, char** argv)
     error = kernel.setArg(4, clScene);
     error = kernel.setArg(5, oList.m_size);
     error = kernel.setArg(6, oList.m_numObj);
+    error = kernel.setArg(7, clSeeds);
+    CheckError(error, "Set kernel args7(clSeeds)");
+
+    error = kernel.setArg(8, clColor);
 
     InitGLFWWindow(IMAGE_WIDTH, IMAGE_HEIGHT);
 
+    unsigned int currentSample = 0;
     // OpenGL viewport loop
     while (!glfwWindowShouldClose(gs_pWindow))
     {
-        // Tell the device, through the command queue, to execute queue Kernel
-        error = cq.enqueueNDRangeKernel(kernel, 0, worksize, 256);
-        CheckError(error,"Enqueue NDRange kernel");
+        if (currentSample < 0xffffffd)
+        {
+            error = kernel.setArg(9, currentSample);
+            CheckError(error, "Set kernel args8 (currentSample)");
+            currentSample++;
+
+            // Tell the device, through the command queue, to execute queue Kernel
+            error = cq.enqueueNDRangeKernel(kernel, 0, worksize, 256);
+            CheckError(error, "Enqueue NDRange kernel");
+        }
 
         // Read the result back into image
-        error = cq.enqueueReadBuffer(mem1, CL_FALSE, 0, worksize * 3, image.GetRawData());
+        error = cq.enqueueReadBuffer(pixelBuffer, CL_FALSE, 0, worksize * 3, image.GetRawData());
         CheckError(error, "Enqueue read buffer");
 
         glDrawPixels(IMAGE_WIDTH, IMAGE_HEIGHT, GL_RGB, GL_UNSIGNED_BYTE, image.GetRawData());
@@ -173,7 +199,7 @@ int main(int argc, char** argv)
     }
 
     // Read the FINAL result back into image
-    error = cq.enqueueReadBuffer(mem1, CL_TRUE, 0, worksize * 3, image.GetRawData());
+    error = cq.enqueueReadBuffer(pixelBuffer, CL_TRUE, 0, worksize * 3, image.GetRawData());
     CheckError(error, "Enqueue read buffer");
 
     // Await completion of all the above
@@ -184,6 +210,16 @@ int main(int argc, char** argv)
 
     image.SavePNG("image.png");
     image.Release();
+
+    if (pSeeds != nullptr)
+    {
+        delete[] pSeeds;
+    }
+
+    if (nullptr != pColor)
+    {
+        delete[] pColor;
+    }
 
     return 0;
 }
