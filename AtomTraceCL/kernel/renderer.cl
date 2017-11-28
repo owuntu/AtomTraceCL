@@ -39,17 +39,17 @@ Ray CastCamRay(int px, int py, __constant Camera* cam)
     float3 orig = cam->pos;
 
     Ray ray;
-    ray.direction = tar - orig;
-    ray.direction = normalize(ray.direction);
-    ray.origin = orig;
+    ray.dir = tar - orig;
+    ray.dir = normalize(ray.dir);
+    ray.orig = orig;
     return ray;
 }
 
 bool IntersectSphere(const Sphere* obj, const Ray* ray, float* t)
 {
     bool res = false;
-    float3 po = obj->pos - ray->origin;
-    float b = dot(po, ray->direction);
+    float3 po = obj->pos - ray->orig;
+    float b = dot(po, ray->dir);
     float det = b*b - dot(po, po) + obj->radius * obj->radius;
     if (det < 0.0f)
     {
@@ -82,7 +82,7 @@ bool IntersectSphere(const Sphere* obj, const Ray* ray, float* t)
 
 bool IntersectP(__constant char* pObj, int numObjs, const Ray* ray, const float maxt)
 {
-    __constant char* pCurr = pObjs;
+    __constant char* pCurr = pObj;
     bool bHit = false;
     float t = maxt;
     for (int i = 0; i < numObjs; ++i)
@@ -95,7 +95,7 @@ bool IntersectP(__constant char* pObj, int numObjs, const Ray* ray, const float 
         if (gtype == 1) // SPHERE
         {
             Sphere sp = *(__constant Sphere*)pCurr;
-            bHit |= IntersectSphere(&sp, &ray, &t);
+            bHit |= IntersectSphere(&sp, ray, &t);
         }
     }
     return bHit;
@@ -104,7 +104,7 @@ bool IntersectP(__constant char* pObj, int numObjs, const Ray* ray, const float 
 void SampleLights(__constant char* pObj, int numObjs,
                   const float3* pHitP, const float3* pN, float3* result)
 {
-    __constant char* pCurr = pObjs;
+    __constant char* pCurr = pObj;
     for(int i = 0; i < numObjs; ++i)
     {
         uint gtype = *((__constant uint*)pCurr);
@@ -125,7 +125,7 @@ void SampleLights(__constant char* pObj, int numObjs,
                 float len = fast_length(shadowRay.dir);
                 len -= sp.radius;
                 shadowRay.dir = normalize(shadowRay.dir);
-                if (!IntersectP(pObj, numObjs, shadowRay, len - 0.01f)
+                if (!IntersectP(pObj, numObjs, &shadowRay, len - 0.01f))
                 {
                     // add light contribution
                     *result += sp.emission * dot(*pN, shadowRay.dir);
@@ -136,18 +136,18 @@ void SampleLights(__constant char* pObj, int numObjs,
 
 }
 
-float3 Radiance(const Ray& ray, __constant char* pObj, int numObjs)
+float3 Radiance(const Ray* ray, __constant char* pObj, int numObjs)
 {
     Ray currentRay;
-    currentRay.orig = ray.orig;
-    currentRay.dir = ray.dir;
+    currentRay.orig = ray->orig;
+    currentRay.dir = ray->dir;
     int d = 0;
-    float3 throughput = float3(1.f);
-    float3 rad = float3(0.f);
+    float3 throughput = (float3)(1.f);
+    float3 rad = (float3)(0.f);
     
     while(d < MAX_DEPTH)
     {
-        __constant char* pCurr = pObjs;
+        __constant char* pCurr = pObj;
         float t = FLT_MAX;
         bool bHit = false;
         Sphere sHit;
@@ -181,9 +181,9 @@ float3 Radiance(const Ray& ray, __constant char* pObj, int numObjs)
                 throughput *= sHit.color;
                 float3 Ld;
                 float3 hitP = currentRay.orig + currentRay.dir * t;
-                float3 hitN = hitP - sHit.orig;
+                float3 hitN = hitP - sHit.pos;
                 hitN = normalize(hitN);
-                SampleLights(pObjs, numObjs, &hitP, &hitN, &Ld);
+                SampleLights(pObj, numObjs, &hitP, &hitN, &Ld);
                 Ld *= throughput;
                 rad += Ld;
 
@@ -196,7 +196,7 @@ float3 Radiance(const Ray& ray, __constant char* pObj, int numObjs)
         }
         ++d;
     }
-
+    return rad;
 }
 
 __kernel void RenderKernel(__global uchar* pOutput, int width, int height,
@@ -238,9 +238,9 @@ __kernel void RenderKernel(__global uchar* pOutput, int width, int height,
 
         if (bHit)
         {
-            float3 hitP = cRay.origin + cRay.direction * t;
+            float3 hitP = cRay.orig + cRay.dir * t;
             float3 hitN = normalize(hitP - sHit.pos);
-            float d = dot(cRay.direction * -1.0f, hitN);
+            float d = dot(cRay.dir * -1.0f, hitN);
             pOutput[pid * 3] = d * 255;
             pOutput[pid * 3 + 1] = d * 255;
             pOutput[pid * 3 + 2] = d * 255;
