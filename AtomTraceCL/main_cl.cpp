@@ -96,10 +96,17 @@ int main(int argc, char** argv)
     error = program.build({device});
     if (!CheckError(error, "Build program"))
     {
-        char msg[1024] = { 0 };
+        char* msg = nullptr;
+        std::size_t len = 0;
         //program.getBuildInfo(device, CL_PROGRAM_BUILD_LOG, msg);
-        clGetProgramBuildInfo(program(), device(), CL_PROGRAM_BUILD_LOG, sizeof(msg), msg, nullptr);
-        std::cerr << msg << std::endl;
+        clGetProgramBuildInfo(program(), device(), CL_PROGRAM_BUILD_LOG, 0, nullptr, &len);
+        if (len > 0)
+        {
+            msg = new char[len];
+            clGetProgramBuildInfo(program(), device(), CL_PROGRAM_BUILD_LOG, len, msg, nullptr);
+            std::cerr << msg << std::endl;
+            delete[] msg;
+        }
         ShutDownGLFW();
         system("pause");
         return 1;
@@ -122,12 +129,53 @@ int main(int argc, char** argv)
     ObjectList oList;
     // Load scene
     {
-        Sphere s1(1.f, AtomMathCL::Vector3(1.f, 0.f, -2.0f));
-        s1.SetEmission(AtomMathCL::Vector3(2.0f));
-        oList.AddObject(s1);
-        Sphere s0(0.2f, AtomMathCL::Vector3(-0.5f, 0.f, -2.0f));
-        s0.SetColor(AtomMathCL::Vector3(0.75f, 0.25f, .25f));
-        oList.AddObject(s0);
+        // light
+        {
+            Sphere s0(0.01f, AtomMathCL::Vector3(-0.1f, -0.1f, -1.5f));
+            s0.SetEmission(AtomMathCL::Vector3(1.0f));
+            oList.AddObject(s0);
+        }
+
+        {
+	        Sphere s0(0.2f, AtomMathCL::Vector3(-0.6f, 0.2f, -2.0f));
+	        s0.SetColor(AtomMathCL::Vector3(0.75f, 0.25f, 0.25f));
+	        oList.AddObject(s0);
+        }
+
+        // left
+        {
+	        Sphere s0(100.f, AtomMathCL::Vector3(-100.8f, 0.0f, -2.0f));
+            s0.SetColor(AtomMathCL::Vector3(0.25f, 0.75f, 0.25f));
+	        oList.AddObject(s0);
+        }
+
+        // back
+        {
+	        Sphere s0(100.f, AtomMathCL::Vector3(0.0f, 0.0f, -103.5f));
+            s0.SetColor(AtomMathCL::Vector3(0.25f, 0.25f, 0.25f));
+	        oList.AddObject(s0);
+        }
+
+        // right
+        {
+	        Sphere s0(100.f, AtomMathCL::Vector3(100.5f, 0.0f, -2.0f));
+            s0.SetColor(AtomMathCL::Vector3(0.25f, 0.25f, 0.75f));
+	        oList.AddObject(s0);
+        }
+
+        // top
+        {
+	        Sphere s0(100.f, AtomMathCL::Vector3(0.0f, 100.5f, 0.f));
+            s0.SetColor(AtomMathCL::Vector3(0.75f, 0.75f, 0.75f));
+	        oList.AddObject(s0);
+        }
+
+        // bottom
+        {
+	        Sphere s0(100.f, AtomMathCL::Vector3(0.0f, -100.7f, 0.0f));
+            s0.SetColor(AtomMathCL::Vector3(0.75f, 0.75f, 0.75f));
+	        oList.AddObject(s0);
+        }
     }
     cl::Buffer clScene;
     clScene = cl::Buffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, oList.m_size, oList.m_pData);
@@ -173,6 +221,8 @@ int main(int argc, char** argv)
 
     InitGLFWWindow(IMAGE_WIDTH, IMAGE_HEIGHT);
 
+    std::cout << "\n";
+
     unsigned int currentSample = 0;
     // OpenGL viewport loop
     while (!glfwWindowShouldClose(gs_pWindow))
@@ -188,6 +238,8 @@ int main(int argc, char** argv)
             CheckError(error, "Enqueue NDRange kernel");
         }
 
+        std::cout << "\rCurrent samples: " << currentSample << ".";
+
         // Read the result back into image
         error = cq.enqueueReadBuffer(pixelBuffer, CL_FALSE, 0, worksize * 3, image.GetRawData());
         CheckError(error, "Enqueue read buffer");
@@ -197,6 +249,8 @@ int main(int argc, char** argv)
         glfwSwapBuffers(gs_pWindow);
         glfwPollEvents();
     }
+
+    std::cout << "\n";
 
     // Read the FINAL result back into image
     error = cq.enqueueReadBuffer(pixelBuffer, CL_TRUE, 0, worksize * 3, image.GetRawData());

@@ -1,5 +1,8 @@
-#define MAX_DEPTH 1
-#define PI_F 3.14159265358979323846f
+#define MAX_DEPTH 6
+#define PI_F      3.14159265358979323846f
+#define HALF_PI_F 1.57079632679f
+#define TWO_PI_F  6.28318530718f
+#define EPSILON 0.01f
 
 typedef struct
 {
@@ -28,6 +31,10 @@ typedef struct
     float3 dy; // camera up direction, per-pixel height
 }Camera;
 
+__constant float3 UNIT_X = (float3)(1.f, 0.f, 0.f);
+__constant float3 UNIT_Y = (float3)(0.f, 1.f, 0.f);
+__constant float3 UNIT_Z = (float3)(0.f, 0.f, 1.f);
+
 // This function is copy from: http://davibu.interfree.it/opencl/smallptgpu2/smallptGPU2.html
 float GetRandom01(uint *pSeed0, uint *pSeed1) {
     *pSeed0 = 36969 * ((*pSeed0) & 65535) + ((*pSeed0) >> 16);
@@ -45,25 +52,56 @@ float GetRandom01(uint *pSeed0, uint *pSeed1) {
     return (res.f - 2.f) / 2.f;
 }
 
+float Halton(int index, int base)
+{
+    float r = 0;
+    float f = 1.0f / (float)base;
+    for (int i = index; i > 0; i /= base)
+    {
+        r += f * (i%base);
+        f /= (float)base;
+    }
+    return r;
+}
+
 void UniformSampleSphere(float u1, float u2, float3* p)
 {
-    // TODO: apply importance sampling
-    float theta = 0.5f * PI_F*(1.f - u1 * 2.f);
-    p->z = sin(theta);
-    float r = cos(theta);
-    float phi = 2.0f * PI_F * u2;
+    float theta = HALF_PI_F*(1.f - u1 * 2.f); // [-PI/2, PI/2]
+    p->z = cos(theta);
+    float r = sin(theta);
+    float phi = TWO_PI_F * u2;
     p->x = r * cos(phi);
     p->y = r * sin(phi);
 }
 
-// fov is the vertial fov angle
-Ray CastCamRay(int px, int py, __constant Camera* cam, uint* pSeed0, uint* pSeed1)
+void SampleHemiSphere(float u1, float u2, const float3* pN, float3* p)
 {
-    float fx = (float)px;
-    float fy = (float)py;
+    float3 ax = UNIT_X;
+    if (1.f - fabs(dot(ax, *pN)) < EPSILON)
+    {
+        ax = UNIT_Y;
+    }
+
+    float3 ay = cross(*pN, ax);
+    ax = cross(ay, *pN); // make sure ax is perpendicular to N
+
+    // Importance sampling
+    float theta = 0.5f * acos(1.f - 2.f * u1);
+    //float theta = HALF_PI_F * u1;
+    float phi = TWO_PI_F * u2;
+    float r = sin(theta);
+    float3 dir = *pN * cos(theta) + ax * r * cos(phi) + ay * r * sin(phi);
+    *p = normalize(dir);
+}
+
+// fov is the vertial fov angle
+Ray CastCamRay(int px, int py, __constant Camera* cam, const uint npp)
+{
+    float fx = (float)px - 0.5f + Halton((int)npp, 2);
+    float fy = (float)py - 0.5f + Halton((int)npp, 3);
     float3 tar = cam->upLeftPix 
-                 + cam->dx * (fx - 0.5f + GetRandom01(pSeed0, pSeed1))
-                 - cam->dy * (fy - 0.5f + GetRandom01(pSeed0, pSeed1));
+                 + cam->dx * fx
+                 - cam->dy * fy;
 
     float3 orig = cam->pos;
 
@@ -145,19 +183,41 @@ void SampleLights(__constant char* pObj, int numObjs,
         if (gtype == 1) // SPHERE
         {
             Sphere light = *(__constant Sphere*)pCurr;
-            if (fast_length(light.emission) > 0.01f)
+            if (fast_length(light.emission) > 0.1f)
             {
                 // cast shadow ray
                 float3 sampP = (float3)(0.f);
-                UniformSampleSphere(GetRandom01(pSeed0, pSeed1),
-                                    GetRandom01(pSeed0, pSeed1),
-                                    &sampP);
+
+                // Sample a point on the surface that is facing the shading object.
+                {
+                    float u1 = GetRandom01(pSeed0, pSeed1);
+                    float u2 = GetRandom01(pSeed0, pSeed1);
+
+                    float3 az = *pHitP - light.pos;
+                    float maxTheta = acos(light.radius / length(az));
+                    az = normalize(az);
+
+                    float3 ax = UNIT_X;
+                    if (1.f - fabs(dot(az, ax)) <= EPSILON)
+                    {
+                        ax = UNIT_Y;
+                    }
+                    float3 ay = cross(az, ax);
+                    ax = cross(ay, az);
+
+                    float theta = maxTheta * u1;
+                    float phi = TWO_PI_F * u2;
+                    float r = sin(theta);
+                    sampP = ax * r * cos(phi) + ay * r * sin(phi) + az * cos(theta);
+                    sampP = light.pos + normalize(sampP) * light.radius;
+                }
                 Ray shadowRay;
                 shadowRay.orig = *pHitP;
-                shadowRay.dir = light.pos + sampP * light.radius - shadowRay.orig;
-                float len = fast_length(shadowRay.dir);
-                len -= light.radius;
+                shadowRay.dir = sampP - shadowRay.orig;
+                float len = length(shadowRay.dir);
+                //len -= light.radius;
                 shadowRay.dir = normalize(shadowRay.dir);
+                //shadowRay.orig += shadowRay.dir * EPSILON;
                 if (!IntersectP(pObj, numObjs, &shadowRay, len - 0.01f))
                 {
                     // add light contribution
@@ -210,20 +270,32 @@ float3 Radiance(const Ray* ray, __constant char* pObj, int numObjs, uint* pSeed0
         {
             if (hType == 1) // SPHERE
             {
+                if (fast_length(sHit.emission) > EPSILON)
+                {
+                    rad = sHit.emission;
+                    break;
+                }
+
                 // Direct illumination
-                throughput *= sHit.color;
-                float3 Ld = (float3)(0.f);
                 float3 hitP = currentRay.orig + currentRay.dir * t;
                 float3 hitN = hitP - sHit.pos;
                 hitN = normalize(hitN);
+                float3 Ld = (float3)(0.f);
                 SampleLights(pObj, numObjs, &hitP, &hitN, &Ld, pSeed0, pSeed1);
+                throughput *= sHit.color;
                 Ld *= throughput;
-                rad += Ld + sHit.emission;
+                rad += Ld;
 
-                // TODO: Indirect illumination
+                // Indirect illumination
+                float3 newDir = hitN;
+                SampleHemiSphere(
+                    GetRandom01(pSeed0, pSeed1), GetRandom01(pSeed0, pSeed1),
+                    &hitN, &newDir);
+                currentRay.orig = hitP;
+                currentRay.dir = newDir;
             }
         }
-        else
+        else // miss
         {
             break;
         }
@@ -247,7 +319,7 @@ __kernel void RenderKernel(__global uchar* pOutput, int width, int height,
         uint seed0 = pSeeds[pid];
         uint seed1 = pSeeds[worksize + pid];
 
-        Ray cRay = CastCamRay(px, py, cam, &seed0, &seed1);
+        Ray cRay = CastCamRay(px, py, cam, currentSample);
 
         float3 rad = Radiance(&cRay, pObjs, numObjs, &seed0, &seed1);
         float invNs = 1.0f / (currentSample + 1);
@@ -256,9 +328,9 @@ __kernel void RenderKernel(__global uchar* pOutput, int width, int height,
         color[pid * 3 + 1] = sNs * color[pid*3 + 1] + rad.y * invNs;
         color[pid * 3 + 2] = sNs * color[pid*3 + 2] + rad.z * invNs;
 
-        pOutput[pid * 3] = color[pid * 3] * 255;
-        pOutput[pid * 3 + 1 ] = color[pid * 3 + 1 ] * 255;
-        pOutput[pid * 3 + 2 ] = color[pid * 3 + 2 ] * 255;
+        pOutput[pid * 3] =      clamp(color[pid*3],      0.f, 1.0f) * 255;
+        pOutput[pid * 3 + 1 ] = clamp(color[pid*3 + 1 ], 0.f, 1.0f) * 255;
+        pOutput[pid * 3 + 2 ] = clamp(color[pid*3 + 2 ], 0.f, 1.0f) * 255;
 
         pSeeds[pid] = seed0;
         pSeeds[worksize + pid] = seed1;
