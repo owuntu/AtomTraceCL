@@ -76,14 +76,20 @@ void UniformSampleSphere(float u1, float u2, float3* p)
 
 void SampleHemiSphere(float u1, float u2, const float3* pN, float3* p)
 {
-    float3 ax = UNIT_X;
-    if (1.f - fabs(dot(ax, *pN)) < EPSILON)
+    float3 ax;
+    if (1.f - fabs(dot(UNIT_X, *pN)) < 0.01f)
     {
-        ax = UNIT_Y;
+        ax = cross(*pN, UNIT_Y);
+    }
+    else
+    {
+        ax = cross(*pN, UNIT_X);
     }
 
-    float3 ay = cross(*pN, ax);
-    ax = cross(ay, *pN); // make sure ax is perpendicular to N
+    float3 ay = cross(ax, *pN);
+
+    ax = normalize(ax);
+    ay = normalize(ay);
 
     // Importance sampling
     float theta = 0.5f * acos(1.f - 2.f * u1);
@@ -272,7 +278,7 @@ float3 Radiance(const Ray* ray, __constant char* pObj, int numObjs, uint* pSeed0
             {
                 if (fast_length(sHit.emission) > EPSILON)
                 {
-                    rad = sHit.emission;
+                    rad += sHit.emission;
                     break;
                 }
 
@@ -280,6 +286,7 @@ float3 Radiance(const Ray* ray, __constant char* pObj, int numObjs, uint* pSeed0
                 float3 hitP = currentRay.orig + currentRay.dir * t;
                 float3 hitN = hitP - sHit.pos;
                 hitN = normalize(hitN);
+
                 float3 Ld = (float3)(0.f);
                 SampleLights(pObj, numObjs, &hitP, &hitN, &Ld, pSeed0, pSeed1);
                 throughput *= sHit.color;

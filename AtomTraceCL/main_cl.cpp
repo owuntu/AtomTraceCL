@@ -142,17 +142,17 @@ int main(int argc, char** argv)
 	        oList.AddObject(s0);
         }
 
+        // back
+        {
+            Sphere s0(100.f, AtomMathCL::Vector3(0.0f, 0.0f, -103.5f));
+            s0.SetColor(AtomMathCL::Vector3(0.25f, 0.25f, 0.25f));
+            oList.AddObject(s0);
+        }
+
         // left
         {
 	        Sphere s0(100.f, AtomMathCL::Vector3(-100.8f, 0.0f, -2.0f));
             s0.SetColor(AtomMathCL::Vector3(0.25f, 0.75f, 0.25f));
-	        oList.AddObject(s0);
-        }
-
-        // back
-        {
-	        Sphere s0(100.f, AtomMathCL::Vector3(0.0f, 0.0f, -103.5f));
-            s0.SetColor(AtomMathCL::Vector3(0.25f, 0.25f, 0.25f));
 	        oList.AddObject(s0);
         }
 
