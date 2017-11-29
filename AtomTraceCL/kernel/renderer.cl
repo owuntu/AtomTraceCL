@@ -109,7 +109,7 @@ bool IntersectSphere(const Sphere* obj, const Ray* ray, float* t)
     return res;
 }
 
-bool IntersectP(__constant char* pObj, int numObjs, const Ray* ray, const float maxt)
+bool IntersectP(__constant char* pObj, int numObjs, const Ray* pRay, const float maxt)
 {
     __constant char* pCurr = pObj;
     bool bHit = false;
@@ -124,7 +124,8 @@ bool IntersectP(__constant char* pObj, int numObjs, const Ray* ray, const float 
         if (gtype == 1) // SPHERE
         {
             Sphere sp = *(__constant Sphere*)pCurr;
-            bHit |= IntersectSphere(&sp, ray, &t);
+            pCurr += gsize;
+            bHit |= IntersectSphere(&sp, pRay, &t);
         }
     }
     return bHit;
