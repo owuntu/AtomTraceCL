@@ -20,7 +20,6 @@ namespace AtomTraceCL
 
         //void LoadScene();
         bool AddObject(const Geometry&);
-        bool AddSphere(const Sphere&);
     };
 
 } // namespace AtomTraceCL

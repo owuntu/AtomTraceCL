@@ -25,18 +25,9 @@ namespace AtomTraceCL
 
     bool ObjectList::AddObject(const Geometry& geo)
     {
-        if (geo.GetType() == SPHERE)
-        {
-            return this->AddSphere(reinterpret_cast<const Sphere&>(geo));
-        }
-        return false;
-    }
-
-    bool ObjectList::AddSphere(const Sphere& sph)
-    {
         char* pCurr = reinterpret_cast<char*>(m_pData) + m_size;
-        unsigned __int32 gtype = SPHERE;
-        unsigned __int32 gsize = sph.GetSize();
+        unsigned __int32 gtype = geo.GetType();
+        unsigned __int32 gsize = geo.GetSize();
 
         unsigned __int32 inc = sizeof(gtype) + sizeof(gsize) + gsize;
         if (m_size + inc >= MAX_DATA_SIZE)
@@ -51,7 +42,7 @@ namespace AtomTraceCL
         pCurr += sizeof(gtype);
         memcpy(pCurr, &gsize, sizeof(gsize));
         pCurr += sizeof(gsize);
-        memcpy(pCurr, sph.GetData(), gsize);
+        memcpy(pCurr, geo.GetData(), gsize);
 
         return true;
     }
