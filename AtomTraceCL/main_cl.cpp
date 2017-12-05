@@ -140,50 +140,52 @@ int main(int argc, char** argv)
         }
 
         {
-	        Sphere s0(0.2f, AtomMathCL::Vector3(-0.6f, 0.2f, -2.0f));
-	        s0.SetColor(AtomMathCL::Vector3(0.75f, 0.25f, 0.25f));
-	        oList.AddObject(s0);
+            Sphere s0(0.2f, AtomMathCL::Vector3(-0.6f, 0.2f, -2.0f));
+            RenderObject obj;
+            obj.SetGeometry(&s0);
+            obj.m_color = (AtomMathCL::Vector3(0.75f, 0.25f, 0.25f));
+            oList.AddObject(obj);
         }
 
         // back
         {
             Sphere s0(100.f, AtomMathCL::Vector3(0.0f, 0.0f, -103.5f));
-            s0.SetColor(AtomMathCL::Vector3(0.25f, 0.25f, 0.25f));
-            oList.AddObject(s0);
+            RenderObject obj;
+            obj.SetGeometry(&s0);
+            obj.m_color = (AtomMathCL::Vector3(0.25f, 0.25f, 0.25f));
+            oList.AddObject(obj);
         }
 
         // left
         {
-	        Sphere s0(100.f, AtomMathCL::Vector3(-100.8f, 0.0f, -2.0f));
-            s0.SetColor(AtomMathCL::Vector3(0.25f, 0.75f, 0.25f));
-	        oList.AddObject(s0);
+            Sphere s0(100.f, AtomMathCL::Vector3(-100.8f, 0.0f, -2.0f));
+            RenderObject obj;
+            obj.SetGeometry(&s0);
+            obj.m_color = (AtomMathCL::Vector3(0.25f, 0.75f, 0.25f));
+            oList.AddObject(obj);
         }
 
         // right
         {
-	        Sphere s0(100.f, AtomMathCL::Vector3(100.5f, 0.0f, -2.0f));
-            s0.SetColor(AtomMathCL::Vector3(0.25f, 0.25f, 0.75f));
-	        oList.AddObject(s0);
-            Sphere s0(0.2f, AtomMathCL::Vector3(-0.6f, 0.2f, -2.0f));
+            Sphere s0(100.f, AtomMathCL::Vector3(100.5f, 0.0f, -2.0f));
             RenderObject obj;
             obj.SetGeometry(&s0);
-            obj.m_color = AtomMathCL::Vector3(0.75f, 0.25f, 0.25f);
+            obj.m_color = (AtomMathCL::Vector3(0.25f, 0.25f, 0.75f));
             oList.AddObject(obj);
         }
 
         // top
         {
-	        Sphere s0(100.f, AtomMathCL::Vector3(0.0f, 100.5f, 0.f));
-            s0.SetColor(AtomMathCL::Vector3(0.75f, 0.75f, 0.75f));
-	        oList.AddObject(s0);
+            Sphere s0(100.f, AtomMathCL::Vector3(0.0f, 100.5f, 0.f));
+            RenderObject obj;
+            obj.SetGeometry(&s0);
+            obj.m_color = (AtomMathCL::Vector3(0.75f, 0.75f, 0.75f));
+            oList.AddObject(obj);
         }
 
         // bottom
         {
-	        Sphere s0(100.f, AtomMathCL::Vector3(0.0f, -100.7f, 0.0f));
-            s0.SetColor(AtomMathCL::Vector3(0.75f, 0.75f, 0.75f));
-	        oList.AddObject(s0);
-            Sphere s0(100.f, AtomMathCL::Vector3(0.0f, 100.5f, 0.f));
+            Sphere s0(100.f, AtomMathCL::Vector3(0.0f, -100.7f, 0.0f));
             RenderObject obj;
             obj.SetGeometry(&s0);
             obj.m_color = (AtomMathCL::Vector3(0.75f, 0.75f, 0.75f));
