@@ -7,17 +7,13 @@ namespace AtomTraceCL
 
     Sphere::Sphere() :
         m_orig(Vector3::ZERO),
-        m_radius(0.0f),
-        m_emission(Vector3::ZERO),
-        m_color(1.0f, 1.0f, 1.0f)
+        m_radius(0.0f)
     {
     }
 
     Sphere::Sphere(float r, const AtomMathCL::Vector3& orig) :
         m_orig(orig),
-        m_radius(r),
-        m_emission(Vector3::ZERO),
-        m_color(1.0f, 1.0f, 1.0f)
+        m_radius(r)
     {
     }
 
@@ -34,16 +30,6 @@ namespace AtomTraceCL
     const void* Sphere::GetData() const
     {
         return (&m_radius);
-    }
-
-    void Sphere::SetEmission(const AtomMathCL::Vector3& em)
-    {
-        m_emission = em;
-    }
-
-    void Sphere::SetColor(const AtomMathCL::Vector3& c)
-    {
-        m_color = c;
     }
 
     bool Sphere::Intersect(const Ray& ray)

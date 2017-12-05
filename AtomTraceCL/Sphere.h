@@ -19,9 +19,6 @@ namespace AtomTraceCL
         GeometryType GetType() const;
         const void* GetData() const;
 
-        void SetEmission(const AtomMathCL::Vector3&);
-        void SetColor(const AtomMathCL::Vector3&);
-
         bool Intersect(const Ray& ray);
 
     private:
@@ -30,8 +27,6 @@ namespace AtomTraceCL
         float padding2;
         float padding3;
         AtomMathCL::Vector3 m_orig;
-        AtomMathCL::Vector3 m_emission;
-        AtomMathCL::Vector3 m_color;
     };
 
 } // namespace AtomTraceCL

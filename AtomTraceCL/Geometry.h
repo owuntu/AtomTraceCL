@@ -14,6 +14,14 @@ namespace AtomTraceCL
         virtual unsigned __int32 GetSize() const = 0;
         virtual GeometryType GetType() const = 0;
         virtual const void* GetData() const = 0;
+#if 0
+        virtual void* GetData()
+        {
+            return const_cast<void*>(
+                        reinterpret_cast<const Geometry*>(this)->GetData()
+                   );
+        }
+#endif
     };
 
 } // namespace AtomTraceCL

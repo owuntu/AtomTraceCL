@@ -14,14 +14,26 @@ typedef struct
 {
     float radius;
     float3 pos;
-    float3 emission;
-    float3 color;
 }Sphere;
 
 typedef struct
 {
-    uint size;
-}Object;
+    float3 emission;
+    float3 color;
+}DiffuseMaterial;
+
+/* This is a description of a RenderObject that store into the scene
+struct
+{
+    uint gtype;
+    uint gsize;
+    struct
+    {
+        geometry data
+    };
+    DiffuseMaterial mat;
+}RenderObject;
+*/
 
 typedef struct
 {
@@ -153,13 +165,13 @@ bool IntersectSphere(const Sphere* obj, const Ray* ray, float* t)
     return res;
 }
 
-bool IntersectP(__constant char* pObj, int numObjs, const Ray* pRay, const float maxt)
+bool IntersectP(__constant char* pObj, __constant int* pIndexTable, int numObjs, const Ray* pRay, const float maxt)
 {
-    __constant char* pCurr = pObj;
     bool bHit = false;
     float t = maxt;
     for (int i = 0; i < numObjs; ++i)
     {
+        __constant char* pCurr = pObj + pIndexTable[i];
         uint gtype = *((__constant uint*)pCurr);
         pCurr += sizeof(uint);
         uint gsize = *((__constant uint*)pCurr);
@@ -168,19 +180,19 @@ bool IntersectP(__constant char* pObj, int numObjs, const Ray* pRay, const float
         if (gtype == 1) // SPHERE
         {
             Sphere sp = *(__constant Sphere*)pCurr;
-            pCurr += gsize;
+            // pCurr += gsize;
             bHit |= IntersectSphere(&sp, pRay, &t);
         }
     }
     return bHit;
 }
 
-void SampleLights(__constant char* pObj, int numObjs,
+void SampleLights(__constant char* pObj, __constant int* pIndexTable, int numObjs,
                   const float3* pHitP, const float3* pN, float3* result, uint* pSeed0, uint* pSeed1)
 {
-    __constant char* pCurr = pObj;
     for(int i = 0; i < numObjs; ++i)
     {
+        __constant char* pCurr = pObj + pIndexTable[i];
         uint gtype = *((__constant uint*)pCurr);
         pCurr += sizeof(uint);
         uint gsize = *((__constant uint*)pCurr);
@@ -189,7 +201,9 @@ void SampleLights(__constant char* pObj, int numObjs,
         if (gtype == 1) // SPHERE
         {
             Sphere light = *(__constant Sphere*)pCurr;
-            if (fast_length(light.emission) > 0.1f)
+            pCurr += gsize;
+            DiffuseMaterial mat = *((__constant DiffuseMaterial*)pCurr);
+            if (fast_length(mat.emission) > 0.1f)
             {
                 // cast shadow ray
                 float3 sampP = (float3)(0.f);
@@ -224,10 +238,10 @@ void SampleLights(__constant char* pObj, int numObjs,
                 //len -= light.radius;
                 shadowRay.dir = normalize(shadowRay.dir);
                 //shadowRay.orig += shadowRay.dir * EPSILON;
-                if (!IntersectP(pObj, numObjs, &shadowRay, len - 0.01f))
+                if (!IntersectP(pObj, pIndexTable, numObjs, &shadowRay, len - 0.01f))
                 {
                     // add light contribution
-                    *result += light.emission * max(0.0f, dot(*pN, shadowRay.dir));
+                    *result += mat.emission * max(0.0f, dot(*pN, shadowRay.dir));
                 }
             }
         }
@@ -235,7 +249,7 @@ void SampleLights(__constant char* pObj, int numObjs,
 
 }
 
-float3 Radiance(const Ray* ray, __constant char* pObj, int numObjs, uint* pSeed0, uint* pSeed1)
+float3 Radiance(const Ray* ray, __constant char* pObj, __constant int* pIndexTable, int numObjs, uint* pSeed0, uint* pSeed1)
 {
     Ray currentRay;
     currentRay.orig = ray->orig;
@@ -243,16 +257,17 @@ float3 Radiance(const Ray* ray, __constant char* pObj, int numObjs, uint* pSeed0
     int d = 0;
     float3 throughput = (float3)(1.f);
     float3 rad = (float3)(0.f);
-    
+
+    Sphere sHit;
+    DiffuseMaterial mat;
+    uint hType;
     while(d < MAX_DEPTH)
     {
-        __constant char* pCurr = pObj;
         float t = FLT_MAX;
         bool bHit = false;
-        Sphere sHit;
-        uint hType;
         for (int i = 0; i < numObjs; ++i)
         {
+            __constant char* pCurr = pObj + pIndexTable[i];
             uint gtype = *((__constant uint*)pCurr);
             pCurr += sizeof(uint);
             uint gsize = *((__constant uint*)pCurr);
@@ -268,6 +283,9 @@ float3 Radiance(const Ray* ray, __constant char* pObj, int numObjs, uint* pSeed0
                     sHit = sp;
                     bHit = true;
                     hType = 1;
+
+                    // record material
+                    mat = *((__constant DiffuseMaterial*)pCurr);
                 }
             }
         }
@@ -276,9 +294,9 @@ float3 Radiance(const Ray* ray, __constant char* pObj, int numObjs, uint* pSeed0
         {
             if (hType == 1) // SPHERE
             {
-                if (fast_length(sHit.emission) > EPSILON)
+                if (fast_length(mat.emission) > EPSILON)
                 {
-                    rad += sHit.emission;
+                    rad += mat.emission;
                     break;
                 }
 
@@ -288,8 +306,8 @@ float3 Radiance(const Ray* ray, __constant char* pObj, int numObjs, uint* pSeed0
                 hitN = normalize(hitN);
 
                 float3 Ld = (float3)(0.f);
-                SampleLights(pObj, numObjs, &hitP, &hitN, &Ld, pSeed0, pSeed1);
-                throughput *= sHit.color;
+                SampleLights(pObj, pIndexTable, numObjs, &hitP, &hitN, &Ld, pSeed0, pSeed1);
+                throughput *= mat.color;
                 Ld *= throughput;
                 rad += Ld;
 
@@ -313,7 +331,7 @@ float3 Radiance(const Ray* ray, __constant char* pObj, int numObjs, uint* pSeed0
 
 __kernel void RenderKernel(__global uchar* pOutput, int width, int height,
                            __constant Camera* cam,
-                           __constant char* pObjs, int objsSize, int numObjs,
+                           __constant char* pObjs, __constant int* pIndexTable, int numObjs,
                            __global uint* pSeeds, __global float* color, const uint currentSample)
 {
     int pid = get_global_id(0);
@@ -328,7 +346,7 @@ __kernel void RenderKernel(__global uchar* pOutput, int width, int height,
 
         Ray cRay = CastCamRay(px, py, cam, currentSample);
 
-        float3 rad = Radiance(&cRay, pObjs, numObjs, &seed0, &seed1);
+        float3 rad = Radiance(&cRay, pObjs, pIndexTable, numObjs, &seed0, &seed1);
         float invNs = 1.0f / (currentSample + 1);
         float sNs = (float)currentSample * invNs;
         color[pid * 3]     = sNs * color[pid*3    ] + rad.x * invNs;

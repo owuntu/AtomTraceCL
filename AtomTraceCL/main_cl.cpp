@@ -12,6 +12,7 @@
 #include "Camera.h"
 #include "CLResourceManager.h"
 #include "RenderImage.h"
+#include "RenderObject.h"
 #include "Sphere.h"
 #include "ObjectList.h"
 #include "Utilities.h"
@@ -132,8 +133,10 @@ int main(int argc, char** argv)
         // light
         {
             Sphere s0(0.01f, AtomMathCL::Vector3(-0.1f, -0.1f, -1.5f));
-            s0.SetEmission(AtomMathCL::Vector3(1.0f));
-            oList.AddObject(s0);
+            RenderObject obj;
+            obj.SetGeometry(&s0);
+            obj.m_emission = AtomMathCL::Vector3(1.0f);
+            oList.AddObject(obj);
         }
 
         {
@@ -161,6 +164,11 @@ int main(int argc, char** argv)
 	        Sphere s0(100.f, AtomMathCL::Vector3(100.5f, 0.0f, -2.0f));
             s0.SetColor(AtomMathCL::Vector3(0.25f, 0.25f, 0.75f));
 	        oList.AddObject(s0);
+            Sphere s0(0.2f, AtomMathCL::Vector3(-0.6f, 0.2f, -2.0f));
+            RenderObject obj;
+            obj.SetGeometry(&s0);
+            obj.m_color = AtomMathCL::Vector3(0.75f, 0.25f, 0.25f);
+            oList.AddObject(obj);
         }
 
         // top
@@ -175,11 +183,19 @@ int main(int argc, char** argv)
 	        Sphere s0(100.f, AtomMathCL::Vector3(0.0f, -100.7f, 0.0f));
             s0.SetColor(AtomMathCL::Vector3(0.75f, 0.75f, 0.75f));
 	        oList.AddObject(s0);
+            Sphere s0(100.f, AtomMathCL::Vector3(0.0f, 100.5f, 0.f));
+            RenderObject obj;
+            obj.SetGeometry(&s0);
+            obj.m_color = (AtomMathCL::Vector3(0.75f, 0.75f, 0.75f));
+            oList.AddObject(obj);
         }
     }
     cl::Buffer clScene;
     clScene = cl::Buffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, oList.m_size, oList.m_pData);
     CheckError(error, "Create clScene");
+
+    cl::Buffer clIndexTable = cl::Buffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, oList.m_indexTable.size() * sizeof(int), &oList.m_indexTable[0]);
+    CheckError(error, "Create clIndexTable");
 
     unsigned __int32* pSeeds = new unsigned __int32[worksize * 2];
     for (int i = 0; i < worksize * 2; ++i)
@@ -212,8 +228,14 @@ int main(int argc, char** argv)
     CheckError(error, "Set kernel args3");
 
     error = kernel.setArg(4, clScene);
-    error = kernel.setArg(5, oList.m_size);
+    CheckError(error, "Set clScene");
+
+    error = kernel.setArg(5, clIndexTable);
+    CheckError(error, "Set kernel args index table");
+
     error = kernel.setArg(6, oList.m_numObj);
+    CheckError(error, "Set num obj");
+
     error = kernel.setArg(7, clSeeds);
     CheckError(error, "Set kernel args7(clSeeds)");
 
@@ -227,7 +249,7 @@ int main(int argc, char** argv)
     // OpenGL viewport loop
     while (!glfwWindowShouldClose(gs_pWindow))
     {
-        if (currentSample < 0xffffffd)
+        if (currentSample < 0xffffffff)
         {
             error = kernel.setArg(9, currentSample);
             CheckError(error, "Set kernel args8 (currentSample)");
@@ -236,9 +258,9 @@ int main(int argc, char** argv)
             // Tell the device, through the command queue, to execute queue Kernel
             error = cq.enqueueNDRangeKernel(kernel, 0, worksize, 256);
             CheckError(error, "Enqueue NDRange kernel");
-        }
 
-        std::cout << "\rCurrent samples: " << currentSample << ".";
+            std::cout << "\rCurrent samples: " << currentSample << ".";
+        }
 
         // Read the result back into image
         error = cq.enqueueReadBuffer(pixelBuffer, CL_FALSE, 0, worksize * 3, image.GetRawData());

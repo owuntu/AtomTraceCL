@@ -135,6 +135,7 @@
     <ClCompile Include="ObjectList.cpp" />
     <ClCompile Include="Ray.cpp" />
     <ClCompile Include="RenderImage.cpp" />
+    <ClCompile Include="RenderObject.cpp" />
     <ClCompile Include="Sphere.cpp" />
     <ClCompile Include="Utilities.cpp" />
   </ItemGroup>
@@ -146,6 +147,7 @@
     <ClInclude Include="ObjectList.h" />
     <ClInclude Include="Ray.h" />
     <ClInclude Include="RenderImage.h" />
+    <ClInclude Include="RenderObject.h" />
     <ClInclude Include="Sphere.h" />
     <ClInclude Include="Utilities.h" />
   </ItemGroup>
