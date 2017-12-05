@@ -133,6 +133,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="ObjectList.cpp" />
+    <ClCompile Include="Plane.cpp" />
     <ClCompile Include="Ray.cpp" />
     <ClCompile Include="RenderImage.cpp" />
     <ClCompile Include="RenderObject.cpp" />
@@ -145,6 +146,7 @@
     <ClInclude Include="CLResourceManager.h" />
     <ClInclude Include="Geometry.h" />
     <ClInclude Include="ObjectList.h" />
+    <ClInclude Include="Plane.h" />
     <ClInclude Include="Ray.h" />
     <ClInclude Include="RenderImage.h" />
     <ClInclude Include="RenderObject.h" />

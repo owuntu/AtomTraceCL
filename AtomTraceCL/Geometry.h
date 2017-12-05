@@ -6,7 +6,8 @@ namespace AtomTraceCL
     enum GeometryType
     {
         SPHERE = 1,
-        TRIANGLES = 2
+        PLANE = 2,
+        TRIANGLES = 3
     };
     class Geometry
     {

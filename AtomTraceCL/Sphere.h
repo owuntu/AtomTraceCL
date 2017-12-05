@@ -19,6 +19,7 @@ namespace AtomTraceCL
         GeometryType GetType() const;
         const void* GetData() const;
 
+        // CPU implementation.
         bool Intersect(const Ray& ray);
 
     private:
