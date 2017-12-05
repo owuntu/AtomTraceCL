@@ -10,11 +10,20 @@ typedef struct
     float3 dir;
 }Ray;
 
+// --- Geometries ----
 typedef struct
 {
     float radius;
     float3 pos;
 }Sphere;
+
+typedef struct
+{
+    float3 pos;
+    float3 norm;
+}Plane;
+
+// -------------------
 
 typedef struct
 {
@@ -162,6 +171,12 @@ bool IntersectSphere(const Sphere* obj, const Ray* ray, float* t)
             res = true;
         }
     }
+    return res;
+}
+
+bool IntersectPlane(const Plane* obj, const Ray* ray, float* t)
+{
+    bool res = false;
     return res;
 }
 
