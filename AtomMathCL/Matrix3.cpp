@@ -142,24 +142,24 @@ namespace AtomMathCL
         m_data[8] = tz * axis.Z() + c;
     }
 
-    void Matrix3::SetRotate(float degree, const Vector3& axis)
+    void Matrix3::SetRotation(float theta, const Vector3& axis)
     {
-
+        this->SetRotation(axis, cosf(theta), sinf(theta));
     }
 
-    void Matrix3::SetRotateX(float degree)
+    void Matrix3::SetRotationX(float theta)
     {
-        this->SetRotate(degree, Vector3::UNIT_X);
+        this->SetRotation(theta, Vector3::UNIT_X);
     }
 
-    void Matrix3::SetRotateY(float degree)
+    void Matrix3::SetRotationY(float theta)
     {
-        this->SetRotate(degree, Vector3::UNIT_Y);
+        this->SetRotation(theta, Vector3::UNIT_Y);
     }
 
-    void Matrix3::SetRotateZ(float degree)
+    void Matrix3::SetRotationZ(float theta)
     {
-        this->SetRotate(degree, Vector3::UNIT_Z);
+        this->SetRotation(theta, Vector3::UNIT_Z);
     }
 
 } // namespace AtomMathCL

@@ -28,10 +28,10 @@ namespace AtomMathCL
         void SetScale(float scale);
 
         void Matrix3::SetRotation(const Vector3& axis, float cosTheta, float sinTheta);
-        void SetRotation(float degree, const Vector3& axis);
-        void SetRotationX(float degree);
-        void SetRotationY(float degree);
-        void SetRotationZ(float degree);
+        void SetRotation(float theta, const Vector3& axis);
+        void SetRotationX(float theta);
+        void SetRotationY(float theta);
+        void SetRotationZ(float theta);
 
     private:
         float m_data[9];

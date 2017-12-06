@@ -21,9 +21,15 @@
     <ClInclude Include="MathConstant.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Matrix3.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Vector3.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Matrix3.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

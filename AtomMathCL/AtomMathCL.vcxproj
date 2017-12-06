@@ -124,9 +124,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="MathConstant.h" />
+    <ClInclude Include="Matrix3.h" />
     <ClInclude Include="Vector3.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Matrix3.cpp" />
     <ClCompile Include="Vector3.cpp" />
   </ItemGroup>
   <ItemGroup>
