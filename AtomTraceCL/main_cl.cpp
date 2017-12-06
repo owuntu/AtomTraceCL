@@ -123,7 +123,7 @@ int main(int argc, char** argv)
 
     cl::Buffer clCam;
     AtomTraceCL::Camera cam;
-    cam.Init(AtomMathCL::Vector3::UNIT_Z, AtomMathCL::Vector3::ZERO, 40.f, IMAGE_WIDTH, IMAGE_HEIGHT);
+    cam.Init(AtomMathCL::Vector3::UNIT_Z, AtomMathCL::Vector3::UNIT_Y * -0.01f, 40.f, IMAGE_WIDTH, IMAGE_HEIGHT);
     clCam = cl::Buffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(AtomTraceCL::Camera), &cam, &error);
     CheckError(error, "Create clCam");
 
@@ -133,15 +133,15 @@ int main(int argc, char** argv)
     {
         // light
         {
-            Sphere s0(0.01f, AtomMathCL::Vector3(-0.1f, -0.1f, -1.5f));
+            Sphere s0(0.05f, AtomMathCL::Vector3(0.0f, -0.6f, -1.5f));
             RenderObject obj;
             obj.SetGeometry(&s0);
-            obj.m_emission = AtomMathCL::Vector3(1.0f);
+            obj.m_emission = AtomMathCL::Vector3(.5f);
             oList.AddObject(obj);
         }
 
         {
-            Sphere s0(0.2f, AtomMathCL::Vector3(-0.6f, 0.2f, -2.0f));
+            Sphere s0(0.2f, AtomMathCL::Vector3(-0.3f, 0.22f, -2.0f));
             RenderObject obj;
             obj.SetGeometry(&s0);
             obj.m_color = (AtomMathCL::Vector3(0.75f, 0.25f, 0.25f));
@@ -150,10 +150,10 @@ int main(int argc, char** argv)
 
         // back
         {
-            Plane pl0(AtomMathCL::Vector3(0.f, 0.f, -3.5f), AtomMathCL::Vector3::UNIT_Z);
+            Plane pl0(AtomMathCL::Vector3(0.f, 0.f, -2.5f), AtomMathCL::Vector3::UNIT_Z);
             RenderObject obj;
             obj.SetGeometry(&pl0);
-            obj.m_color = (AtomMathCL::Vector3(0.25f, 0.25f, 0.25f));
+            obj.m_color = (AtomMathCL::Vector3(0.75f, 0.75f, 0.75f));
             oList.AddObject(obj);
         }
 
@@ -168,7 +168,7 @@ int main(int argc, char** argv)
 
         // right
         {
-            Plane pl0(AtomMathCL::Vector3(0.5f, 0.0f, 0.0f), AtomMathCL::Vector3::UNIT_X * -1.0f);
+            Plane pl0(AtomMathCL::Vector3(0.8f, 0.0f, 0.0f), AtomMathCL::Vector3::UNIT_X * -1.0f);
             RenderObject obj;
             obj.SetGeometry(&pl0);
             obj.m_color = (AtomMathCL::Vector3(0.25f, 0.25f, 0.75f));
