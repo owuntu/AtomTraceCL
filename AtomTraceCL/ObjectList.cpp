@@ -26,30 +26,6 @@ namespace AtomTraceCL
         m_indexTable.clear();
     }
 
-    bool ObjectList::AddObject(const Geometry& geo)
-    {
-        char* pCurr = reinterpret_cast<char*>(m_pData) + m_size;
-        unsigned __int32 gtype = geo.GetType();
-        unsigned __int32 gsize = geo.GetSize();
-
-        unsigned __int32 inc = sizeof(gtype) + sizeof(gsize) + gsize;
-        if (m_size + inc >= MAX_DATA_SIZE)
-        {
-            return false;
-        }
-
-        m_size += inc;
-        m_numObj++;
-
-        memcpy(pCurr, &gtype, sizeof(gtype));
-        pCurr += sizeof(gtype);
-        memcpy(pCurr, &gsize, sizeof(gsize));
-        pCurr += sizeof(gsize);
-        memcpy(pCurr, geo.GetData(), gsize);
-
-        return true;
-    }
-
     bool ObjectList::AddObject(const RenderObject& obj)
     {
         char* pCurr = reinterpret_cast<char*>(m_pData) + m_size;

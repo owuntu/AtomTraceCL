@@ -21,7 +21,6 @@ namespace AtomTraceCL
         ~ObjectList();
 
         //void LoadScene();
-        bool AddObject(const Geometry&);
         bool AddObject(const RenderObject&);
     };
 

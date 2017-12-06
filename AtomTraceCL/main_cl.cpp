@@ -14,6 +14,7 @@
 #include "RenderImage.h"
 #include "RenderObject.h"
 #include "Sphere.h"
+#include "Plane.h"
 #include "ObjectList.h"
 #include "Utilities.h"
 
@@ -149,48 +150,49 @@ int main(int argc, char** argv)
 
         // back
         {
-            Sphere s0(100.f, AtomMathCL::Vector3(0.0f, 0.0f, -103.5f));
+            Plane pl0(AtomMathCL::Vector3(0.f, 0.f, -3.5f), AtomMathCL::Vector3::UNIT_Z);
             RenderObject obj;
-            obj.SetGeometry(&s0);
+            obj.SetGeometry(&pl0);
             obj.m_color = (AtomMathCL::Vector3(0.25f, 0.25f, 0.25f));
             oList.AddObject(obj);
         }
 
         // left
         {
-            Sphere s0(100.f, AtomMathCL::Vector3(-100.8f, 0.0f, -2.0f));
+            Plane pl0(AtomMathCL::Vector3(-0.8f, 0.f, 0.f), AtomMathCL::Vector3::UNIT_X);
             RenderObject obj;
-            obj.SetGeometry(&s0);
+            obj.SetGeometry(&pl0);
             obj.m_color = (AtomMathCL::Vector3(0.25f, 0.75f, 0.25f));
             oList.AddObject(obj);
         }
 
         // right
         {
-            Sphere s0(100.f, AtomMathCL::Vector3(100.5f, 0.0f, -2.0f));
+            Plane pl0(AtomMathCL::Vector3(0.5f, 0.0f, 0.0f), AtomMathCL::Vector3::UNIT_X * -1.0f);
             RenderObject obj;
-            obj.SetGeometry(&s0);
+            obj.SetGeometry(&pl0);
             obj.m_color = (AtomMathCL::Vector3(0.25f, 0.25f, 0.75f));
             oList.AddObject(obj);
         }
 
         // top
         {
-            Sphere s0(100.f, AtomMathCL::Vector3(0.0f, 100.5f, 0.f));
+            Plane pl0(AtomMathCL::Vector3(0.f, 0.5f, 0.f), AtomMathCL::Vector3::UNIT_Y * -1.f);
             RenderObject obj;
-            obj.SetGeometry(&s0);
+            obj.SetGeometry(&pl0);
             obj.m_color = (AtomMathCL::Vector3(0.75f, 0.75f, 0.75f));
             oList.AddObject(obj);
         }
 
         // bottom
         {
-            Sphere s0(100.f, AtomMathCL::Vector3(0.0f, -100.7f, 0.0f));
+            Plane pl0(AtomMathCL::Vector3(0.0f, -0.7f, 0.0f), AtomMathCL::Vector3::UNIT_Y);
             RenderObject obj;
-            obj.SetGeometry(&s0);
+            obj.SetGeometry(&pl0);
             obj.m_color = (AtomMathCL::Vector3(0.75f, 0.75f, 0.75f));
             oList.AddObject(obj);
         }
+
     }
     cl::Buffer clScene;
     clScene = cl::Buffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, oList.m_size, oList.m_pData);

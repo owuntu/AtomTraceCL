@@ -174,13 +174,37 @@ bool IntersectSphere(const Sphere* obj, const Ray* ray, float* t)
     return res;
 }
 
-bool IntersectPlane(const Plane* obj, const Ray* ray, float* t)
+bool IntersectPlane(const Plane* pOBJ, const Ray* pRAY, float* pt)
 {
-    bool res = false;
-    return res;
+    // intersect if(dot(pRAY->orig + pRAY->dir * t - pOBJ->pos, pOBJ->norm) == 0)
+    float3 d = pRAY->dir;
+    float3 n = pOBJ->norm;
+    float dn = dot(d, n);
+    if (fabs(dn) < EPSILON) // ray is parallel to the plane
+    {
+        return false;
+    }
+
+    float3 op = pOBJ->pos - pRAY->orig;
+    float t = dot(op, n) / dn;
+
+    if (t < 0.f)
+    {
+        // ignore if intersection point is beind the ray.
+        return false;
+    }
+
+    if (t >= *pt)
+    {
+        return false;
+    }
+
+    *pt = t;
+
+    return true;
 }
 
-bool IntersectP(__constant char* pObj, __constant int* pIndexTable, int numObjs, const Ray* pRay, const float maxt)
+bool IntersectP(__constant char* pObj, __constant int* pIndexTable, int numObjs, const Ray* pRay, const float maxt, bool bIgnoreLight)
 {
     bool bHit = false;
     float t = maxt;
@@ -192,11 +216,24 @@ bool IntersectP(__constant char* pObj, __constant int* pIndexTable, int numObjs,
         uint gsize = *((__constant uint*)pCurr);
         pCurr += sizeof(uint);
 
+        if (bIgnoreLight)
+        {
+            DiffuseMaterial mat = *(__constant DiffuseMaterial*)(pCurr + gsize);
+            if (fast_length(mat.emission) > EPSILON)
+            {
+                continue;
+            }
+        }
+
         if (gtype == 1) // SPHERE
         {
             Sphere sp = *(__constant Sphere*)pCurr;
-            // pCurr += gsize;
             bHit |= IntersectSphere(&sp, pRay, &t);
+        }
+        else if (gtype == 2) // PLANE
+        {
+            Plane pl = *(__constant Plane*)pCurr;
+            bHit |= IntersectPlane(&pl, pRay, &t);
         }
     }
     return bHit;
@@ -212,53 +249,55 @@ void SampleLights(__constant char* pObj, __constant int* pIndexTable, int numObj
         pCurr += sizeof(uint);
         uint gsize = *((__constant uint*)pCurr);
         pCurr += sizeof(uint);
-
-        if (gtype == 1) // SPHERE
+        DiffuseMaterial mat = *(__constant DiffuseMaterial*)(pCurr + gsize);
+        if (fast_length(mat.emission) > 0.1f)
         {
-            Sphere light = *(__constant Sphere*)pCurr;
-            pCurr += gsize;
-            DiffuseMaterial mat = *((__constant DiffuseMaterial*)pCurr);
-            if (fast_length(mat.emission) > 0.1f)
+            float3 sampP = (float3)(0.f);
+            if (gtype == 1) // SPHERE
             {
-                // cast shadow ray
-                float3 sampP = (float3)(0.f);
+                Sphere splight = *(__constant Sphere*)pCurr;
 
                 // Sample a point on the surface that is facing the shading object.
+                float u1 = GetRandom01(pSeed0, pSeed1);
+                float u2 = GetRandom01(pSeed0, pSeed1);
+
+                float3 az = *pHitP - splight.pos;
+                float maxTheta = acos(splight.radius / length(az));
+                az = normalize(az);
+
+                float3 ax = UNIT_X;
+                if (1.f - fabs(dot(az, ax)) <= EPSILON)
                 {
-                    float u1 = GetRandom01(pSeed0, pSeed1);
-                    float u2 = GetRandom01(pSeed0, pSeed1);
-
-                    float3 az = *pHitP - light.pos;
-                    float maxTheta = acos(light.radius / length(az));
-                    az = normalize(az);
-
-                    float3 ax = UNIT_X;
-                    if (1.f - fabs(dot(az, ax)) <= EPSILON)
-                    {
-                        ax = UNIT_Y;
-                    }
-                    float3 ay = cross(az, ax);
-                    ax = cross(ay, az);
-
-                    float theta = maxTheta * u1;
-                    float phi = TWO_PI_F * u2;
-                    float r = sin(theta);
-                    sampP = ax * r * cos(phi) + ay * r * sin(phi) + az * cos(theta);
-                    sampP = light.pos + normalize(sampP) * light.radius;
+                    ax = UNIT_Y;
                 }
-                Ray shadowRay;
-                shadowRay.orig = *pHitP;
-                shadowRay.dir = sampP - shadowRay.orig;
-                float len = length(shadowRay.dir);
-                //len -= light.radius;
-                shadowRay.dir = normalize(shadowRay.dir);
-                //shadowRay.orig += shadowRay.dir * EPSILON;
-                if (!IntersectP(pObj, pIndexTable, numObjs, &shadowRay, len - 0.01f))
-                {
-                    // add light contribution
-                    *result += mat.emission * max(0.0f, dot(*pN, shadowRay.dir));
-                }
+                float3 ay = cross(az, ax);
+                ax = cross(ay, az);
+
+                float theta = maxTheta * u1;
+                float phi = TWO_PI_F * u2;
+                float r = sin(theta);
+                sampP = ax * r * cos(phi) + ay * r * sin(phi) + az * cos(theta);
+                sampP = splight.pos + normalize(sampP) * splight.radius;
             }
+            else
+            {
+                // TODO: For now only support sphere shape light.
+                continue;
+            }
+
+            // cast shadow ray
+            Ray shadowRay;
+            shadowRay.orig = *pHitP;
+            shadowRay.dir = sampP - shadowRay.orig;
+            float len = length(shadowRay.dir);
+            shadowRay.dir = normalize(shadowRay.dir);
+            float dnd = dot(*pN, shadowRay.dir);
+            shadowRay.orig += shadowRay.dir * EPSILON * dnd;
+            if (!IntersectP(pObj, pIndexTable, numObjs, &shadowRay, len, true))
+            {
+                // add light contribution
+                *result += mat.emission * max(0.0f, dnd);
+            }            
         }
     }
 
@@ -274,8 +313,9 @@ float3 Radiance(const Ray* ray, __constant char* pObj, __constant int* pIndexTab
     float3 rad = (float3)(0.f);
 
     Sphere sHit;
+    Plane plHit;
     DiffuseMaterial mat;
-    uint hType;
+    uint hType = 0;
     while(d < MAX_DEPTH)
     {
         float t = FLT_MAX;
@@ -287,53 +327,71 @@ float3 Radiance(const Ray* ray, __constant char* pObj, __constant int* pIndexTab
             pCurr += sizeof(uint);
             uint gsize = *((__constant uint*)pCurr);
             pCurr += sizeof(uint);
-
+            bool tHit = false;
             if (gtype == 1) // SPHERE
             {
                 Sphere sp = *((__constant Sphere*)pCurr);
-                pCurr += gsize;
-                bool tHit = IntersectSphere(&sp, &currentRay, &t);
+                tHit = IntersectSphere(&sp, &currentRay, &t);
                 if (tHit)
                 {
                     sHit = sp;
-                    bHit = true;
-                    hType = 1;
-
-                    // record material
-                    mat = *((__constant DiffuseMaterial*)pCurr);
                 }
+            }
+            else if (gtype == 2) // PLANE
+            {
+                Plane pl = *(__constant Plane*)pCurr;
+                tHit = IntersectPlane(&pl, &currentRay, &t);
+                if (tHit)
+                {
+                    plHit = pl;
+                }
+            }
+
+            if (tHit)
+            {
+                pCurr += gsize;
+                bHit = true;
+                hType = gtype;
+
+                // record material
+                mat = *(__constant DiffuseMaterial*)pCurr;
             }
         }
 
         if (bHit)
         {
+            if (fast_length(mat.emission) > EPSILON)
+            {
+                rad += mat.emission;
+                break;
+            }
+
+            float3 hitP = currentRay.orig + currentRay.dir * t;
+            float3 hitN;
             if (hType == 1) // SPHERE
             {
-                if (fast_length(mat.emission) > EPSILON)
-                {
-                    rad += mat.emission;
-                    break;
-                }
-
-                // Direct illumination
-                float3 hitP = currentRay.orig + currentRay.dir * t;
-                float3 hitN = hitP - sHit.pos;
-                hitN = normalize(hitN);
-
-                float3 Ld = (float3)(0.f);
-                SampleLights(pObj, pIndexTable, numObjs, &hitP, &hitN, &Ld, pSeed0, pSeed1);
-                throughput *= mat.color;
-                Ld *= throughput;
-                rad += Ld;
-
-                // Indirect illumination
-                float3 newDir = hitN;
-                SampleHemiSphere(
-                    GetRandom01(pSeed0, pSeed1), GetRandom01(pSeed0, pSeed1),
-                    &hitN, &newDir);
-                currentRay.orig = hitP;
-                currentRay.dir = newDir;
+                hitN = hitP - sHit.pos;
             }
+            else if (hType == 2) // PLANE
+            {
+                hitN = plHit.norm;
+            }
+            hitN = normalize(hitN);
+
+            // Direct illumination
+            float3 Ld = (float3)(0.f);
+            SampleLights(pObj, pIndexTable, numObjs, &hitP, &hitN, &Ld, pSeed0, pSeed1);
+            throughput *= mat.color;
+            Ld *= throughput;
+            rad += Ld;
+
+            // Indirect illumination
+            float3 newDir = hitN;
+            SampleHemiSphere(
+                GetRandom01(pSeed0, pSeed1), GetRandom01(pSeed0, pSeed1),
+                &hitN, &newDir);
+            currentRay.orig = hitP + hitN * EPSILON;
+            currentRay.dir = newDir;
         }
         else // miss
         {
