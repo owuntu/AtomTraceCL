@@ -12,6 +12,13 @@ typedef struct
 
 typedef struct
 {
+    DataHeader geometryHeader;
+    uint geometryIndex;
+    uint matIndex;
+}HitInfo;
+
+typedef struct
+{
     float3 orig;
     float3 dir;
 }Ray;
@@ -246,7 +253,7 @@ bool IntersectP(__constant char* pObj, __constant int* pIndexTable, int numObjs,
 }
 
 bool Intersect(__constant char* pObj, __constant int* pIndexTable, int numObjs, const Ray* pRay,
-               float* pt, int* pObjIndex, DataHeader* pGeoH, bool bIgnoreLight)
+               float* pt, HitInfo* pHitInfo, bool bIgnoreLight)
 {
     bool bHit = false;
     bool tHit = false;
@@ -280,8 +287,9 @@ bool Intersect(__constant char* pObj, __constant int* pIndexTable, int numObjs, 
         if (tHit)
         {
             bHit = true;
-            *pObjIndex = pIndexTable[i];
-            *pGeoH = dh;
+            pHitInfo->geometryHeader = dh;
+            pHitInfo->geometryIndex  = pIndexTable[i] + sizeof(dh);
+            pHitInfo->matIndex       = pIndexTable[i] + sizeof(dh) + dh.size;
         }
     }
     return bHit;
@@ -360,19 +368,15 @@ float3 Radiance(const Ray* ray, __constant char* pObj, __constant int* pIndexTab
     float3 throughput = (float3)(1.f);
     float3 rad = (float3)(0.f);
 
-    DiffuseMaterial mat;
     while(d < MAX_DEPTH)
     {
         float t = FLT_MAX;
-        int objIndex = -1;
-        DataHeader geoHead;
-        bool bHit = Intersect(pObj, pIndexTable, numObjs, &currentRay,
-            &t, &objIndex, &geoHead, false);
+        HitInfo hInfo;
+        bool bHit = Intersect(pObj, pIndexTable, numObjs, &currentRay, &t, &hInfo, false);
 
         if (bHit)
         {
-            __constant char* pCurr = pObj + objIndex;
-            mat = *(__constant DiffuseMaterial*)(pCurr + sizeof(geoHead) + geoHead.size);
+            DiffuseMaterial mat = *(__constant DiffuseMaterial*)(pObj + hInfo.matIndex);
             if (fast_length(mat.emission) > EPSILON)
             {
                 rad += mat.emission;
@@ -381,15 +385,18 @@ float3 Radiance(const Ray* ray, __constant char* pObj, __constant int* pIndexTab
 
             float3 hitP = currentRay.orig + currentRay.dir * t;
             float3 hitN;
-            if (geoHead.type == 1) // SPHERE
             {
-                Sphere sHit = *(__constant Sphere*)(pCurr + sizeof(geoHead));
-                hitN = hitP - sHit.pos;
-            }
-            else if (geoHead.type == 2) // PLANE
-            {
-                Plane plHit = *(__constant Plane*)(pCurr + sizeof(geoHead));
-                hitN = plHit.norm;
+                __constant char* pGeo = pObj + hInfo.geometryIndex;
+                if (hInfo.geometryHeader.type == 1) // SPHERE
+                {
+                    Sphere sHit = *(__constant Sphere*)(pGeo);
+                    hitN = hitP - sHit.pos;
+                }
+                else if (hInfo.geometryHeader.type == 2) // PLANE
+                {
+                    Plane plHit = *(__constant Plane*)(pGeo);
+                    hitN = plHit.norm;
+                }
             }
             hitN = normalize(hitN);
 
