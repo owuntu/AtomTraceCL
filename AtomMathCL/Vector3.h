@@ -38,21 +38,21 @@ namespace AtomMathCL
         inline const Vector3& operator+=(const float);
         inline const Vector3& operator-=(const Vector3&);
         inline const Vector3& operator-=(const float);
-        inline const Vector3& operator*=(const float);
-        inline const Vector3& operator/=(const float);
+        //inline const Vector3& operator*=(const float);
+        //inline const Vector3& operator/=(const float);
 
         inline bool operator==(const Vector3&) const;
 
-        inline void DebugPrint() const;
+        //inline void DebugPrint() const;
 
         const Vector3 operator+(const Vector3&) const;
-        const Vector3 operator+(const float) const;
+        //const Vector3 operator+(const float) const;
         const Vector3 operator-(const Vector3&) const;
-        const Vector3 operator-(const float) const;
-        const Vector3 operator-();
+        //const Vector3 operator-(const float) const;
+        const Vector3 operator-() const;
         const float operator*(const Vector3 &) const; //dot product
         const Vector3 operator*(const float) const; //scale
-        const Vector3 operator/(const float) const; //scale
+        //const Vector3 operator/(const float) const; //scale
 
         float Dot(const Vector3 &) const;
         const Vector3 Cross(const Vector3 &) const;
@@ -61,6 +61,9 @@ namespace AtomMathCL
         inline const float X() const;
         inline const float Y() const;
         inline const float Z() const;
+        inline float& X();
+        inline float& Y();
+        inline float& Z();
         inline const float& operator[](const std::size_t& index) const;
         inline       float& operator[](const std::size_t& index);
         inline void X(const float in_x);

@@ -78,6 +78,21 @@ namespace AtomMathCL
         return m_z;
     }
 
+    float& Vector3::X()
+    {
+        return m_x;
+    }
+
+    float& Vector3::Y()
+    {
+        return m_y;
+    }
+
+    float& Vector3::Z()
+    {
+        return m_z;
+    }
+
     const float& Vector3::operator[](const std::size_t& index) const
     {
         if (index >= 3)
@@ -102,6 +117,43 @@ namespace AtomMathCL
         m_y = rhs.m_y;
         m_z = rhs.m_z;
         return *this;
+    }
+
+    const Vector3& Vector3::operator += (const Vector3& rhs)
+    {
+        m_x += rhs.m_x;
+        m_y += rhs.m_y;
+        m_z += rhs.m_z;
+        return *this;
+    }
+
+    const Vector3& Vector3::operator += (const float rhs)
+    {
+        m_x += rhs;
+        m_y += rhs;
+        m_z += rhs;
+        return *this;
+    }
+
+    const Vector3& Vector3::operator -= (const Vector3& rhs)
+    {
+        m_x -= rhs.m_x;
+        m_y -= rhs.m_y;
+        m_z -= rhs.m_z;
+        return *this;
+    }
+
+    const Vector3& Vector3::operator -= (const float rhs)
+    {
+        m_x -= rhs;
+        m_y -= rhs;
+        m_z -= rhs;
+        return *this;
+    }
+
+    bool Vector3::operator==(const Vector3& rhs) const
+    {
+        return (m_x == rhs.m_x && m_y == rhs.m_y && m_z == rhs.m_z);
     }
 
     void Vector3::X(const float in_x)

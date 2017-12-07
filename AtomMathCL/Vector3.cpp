@@ -39,6 +39,15 @@ namespace AtomMathCL
         return v;
     }
 
+    const Vector3 Vector3::operator-() const
+    {
+        Vector3 res;
+        res.m_x = -m_x;
+        res.m_y = -m_y;
+        res.m_z = -m_z;
+        return res;
+    }
+
     float Vector3::Dot(const Vector3& rhs) const
     {
         return (m_x * rhs.m_x + m_y * rhs.m_y + m_z * rhs.m_z);

@@ -14,11 +14,21 @@ namespace AtomMathCL
         const Matrix3 operator+(const Matrix3& rhs) const;
         const Matrix3 operator-(const Matrix3& rhs) const;
 
+        const Vector3 operator*(const Vector3& vec) const;
+
+        const Matrix3& operator/=(const float);
+
         float& operator[](int index);
         const float operator[](int index) const;
 
         void Transpose();
         Matrix3 GetTranspose() const;
+
+        // Referencing cyCodeBase https://github.com/cemyuksel/cyCodeBase/blob/master/cyMatrix.h?ts=4
+        void Invert(); // Invert this matrix
+        void GetInverse(Matrix3 &inverse) const; // Get the inverse of this matrix
+        
+        Matrix3 GetInverse() const;
 
         void Zero();
 
