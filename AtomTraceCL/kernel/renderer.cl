@@ -390,7 +390,7 @@ float3 Radiance(const Ray* ray, __constant char* pObjs, __constant int* pIndexTa
                 if (hInfo.gtype == 1) // SPHERE
                 {
                     Sphere sHit = *(__constant Sphere*)(pGeo);
-                    hitN = hitP - sHit.pos;
+                    hitN = hitP - TransformFrom(&hInfo.transform, &sHit.pos);
                 }
                 else if (hInfo.gtype == 2) // PLANE
                 {

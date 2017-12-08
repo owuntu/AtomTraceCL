@@ -105,5 +105,8 @@
     <None Include="kernel\Transformation.hcl">
       <Filter>CL_GL\OpenCL_kernels</Filter>
     </None>
+    <None Include="kernel\Ray.hcl">
+      <Filter>CL_GL\OpenCL_kernels</Filter>
+    </None>
   </ItemGroup>
 </Project>

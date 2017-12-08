@@ -156,6 +156,7 @@
     <ClInclude Include="Utilities.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="kernel\Ray.hcl" />
     <None Include="kernel\renderer.cl" />
     <None Include="kernel\Transformation.hcl" />
   </ItemGroup>
