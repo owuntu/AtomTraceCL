@@ -119,19 +119,19 @@ namespace AtomMathCL
         //  ( 2 7 - 1 8    0 8 - 2 6    1 6 - 0 7 )  / det
         //  ( 1 5 - 2 4    2 3 - 0 5    0 4 - 1 3 ) 
 
-        inverse.m_data[0] = (m_data[4] * m_data[8] - m_data[5] * m_data[7]);
-        inverse.m_data[1] = (m_data[2] * m_data[7] - m_data[1] * m_data[8]);
-        inverse.m_data[2] = (m_data[1] * m_data[5] - m_data[2] * m_data[4]);
+        inverse[0] = (m_data[4] * m_data[8] - m_data[5] * m_data[7]);
+        inverse[1] = (m_data[2] * m_data[7] - m_data[1] * m_data[8]);
+        inverse[2] = (m_data[1] * m_data[5] - m_data[2] * m_data[4]);
 
-        inverse.m_data[3] = (m_data[5] * m_data[6] - m_data[3] * m_data[8]);
-        inverse.m_data[4] = (m_data[0] * m_data[8] - m_data[2] * m_data[6]);
-        inverse.m_data[5] = (m_data[2] * m_data[3] - m_data[0] * m_data[5]);
+        inverse[3] = (m_data[5] * m_data[6] - m_data[3] * m_data[8]);
+        inverse[4] = (m_data[0] * m_data[8] - m_data[2] * m_data[6]);
+        inverse[5] = (m_data[2] * m_data[3] - m_data[0] * m_data[5]);
 
-        inverse.m_data[6] = (m_data[3] * m_data[7] - m_data[4] * m_data[6]);
-        inverse.m_data[7] = (m_data[1] * m_data[6] - m_data[0] * m_data[7]);
-        inverse.m_data[8] = (m_data[0] * m_data[4] - m_data[1] * m_data[3]);
+        inverse[6] = (m_data[3] * m_data[7] - m_data[4] * m_data[6]);
+        inverse[7] = (m_data[1] * m_data[6] - m_data[0] * m_data[7]);
+        inverse[8] = (m_data[0] * m_data[4] - m_data[1] * m_data[3]);
 
-        float det = m_data[0] * inverse.m_data[0] + m_data[1] * inverse.m_data[3] + m_data[2] * inverse.m_data[6];
+        float det = m_data[0] * inverse[0] + m_data[1] * inverse[3] + m_data[2] * inverse[6];
         inverse /= det;
     }
 

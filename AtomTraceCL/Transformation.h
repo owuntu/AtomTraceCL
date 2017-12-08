@@ -6,6 +6,12 @@
 
 namespace AtomTraceCL
 {
+    struct TransformPackBuffer
+    {
+        float data[12];
+        AtomMathCL::Matrix3 itm;
+    };
+
     class Transformation
     {
     public:
@@ -32,6 +38,8 @@ namespace AtomTraceCL
         void Rotate(const float degree, const AtomMathCL::Vector3& axis);
 
         void Transform(const AtomMathCL::Matrix3& m);
+
+        void PackTransformation(TransformPackBuffer& buffer) const;
     };
 } // namespace AtomTraceCL
 

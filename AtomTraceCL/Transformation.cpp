@@ -1,6 +1,7 @@
 #include <cstring>
 
 // AtomMathCL
+#include "MathConstant.h"
 #include "Vector3.h"
 
 #include "Transformation.h"
@@ -41,10 +42,32 @@ namespace AtomTraceCL
         this->Transform(smat);
     }
 
+    void Transformation::Rotate(const float degree, const AtomMathCL::Vector3& axis)
+    {
+        static const float factor = M_PI_F / 180.f;
+        Matrix3 rmat;
+        rmat.SetRotation(degree * factor, axis);
+        this->Transform(rmat);
+    }
+
     void Transformation::Transform(const AtomMathCL::Matrix3& m)
     {
         mat = mat*m;
         pos = m*pos;
+    }
+
+    void Transformation::PackTransformation(TransformPackBuffer& buffer) const
+    {
+        for (int i = 0; i < 9; ++i)
+        {
+            buffer.data[i] = mat[i];
+        }
+
+        buffer.data[9] = pos.X();
+        buffer.data[10] = pos.Y();
+        buffer.data[11] = pos.Z();
+
+        mat.GetInverse(buffer.itm);
     }
 
 } // namespace AtomTraceCL

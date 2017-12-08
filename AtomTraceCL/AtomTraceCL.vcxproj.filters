@@ -56,6 +56,9 @@
     <ClCompile Include="Plane.cpp">
       <Filter>Geometry</Filter>
     </ClCompile>
+    <ClCompile Include="Transformation.cpp">
+      <Filter>Geometry</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Ray.h">
@@ -89,6 +92,9 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="Plane.h">
+      <Filter>Geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="Transformation.h">
       <Filter>Geometry</Filter>
     </ClInclude>
   </ItemGroup>

@@ -45,6 +45,7 @@ namespace AtomMathCL
 
     private:
         float m_data[9];
+        float m_padding[3]; // For OpenCL alignment
     };
 } // namespace AtomMathCL
 

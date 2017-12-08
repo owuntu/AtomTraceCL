@@ -138,6 +138,7 @@
     <ClCompile Include="RenderImage.cpp" />
     <ClCompile Include="RenderObject.cpp" />
     <ClCompile Include="Sphere.cpp" />
+    <ClCompile Include="Transformation.cpp" />
     <ClCompile Include="Utilities.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -151,6 +152,7 @@
     <ClInclude Include="RenderImage.h" />
     <ClInclude Include="RenderObject.h" />
     <ClInclude Include="Sphere.h" />
+    <ClInclude Include="Transformation.h" />
     <ClInclude Include="Utilities.h" />
   </ItemGroup>
   <ItemGroup>
