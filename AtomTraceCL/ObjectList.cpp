@@ -6,6 +6,15 @@
 
 namespace AtomTraceCL
 {
+    typedef struct
+    {
+        TransformPackBuffer transform;
+        unsigned __int32 gtype;
+        unsigned __int32 gsize;
+        unsigned __int32 geometryIndex; // Geometry index from the header
+        unsigned __int32 matIndex;
+    }ObjectHeader;
+
     const static unsigned int MAX_DATA_SIZE = 65536; // size in byte
 
     ObjectList::ObjectList() :
@@ -29,28 +38,34 @@ namespace AtomTraceCL
     bool ObjectList::AddObject(const RenderObject& obj)
     {
         char* pCurr = reinterpret_cast<char*>(m_pData) + m_size;
+        ObjectHeader header;
+        obj.PackTransformation(header.transform);
         const Geometry& geo = *obj.m_pGm;
-        unsigned __int32 gtype = geo.GetType();
-        unsigned __int32 gsize = geo.GetSize();
+        header.gtype = geo.GetType();
+        header.gsize = geo.GetSize();
 
-        unsigned __int32 inc = sizeof(gtype) + sizeof(gsize) + gsize
-                         + sizeof(obj.m_emission) + sizeof(obj.m_color);
+        unsigned __int32 inc = sizeof(header)
+                             + header.gsize // Geometry data
+                             + sizeof(obj.m_emission) + sizeof(obj.m_color); // Material data
         if (m_size + inc >= MAX_DATA_SIZE)
         {
             return false;
         }
         m_indexTable.push_back(m_size);
 
+        header.geometryIndex = m_size + sizeof(header);
+        header.matIndex = header.geometryIndex + header.gsize;
+
         m_size += inc;
         m_numObj++;
 
+        // Header
+        memcpy(pCurr, &header, sizeof(header));
+        pCurr += sizeof(header);
+
         // Geometry
-        memcpy(pCurr, &gtype, sizeof(gtype));
-        pCurr += sizeof(gtype);
-        memcpy(pCurr, &gsize, sizeof(gsize));
-        pCurr += sizeof(gsize);
-        memcpy(pCurr, geo.GetData(), gsize);
-        pCurr += gsize;
+        memcpy(pCurr, geo.GetData(), header.gsize);
+        pCurr += header.gsize;
 
         // Color, material
         std::size_t v3Size = sizeof(AtomMathCL::Vector3);

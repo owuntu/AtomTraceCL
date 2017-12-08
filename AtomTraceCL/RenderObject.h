@@ -1,13 +1,16 @@
 #ifndef ATOMTRACECL_RENDER_OBJECT_H_
 #define ATOMTRACECL_RENDER_OBJECT_H_
 
+// AtomMathCL
 #include "Vector3.h"
+
+#include "Transformation.h"
 
 namespace AtomTraceCL
 {
     class Geometry;
 
-    class RenderObject
+    class RenderObject : public Transformation
     {
     public:
         RenderObject() : m_pGm(nullptr), m_emission(0.f), m_color(0.f) {}

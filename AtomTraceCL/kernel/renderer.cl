@@ -4,17 +4,28 @@
 #define TWO_PI_F  6.28318530718f
 #define EPSILON 0.01f
 
-typedef struct
-{
-    uint type;
-    uint size;
-}DataHeader;
 
 typedef struct
 {
-    DataHeader geometryHeader;
-    uint geometryIndex;
+    float tm[12]; // Scale, Rotation, and translation
+    float itm[12]; // Only inverse matrix3 of scale and rotation.
+}Transformation;
+
+typedef struct
+{
+    Transformation transform;
+    uint gtype;
+    uint gsize;
+    uint geometryIndex; // Geometry index from start address of the scene
     uint matIndex;
+}ObjectHeader;
+
+typedef struct
+{
+    Transformation transform;
+    uint gtype;
+    uint geometryIndex; // Index from start address of the scene
+    uint matIndex; // Index from start address of the scene
 }HitInfo;
 
 typedef struct
@@ -221,31 +232,28 @@ bool IntersectP(__constant char* pObj, __constant int* pIndexTable, int numObjs,
 {
     bool bHit = false;
     float t = maxt;
+    ObjectHeader objh;
     for (int i = 0; i < numObjs; ++i)
     {
-        __constant char* pCurr = pObj + pIndexTable[i];
-        uint gtype = *((__constant uint*)pCurr);
-        pCurr += sizeof(uint);
-        uint gsize = *((__constant uint*)pCurr);
-        pCurr += sizeof(uint);
+        objh = *(__constant ObjectHeader*)(pObj + pIndexTable[i]);
 
         if (bIgnoreLight)
         {
-            DiffuseMaterial mat = *(__constant DiffuseMaterial*)(pCurr + gsize);
+            DiffuseMaterial mat = *(__constant DiffuseMaterial*)(pObj + objh.matIndex);
             if (fast_length(mat.emission) > EPSILON)
             {
                 continue;
             }
         }
 
-        if (gtype == 1) // SPHERE
+        if (objh.gtype == 1) // SPHERE
         {
-            Sphere sp = *(__constant Sphere*)pCurr;
+            Sphere sp = *(__constant Sphere*)(pObj + objh.geometryIndex);
             bHit |= IntersectSphere(&sp, pRay, &t);
         }
-        else if (gtype == 2) // PLANE
+        else if (objh.gtype == 2) // PLANE
         {
-            Plane pl = *(__constant Plane*)pCurr;
+            Plane pl = *(__constant Plane*)(pObj + objh.geometryIndex);
             bHit |= IntersectPlane(&pl, pRay, &t);
         }
     }
@@ -257,61 +265,59 @@ bool Intersect(__constant char* pObj, __constant int* pIndexTable, int numObjs, 
 {
     bool bHit = false;
     bool tHit = false;
-    DataHeader dh;
+    ObjectHeader objh;
     for (int i = 0; i < numObjs; ++i)
     {
         __constant char* pCurr = pObj + pIndexTable[i];
-        dh = *(__constant DataHeader*)pCurr;
-        pCurr += sizeof(dh);
+
+        objh = *(__constant ObjectHeader*)pCurr;
 
         if (bIgnoreLight)
         {
-            DiffuseMaterial mat = *(__constant DiffuseMaterial*)(pCurr + dh.size);
+            DiffuseMaterial mat = *(__constant DiffuseMaterial*)(pObj + objh.matIndex);
             if (fast_length(mat.emission) > EPSILON)
             {
                 continue;
             }
         }
 
-        if (dh.type == 1) // SPHERE
+        if (objh.gtype == 1) // SPHERE
         {
-            Sphere sp = *(__constant Sphere*)pCurr;
+            Sphere sp = *(__constant Sphere*)(pObj + objh.geometryIndex);
             tHit = IntersectSphere(&sp, pRay, pt);
         }
-        else if (dh.type == 2) // PLANE
+        else if (objh.gtype == 2) // PLANE
         {
-            Plane pl = *(__constant Plane*)pCurr;
+            Plane pl = *(__constant Plane*)(pObj + objh.geometryIndex);
             tHit = IntersectPlane(&pl, pRay, pt);
         }
         
         if (tHit)
         {
             bHit = true;
-            pHitInfo->geometryHeader = dh;
-            pHitInfo->geometryIndex  = pIndexTable[i] + sizeof(dh);
-            pHitInfo->matIndex       = pIndexTable[i] + sizeof(dh) + dh.size;
+            pHitInfo->transform = objh.transform;
+            pHitInfo->gtype = objh.gtype;
+            pHitInfo->geometryIndex = objh.geometryIndex;
+            pHitInfo->matIndex = objh.matIndex;
         }
     }
     return bHit;
 }
 
-void SampleLights(__constant char* pObj, __constant int* pIndexTable, int numObjs,
+void SampleLights(__constant char* pObjs, __constant int* pIndexTable, int numObjs,
                   const float3* pHitP, const float3* pN, float3* result, uint* pSeed0, uint* pSeed1)
 {
     for(int i = 0; i < numObjs; ++i)
     {
-        __constant char* pCurr = pObj + pIndexTable[i];
-        uint gtype = *((__constant uint*)pCurr);
-        pCurr += sizeof(uint);
-        uint gsize = *((__constant uint*)pCurr);
-        pCurr += sizeof(uint);
-        DiffuseMaterial mat = *(__constant DiffuseMaterial*)(pCurr + gsize);
+        ObjectHeader objh = *(__constant ObjectHeader*)(pObjs + pIndexTable[i]);
+
+        DiffuseMaterial mat = *(__constant DiffuseMaterial*)(pObjs + objh.matIndex);
         if (fast_length(mat.emission) > 0.1f)
         {
             float3 sampP = (float3)(0.f);
-            if (gtype == 1) // SPHERE
+            if (objh.gtype == 1) // SPHERE
             {
-                Sphere splight = *(__constant Sphere*)pCurr;
+                Sphere splight = *(__constant Sphere*)(pObjs + objh.geometryIndex);
 
                 // Sample a point on the surface that is facing the shading object.
                 float u1 = GetRandom01(pSeed0, pSeed1);
@@ -349,7 +355,7 @@ void SampleLights(__constant char* pObj, __constant int* pIndexTable, int numObj
             shadowRay.dir = normalize(shadowRay.dir);
             float dnd = dot(*pN, shadowRay.dir);
             shadowRay.orig += shadowRay.dir * EPSILON * dnd;
-            if (!IntersectP(pObj, pIndexTable, numObjs, &shadowRay, len, true))
+            if (!IntersectP(pObjs, pIndexTable, numObjs, &shadowRay, len, true))
             {
                 // add light contribution
                 *result += mat.emission * max(0.0f, dnd);
@@ -359,7 +365,7 @@ void SampleLights(__constant char* pObj, __constant int* pIndexTable, int numObj
 
 }
 
-float3 Radiance(const Ray* ray, __constant char* pObj, __constant int* pIndexTable, int numObjs, uint* pSeed0, uint* pSeed1)
+float3 Radiance(const Ray* ray, __constant char* pObjs, __constant int* pIndexTable, int numObjs, uint* pSeed0, uint* pSeed1)
 {
     Ray currentRay;
     currentRay.orig = ray->orig;
@@ -372,11 +378,11 @@ float3 Radiance(const Ray* ray, __constant char* pObj, __constant int* pIndexTab
     {
         float t = FLT_MAX;
         HitInfo hInfo;
-        bool bHit = Intersect(pObj, pIndexTable, numObjs, &currentRay, &t, &hInfo, false);
+        bool bHit = Intersect(pObjs, pIndexTable, numObjs, &currentRay, &t, &hInfo, false);
 
         if (bHit)
         {
-            DiffuseMaterial mat = *(__constant DiffuseMaterial*)(pObj + hInfo.matIndex);
+            DiffuseMaterial mat = *(__constant DiffuseMaterial*)(pObjs + hInfo.matIndex);
             if (fast_length(mat.emission) > EPSILON)
             {
                 rad += mat.emission;
@@ -386,13 +392,13 @@ float3 Radiance(const Ray* ray, __constant char* pObj, __constant int* pIndexTab
             float3 hitP = currentRay.orig + currentRay.dir * t;
             float3 hitN;
             {
-                __constant char* pGeo = pObj + hInfo.geometryIndex;
-                if (hInfo.geometryHeader.type == 1) // SPHERE
+                __constant char* pGeo = pObjs + hInfo.geometryIndex;
+                if (hInfo.gtype == 1) // SPHERE
                 {
                     Sphere sHit = *(__constant Sphere*)(pGeo);
                     hitN = hitP - sHit.pos;
                 }
-                else if (hInfo.geometryHeader.type == 2) // PLANE
+                else if (hInfo.gtype == 2) // PLANE
                 {
                     Plane plHit = *(__constant Plane*)(pGeo);
                     hitN = plHit.norm;
@@ -402,7 +408,7 @@ float3 Radiance(const Ray* ray, __constant char* pObj, __constant int* pIndexTab
 
             // Direct illumination
             float3 Ld = (float3)(0.f);
-            SampleLights(pObj, pIndexTable, numObjs, &hitP, &hitN, &Ld, pSeed0, pSeed1);
+            SampleLights(pObjs, pIndexTable, numObjs, &hitP, &hitN, &Ld, pSeed0, pSeed1);
             throughput *= mat.color;
             Ld *= throughput;
             rad += Ld;
