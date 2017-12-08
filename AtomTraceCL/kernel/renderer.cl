@@ -4,6 +4,7 @@
 #define TWO_PI_F  6.28318530718f
 #define EPSILON 0.01f
 
+#include "Ray.hcl"
 #include "Transformation.hcl"
 
 typedef struct
@@ -22,12 +23,6 @@ typedef struct
     uint geometryIndex; // Index from start address of the scene
     uint matIndex; // Index from start address of the scene
 }HitInfo;
-
-typedef struct
-{
-    float3 orig;
-    float3 dir;
-}Ray;
 
 // --- Geometries ----
 typedef struct
@@ -241,15 +236,17 @@ bool IntersectP(__constant char* pObj, __constant int* pIndexTable, int numObjs,
             }
         }
 
+        Ray ray = RayTransformTo(&objh.transform, pRay);
+
         if (objh.gtype == 1) // SPHERE
         {
             Sphere sp = *(__constant Sphere*)(pObj + objh.geometryIndex);
-            bHit |= IntersectSphere(&sp, pRay, &t);
+            bHit |= IntersectSphere(&sp, &ray, &t);
         }
         else if (objh.gtype == 2) // PLANE
         {
             Plane pl = *(__constant Plane*)(pObj + objh.geometryIndex);
-            bHit |= IntersectPlane(&pl, pRay, &t);
+            bHit |= IntersectPlane(&pl, &ray, &t);
         }
     }
     return bHit;
@@ -276,15 +273,17 @@ bool Intersect(__constant char* pObj, __constant int* pIndexTable, int numObjs, 
             }
         }
 
+        Ray ray = RayTransformTo(&objh.transform, pRay);
+
         if (objh.gtype == 1) // SPHERE
         {
             Sphere sp = *(__constant Sphere*)(pObj + objh.geometryIndex);
-            tHit = IntersectSphere(&sp, pRay, pt);
+            tHit = IntersectSphere(&sp, &ray, pt);
         }
         else if (objh.gtype == 2) // PLANE
         {
             Plane pl = *(__constant Plane*)(pObj + objh.geometryIndex);
-            tHit = IntersectPlane(&pl, pRay, pt);
+            tHit = IntersectPlane(&pl, &ray, pt);
         }
         
         if (tHit)

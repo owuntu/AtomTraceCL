@@ -141,9 +141,10 @@ int main(int argc, char** argv)
         }
 
         {
-            Sphere s0(0.2f, AtomMathCL::Vector3(-0.3f, 0.22f, -2.0f));
+            Sphere s0(0.2f, AtomMathCL::Vector3::ZERO);
             RenderObject obj;
             obj.SetGeometry(&s0);
+            obj.Translate(0.3f, -0.22f, 2.0f);
             obj.m_color = (AtomMathCL::Vector3(0.75f, 0.25f, 0.25f));
             oList.AddObject(obj);
         }
