@@ -4,12 +4,7 @@
 #define TWO_PI_F  6.28318530718f
 #define EPSILON 0.01f
 
-
-typedef struct
-{
-    float tm[12]; // Scale, Rotation, and translation
-    float itm[12]; // Only inverse matrix3 of scale and rotation.
-}Transformation;
+#include "Transformation.hcl"
 
 typedef struct
 {

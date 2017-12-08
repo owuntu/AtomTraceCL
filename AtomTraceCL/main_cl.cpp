@@ -95,7 +95,7 @@ int main(int argc, char** argv)
     CheckError(error, "Create program");
 
     // Compile the kernel code (after this we could extract the compiled version)
-    error = program.build({device});
+    error = program.build({device}, "-I kernel");
     if (!CheckError(error, "Build program"))
     {
         char* msg = nullptr;
