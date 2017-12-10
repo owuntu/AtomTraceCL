@@ -64,8 +64,11 @@ namespace AtomTraceCL
         pCurr += sizeof(header);
 
         // Geometry
-        memcpy(pCurr, geo.GetData(), header.gsize);
-        pCurr += header.gsize;
+        if (0 != header.gsize)
+        {
+            memcpy(pCurr, geo.GetData(), header.gsize);
+            pCurr += header.gsize;
+        }
 
         // Color, material
         std::size_t v3Size = sizeof(AtomMathCL::Vector3);

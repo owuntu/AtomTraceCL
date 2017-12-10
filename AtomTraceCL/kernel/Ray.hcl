@@ -13,7 +13,8 @@ Ray RayTransformTo(const Transformation* pTf, const Ray* iray)
 {
     Ray ray;
     ray.orig = TransformTo(pTf, &iray->orig);
-    ray.dir = VectorTransformTo(pTf, &iray->dir);
+    float3 ldest = iray->orig + iray->dir;
+    ray.dir = (TransformTo(pTf, &(ldest)) - ray.orig);
     return ray;
 }
 

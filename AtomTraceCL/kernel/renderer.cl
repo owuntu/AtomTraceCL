@@ -33,12 +33,6 @@ typedef struct
 // --- Geometries ----
 typedef struct
 {
-    float radius;
-    float3 pos;
-}Sphere;
-
-typedef struct
-{
     float3 pos;
     float3 norm;
 }Plane;
@@ -157,7 +151,7 @@ Ray CastCamRay(int px, int py, __constant Camera* cam, const uint npp)
     return ray;
 }
 
-bool IntersectSphere(const Sphere* obj, const Ray* ray, float* t)
+bool IntersectSphere(const Ray* ray, float* t)
 {
     float a = dot(ray->dir, ray->dir);
     float b = 2.f * dot(ray->orig, ray->dir);
@@ -240,8 +234,7 @@ bool IntersectP(__constant char* pObj, __constant int* pIndexTable, int numObjs,
 
         if (objh.gtype == 1) // SPHERE
         {
-            Sphere sp = *(__constant Sphere*)(pObj + objh.geometryIndex);
-            bHit |= IntersectSphere(&sp, &ray, &t);
+            bHit |= IntersectSphere(&ray, &t);
         }
         else if (objh.gtype == 2) // PLANE
         {
@@ -280,8 +273,7 @@ bool Intersect(__constant char* pObj, __constant int* pIndexTable, int numObjs, 
 
         if (objh.gtype == 1) // SPHERE
         {
-            Sphere sp = *(__constant Sphere*)(pObj + objh.geometryIndex);
-            tHit = IntersectSphere(&sp, &ray, &t);
+            tHit = IntersectSphere(&ray, &t);
 
             hitP = ray.orig + ray.dir * t;
             hitN = normalize(hitP);
@@ -326,8 +318,6 @@ void SampleLights(__constant char* pObjs, __constant int* pIndexTable, int numOb
             float3 sampP = (float3)(0.f);
             if (objh.gtype == 1) // SPHERE
             {
-                Sphere splight = *(__constant Sphere*)(pObjs + objh.geometryIndex);
-
                 // Sample a point on the surface that is facing the shading object.
                 float u1 = GetRandom01(pSeed0, pSeed1);
                 float u2 = GetRandom01(pSeed0, pSeed1);
