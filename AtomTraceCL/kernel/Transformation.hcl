@@ -67,7 +67,7 @@ float3 VectorTransformTo(const Transformation* pTf, const float3* pDir)
     return TransposeMul(pTf->tm, pDir);
 }
 
-float3 VectorTransfromFrom(const Transformation* pTf, const float3* pDir)
+float3 VectorTransformFrom(const Transformation* pTf, const float3* pDir)
 {
     return TransposeMul(pTf->itm, pDir);
 }

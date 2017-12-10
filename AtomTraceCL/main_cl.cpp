@@ -133,22 +133,24 @@ int main(int argc, char** argv)
     {
         // light
         {
-            Sphere s0(0.05f, AtomMathCL::Vector3(0.0f, -0.6f, -1.5f));
+            //Sphere s0(0.05f, AtomMathCL::Vector3(0.0f, -2.5f, 0.f));
+            Sphere s0;
             RenderObject obj;
             obj.SetGeometry(&s0);
+            obj.Scale(0.5f, 0.05f, 0.01f);
+            obj.Translate(0.0f, -0.65f, -1.5f);
             obj.m_emission = AtomMathCL::Vector3(.5f);
             oList.AddObject(obj);
         }
-
         {
-            Sphere s0(0.2f, AtomMathCL::Vector3::ZERO);
+            Sphere s0;
             RenderObject obj;
             obj.SetGeometry(&s0);
-            obj.Translate(0.3f, -0.22f, 2.0f);
+            obj.Scale(0.3f);
+            obj.Translate(-0.3f, 0.22f, -2.0f);
             obj.m_color = (AtomMathCL::Vector3(0.75f, 0.25f, 0.25f));
             oList.AddObject(obj);
         }
-
         // back
         {
             Plane pl0(AtomMathCL::Vector3(0.f, 0.f, -2.5f), AtomMathCL::Vector3::UNIT_Z);

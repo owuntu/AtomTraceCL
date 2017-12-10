@@ -24,6 +24,12 @@ typedef struct
     uint matIndex; // Index from start address of the scene
 }HitInfo;
 
+typedef struct
+{
+    float3 hitP;
+    float3 hitN;
+}HitInfoGeo; // Work around for an LLVM error. These two should be put into HitInfo
+
 // --- Geometries ----
 typedef struct
 {
@@ -48,8 +54,7 @@ typedef struct
 /* This is a description of a RenderObject that store into the scene
 struct
 {
-    uint gtype;
-    uint gsize;
+    ObjectHeader header;
     struct
     {
         geometry data
@@ -131,8 +136,7 @@ void SampleHemiSphere(float u1, float u2, const float3* pN, float3* p)
     //float theta = HALF_PI_F * u1;
     float phi = TWO_PI_F * u2;
     float r = sin(theta);
-    float3 dir = *pN * cos(theta) + ax * r * cos(phi) + ay * r * sin(phi);
-    *p = normalize(dir);
+    *p = *pN * cos(theta) + ax * r * cos(phi) + ay * r * sin(phi);
 }
 
 // fov is the vertial fov angle
@@ -148,44 +152,40 @@ Ray CastCamRay(int px, int py, __constant Camera* cam, const uint npp)
 
     Ray ray;
     ray.dir = tar - orig;
-    ray.dir = normalize(ray.dir);
+    //ray.dir = normalize(ray.dir);
     ray.orig = orig;
     return ray;
 }
 
 bool IntersectSphere(const Sphere* obj, const Ray* ray, float* t)
 {
-    bool res = false;
-    float3 po = obj->pos - ray->orig;
-    float b = dot(po, ray->dir);
-    float det = b*b - dot(po, po) + obj->radius * obj->radius;
-    if (det < 0.0f)
-    {
-        return false;
-    }
-    else
-    {
-        float eps = 1e-4;
-        float lt = *t;
-        det = sqrt(det);
-        lt = b - det;
-        if (lt <= eps)
-        {
-            lt = b + det;
-            if (lt <= eps)
-            {
-                lt = 0.0;
-                return false;
-            }
-        }
+    float a = dot(ray->dir, ray->dir);
+    float b = 2.f * dot(ray->orig, ray->dir);
+    float c = dot(ray->orig, ray->orig) - 1.0f;
 
-        if (lt < *t)
-        {
-            *t = lt;
-            res = true;
-        }
+    float h = b*b - 4.0f * a * c;
+    if (h<0) return false;
+
+    a = 0.5f / a;
+    b = -b * a;
+    h = sqrt(h) * a;
+    float t1 = b - h;
+    float t2 = b + h;
+
+    if (t1 < 0.0f && t2 < 0.0f)
+        return false;
+
+    float tz;
+    if (t1 >= 0.0f)
+        tz = t1;
+    else tz = t2;
+
+    if (tz < *t) {
+        *t = tz;
+        return true;
     }
-    return res;
+
+    return false;
 }
 
 bool IntersectPlane(const Plane* pOBJ, const Ray* pRAY, float* pt)
@@ -253,11 +253,14 @@ bool IntersectP(__constant char* pObj, __constant int* pIndexTable, int numObjs,
 }
 
 bool Intersect(__constant char* pObj, __constant int* pIndexTable, int numObjs, const Ray* pRay,
-               float* pt, HitInfo* pHitInfo, bool bIgnoreLight)
+               HitInfo* pHitInfo, HitInfoGeo* pHitInfoGeo, bool bIgnoreLight)
 {
     bool bHit = false;
     bool tHit = false;
     ObjectHeader objh;
+    float t = FLT_MAX;
+    float3 hitP;
+    float3 hitN;
     for (int i = 0; i < numObjs; ++i)
     {
         __constant char* pCurr = pObj + pIndexTable[i];
@@ -278,12 +281,22 @@ bool Intersect(__constant char* pObj, __constant int* pIndexTable, int numObjs, 
         if (objh.gtype == 1) // SPHERE
         {
             Sphere sp = *(__constant Sphere*)(pObj + objh.geometryIndex);
-            tHit = IntersectSphere(&sp, &ray, pt);
+            tHit = IntersectSphere(&sp, &ray, &t);
+
+            hitP = ray.orig + ray.dir * t;
+            hitN = normalize(hitP);
+
+            hitP = TransformFrom(&objh.transform, &hitP);
+            hitN = normalize(VectorTransformFrom(&objh.transform, &hitN));
         }
         else if (objh.gtype == 2) // PLANE
         {
             Plane pl = *(__constant Plane*)(pObj + objh.geometryIndex);
-            tHit = IntersectPlane(&pl, &ray, pt);
+            tHit = IntersectPlane(&pl, &ray, &t);
+
+            hitP = ray.orig + ray.dir * t;
+            hitP = TransformFrom(&objh.transform, &hitP);
+            hitN = normalize(pl.norm);
         }
         
         if (tHit)
@@ -293,6 +306,8 @@ bool Intersect(__constant char* pObj, __constant int* pIndexTable, int numObjs, 
             pHitInfo->gtype = objh.gtype;
             pHitInfo->geometryIndex = objh.geometryIndex;
             pHitInfo->matIndex = objh.matIndex;
+            pHitInfoGeo->hitP = hitP;
+            pHitInfoGeo->hitN = hitN;
         }
     }
     return bHit;
@@ -317,8 +332,8 @@ void SampleLights(__constant char* pObjs, __constant int* pIndexTable, int numOb
                 float u1 = GetRandom01(pSeed0, pSeed1);
                 float u2 = GetRandom01(pSeed0, pSeed1);
 
-                float3 az = *pHitP - splight.pos;
-                float maxTheta = acos(splight.radius / length(az));
+                float3 az = TransformTo(&objh.transform, pHitP);
+                float maxTheta = acos(1.0f / length(az));
                 az = normalize(az);
 
                 float3 ax = UNIT_X;
@@ -328,12 +343,15 @@ void SampleLights(__constant char* pObjs, __constant int* pIndexTable, int numOb
                 }
                 float3 ay = cross(az, ax);
                 ax = cross(ay, az);
+                ax = normalize(ax);
+                ay = normalize(ay);
 
                 float theta = maxTheta * u1;
                 float phi = TWO_PI_F * u2;
                 float r = sin(theta);
                 sampP = ax * r * cos(phi) + ay * r * sin(phi) + az * cos(theta);
-                sampP = splight.pos + normalize(sampP) * splight.radius;
+                //sampP = normalize(sampP);
+                sampP = TransformFrom(&objh.transform, &sampP);
             }
             else
             {
@@ -345,11 +363,10 @@ void SampleLights(__constant char* pObjs, __constant int* pIndexTable, int numOb
             Ray shadowRay;
             shadowRay.orig = *pHitP;
             shadowRay.dir = sampP - shadowRay.orig;
-            float len = length(shadowRay.dir);
-            shadowRay.dir = normalize(shadowRay.dir);
-            float dnd = dot(*pN, shadowRay.dir);
-            shadowRay.orig += shadowRay.dir * EPSILON * dnd;
-            if (!IntersectP(pObjs, pIndexTable, numObjs, &shadowRay, len, true))
+            float3 nd = normalize(shadowRay.dir);
+            float dnd = dot(*pN, nd);
+            shadowRay.orig += nd * EPSILON * dnd;
+            if (!IntersectP(pObjs, pIndexTable, numObjs, &shadowRay, 1.0f-EPSILON, true))
             {
                 // add light contribution
                 *result += mat.emission * max(0.0f, dnd);
@@ -372,7 +389,8 @@ float3 Radiance(const Ray* ray, __constant char* pObjs, __constant int* pIndexTa
     {
         float t = FLT_MAX;
         HitInfo hInfo;
-        bool bHit = Intersect(pObjs, pIndexTable, numObjs, &currentRay, &t, &hInfo, false);
+        HitInfoGeo hInfoGeo;
+        bool bHit = Intersect(pObjs, pIndexTable, numObjs, &currentRay, &hInfo, &hInfoGeo, false);
 
         if (bHit)
         {
@@ -383,22 +401,14 @@ float3 Radiance(const Ray* ray, __constant char* pObjs, __constant int* pIndexTa
                 break;
             }
 
-            float3 hitP = currentRay.orig + currentRay.dir * t;
-            float3 hitN;
+            float3 hitP = hInfoGeo.hitP;
+            float3 hitN = hInfoGeo.hitN;
+
+            // Ignore backface hit
+            if (dot(hitN, currentRay.dir) > 0.f)
             {
-                __constant char* pGeo = pObjs + hInfo.geometryIndex;
-                if (hInfo.gtype == 1) // SPHERE
-                {
-                    Sphere sHit = *(__constant Sphere*)(pGeo);
-                    hitN = hitP - TransformFrom(&hInfo.transform, &sHit.pos);
-                }
-                else if (hInfo.gtype == 2) // PLANE
-                {
-                    Plane plHit = *(__constant Plane*)(pGeo);
-                    hitN = plHit.norm;
-                }
+                break;
             }
-            hitN = normalize(hitN);
 
             // Direct illumination
             float3 Ld = (float3)(0.f);

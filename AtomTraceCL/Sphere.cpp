@@ -7,7 +7,7 @@ namespace AtomTraceCL
 
     Sphere::Sphere() :
         m_orig(Vector3::ZERO),
-        m_radius(0.0f)
+        m_radius(1.0f)
     {
     }
 
