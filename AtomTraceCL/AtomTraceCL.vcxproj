@@ -129,7 +129,7 @@
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="CLResourceManager.cpp" />
     <ClCompile Include="DiffuseMaterial.cpp" />
-    <ClCompile Include="main_cl.cpp">
+    <ClCompile Include="main.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>
