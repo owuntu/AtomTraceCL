@@ -11,7 +11,7 @@ namespace AtomTraceCL
         return (sizeof(Plane) - sizeof(Geometry));
     }
 
-    unsigned __int32 Plane::GetType() const
+    __int32 Plane::GetType() const
     {
         return PLANE;
     }

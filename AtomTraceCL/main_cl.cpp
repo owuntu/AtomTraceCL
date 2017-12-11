@@ -16,6 +16,7 @@
 #include "Sphere.h"
 #include "Plane.h"
 #include "DiffuseMaterial.h"
+#include "Light.h"
 #include "ObjectList.h"
 #include "Utilities.h"
 
@@ -141,9 +142,9 @@ int main(int argc, char** argv)
             obj.Scale(0.5f, 0.05f, 0.01f);
             obj.Translate(0.0f, -0.65f, -1.5f);
 
-            DiffuseMaterial m0;
-            m0.SetEmission(AtomMathCL::Vector3(1.f));
-            obj.SetMaterial(&m0);
+            Light l0;
+            l0.SetEmission(AtomMathCL::Vector3(1.f));
+            obj.SetMaterial(&l0);
 
             oList.AddObject(obj);
         }

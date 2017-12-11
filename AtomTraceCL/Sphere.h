@@ -12,7 +12,7 @@ namespace AtomTraceCL
         Sphere();
 
         unsigned __int32 GetSize() const;
-        unsigned __int32 GetType() const;
+        __int32 GetType() const;
         const void* GetData() const;
     };
 

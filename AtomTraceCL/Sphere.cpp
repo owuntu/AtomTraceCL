@@ -14,7 +14,7 @@ namespace AtomTraceCL
         return sizeof(Sphere) - sizeof(Geometry);
     }
 
-    unsigned __int32 Sphere::GetType() const
+    __int32 Sphere::GetType() const
     {
         return SPHERE;
     }

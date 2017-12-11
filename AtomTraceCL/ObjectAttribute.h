@@ -6,7 +6,7 @@ namespace AtomTraceCL
     class ObjectAttribute
     {
     public:
-        virtual unsigned __int32 GetType() const = 0;
+        virtual __int32 GetType() const = 0;
         virtual unsigned __int32 GetSize() const = 0;
         virtual const void* GetData() const = 0;
 #if 0

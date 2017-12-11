@@ -10,10 +10,10 @@ namespace AtomTraceCL
     typedef struct
     {
         TransformPackBuffer transform;
-        unsigned __int32 gtype;
+                 __int32 gtype;
         unsigned __int32 gsize;
         unsigned __int32 geometryIndex; // Geometry index from the header
-        unsigned __int32 matType;
+                 __int32 matType;
         unsigned __int32 matSize;
         unsigned __int32 matIndex;
     }ObjectHeader;

@@ -115,6 +115,9 @@
     <ClInclude Include="DiffuseMaterial.h">
       <Filter>Materials</Filter>
     </ClInclude>
+    <ClInclude Include="Light.h">
+      <Filter>Materials</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="kernel\renderer.cl">

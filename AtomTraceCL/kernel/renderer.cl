@@ -10,21 +10,13 @@
 typedef struct
 {
     Transformation transform;
-    uint gtype;
+    int  gtype;
     uint gsize;
     uint geometryIndex; // Geometry index from start address of the scene
-    uint matType;  // Material information
+    int  matType;  // Material information
     uint matSize;
     uint matIndex;
 }ObjectHeader;
-
-typedef struct
-{
-    Transformation transform;
-    uint gtype;
-    uint geometryIndex; // Index from start address of the scene
-    uint matIndex; // Index from start address of the scene
-}HitInfo;
 
 typedef struct
 {
@@ -40,8 +32,12 @@ typedef struct
 typedef struct
 {
     float3 color;
-    float3 emission;
 }DiffuseMaterial;
+
+typedef struct
+{
+    float3 emission;
+}Light;
 
 /* This is a description of a RenderObject that store into the scene
 struct
@@ -229,13 +225,9 @@ bool IntersectP(__constant char* pObj, __constant int* pIndexTable, int numObjs,
     {
         objh = *(__constant ObjectHeader*)(pObj + pIndexTable[i]);
 
-        if (bIgnoreLight)
+        if (bIgnoreLight && objh.matType == 0) // light type
         {
-            DiffuseMaterial mat = *(__constant DiffuseMaterial*)(pObj + objh.matIndex);
-            if (fast_length(mat.emission) > EPSILON)
-            {
-                continue;
-            }
+            continue;
         }
 
         Ray ray = RayTransformTo(&objh.transform, pRay);
@@ -253,7 +245,7 @@ bool IntersectP(__constant char* pObj, __constant int* pIndexTable, int numObjs,
 }
 
 bool Intersect(__constant char* pObj, __constant int* pIndexTable, int numObjs, const Ray* pRay,
-               HitInfo* pHitInfo, HitInfoGeo* pHitInfoGeo, bool bIgnoreLight)
+               ObjectHeader* pObjHead, HitInfoGeo* pHitInfoGeo, bool bIgnoreLight)
 {
     bool bHit = false;
     bool tHit = false;
@@ -267,13 +259,9 @@ bool Intersect(__constant char* pObj, __constant int* pIndexTable, int numObjs, 
 
         objh = *(__constant ObjectHeader*)pCurr;
 
-        if (bIgnoreLight)
+        if (bIgnoreLight && objh.matType == 0) // light type
         {
-            DiffuseMaterial mat = *(__constant DiffuseMaterial*)(pObj + objh.matIndex);
-            if (fast_length(mat.emission) > EPSILON)
-            {
-                continue;
-            }
+            continue;
         }
 
         Ray ray = RayTransformTo(&objh.transform, pRay);
@@ -295,17 +283,15 @@ bool Intersect(__constant char* pObj, __constant int* pIndexTable, int numObjs, 
             hitP = ray.orig + ray.dir * t;
             hitP = TransformFrom(&objh.transform, &hitP);
 
-            float3 unitY = (float3)(0.f, 1.f, 0.f);
-            hitN = normalize(VectorTransformFrom(&objh.transform, &unitY));
+            float3 uy = (float3)(0.f, 1.f, 0.f);
+            hitN = normalize(VectorTransformFrom(&objh.transform, &uy));
         }
         
         if (tHit)
         {
             bHit = true;
-            pHitInfo->transform = objh.transform;
-            pHitInfo->gtype = objh.gtype;
-            pHitInfo->geometryIndex = objh.geometryIndex;
-            pHitInfo->matIndex = objh.matIndex;
+            *pObjHead = objh;
+
             pHitInfoGeo->hitP = hitP;
             pHitInfoGeo->hitN = hitN;
         }
@@ -320,9 +306,9 @@ void SampleLights(__constant char* pObjs, __constant int* pIndexTable, int numOb
     {
         ObjectHeader objh = *(__constant ObjectHeader*)(pObjs + pIndexTable[i]);
 
-        DiffuseMaterial mat = *(__constant DiffuseMaterial*)(pObjs + objh.matIndex);
-        if (fast_length(mat.emission) > 0.1f)
+        if (objh.matType == 0) // light type
         {
+            DiffuseMaterial light = *(__constant DiffuseMaterial*)(pObjs + objh.matIndex);
             float3 sampP = (float3)(0.f);
             if (objh.gtype == 1) // SPHERE
             {
@@ -367,7 +353,7 @@ void SampleLights(__constant char* pObjs, __constant int* pIndexTable, int numOb
             if (!IntersectP(pObjs, pIndexTable, numObjs, &shadowRay, 1.0f-EPSILON, true))
             {
                 // add light contribution
-                *result += mat.emission * max(0.0f, dnd);
+                *result += light.color * max(0.0f, dnd);
             }            
         }
     }
@@ -382,20 +368,20 @@ float3 Radiance(const Ray* ray, __constant char* pObjs, __constant int* pIndexTa
     int d = 0;
     float3 throughput = (float3)(1.f);
     float3 rad = (float3)(0.f);
-
+    DiffuseMaterial mat;
     while(d < MAX_DEPTH)
     {
         float t = FLT_MAX;
-        HitInfo hInfo;
+        ObjectHeader hInfo;
         HitInfoGeo hInfoGeo;
         bool bHit = Intersect(pObjs, pIndexTable, numObjs, &currentRay, &hInfo, &hInfoGeo, false);
 
         if (bHit)
         {
-            DiffuseMaterial mat = *(__constant DiffuseMaterial*)(pObjs + hInfo.matIndex);
-            if (fast_length(mat.emission) > EPSILON)
+            mat = *(__constant DiffuseMaterial*)(pObjs + hInfo.matIndex);
+            if (hInfo.matType == 0) // light
             {
-                rad += mat.emission;
+                rad += mat.color;
                 break;
             }
 

@@ -12,18 +12,16 @@ namespace AtomTraceCL
     {
     public:
         DiffuseMaterial();
-        DiffuseMaterial(const AtomMathCL::Vector3& color, const AtomMathCL::Vector3& emission);
+        DiffuseMaterial(const AtomMathCL::Vector3& color);
 
-        unsigned __int32 GetType() const;
+        __int32 GetType() const;
         unsigned __int32 GetSize() const;
         const void* GetData() const;
 
         void SetColor(const AtomMathCL::Vector3& color);
-        void SetEmission(const AtomMathCL::Vector3& emission);
 
     private:
         AtomMathCL::Vector3 m_color;
-        AtomMathCL::Vector3 m_emission;
     };
 } // namespace AtomTraceCL
 

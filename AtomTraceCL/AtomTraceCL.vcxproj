@@ -148,6 +148,7 @@
     <ClInclude Include="CLResourceManager.h" />
     <ClInclude Include="DiffuseMaterial.h" />
     <ClInclude Include="Geometry.h" />
+    <ClInclude Include="Light.h" />
     <ClInclude Include="Material.h" />
     <ClInclude Include="ObjectAttribute.h" />
     <ClInclude Include="ObjectList.h" />

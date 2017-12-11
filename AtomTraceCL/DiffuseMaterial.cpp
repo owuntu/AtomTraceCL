@@ -3,16 +3,14 @@
 namespace AtomTraceCL
 {
     DiffuseMaterial::DiffuseMaterial() :
-        m_color(AtomMathCL::Vector3::ZERO),
-        m_emission(AtomMathCL::Vector3::ZERO)
+        m_color(AtomMathCL::Vector3::ZERO)
     {}
 
-    DiffuseMaterial::DiffuseMaterial(const AtomMathCL::Vector3& color, const AtomMathCL::Vector3& emission):
-        m_color(color),
-        m_emission(emission)
+    DiffuseMaterial::DiffuseMaterial(const AtomMathCL::Vector3& color) :
+        m_color(color)
     {}
 
-    unsigned __int32 DiffuseMaterial::GetType() const
+    __int32 DiffuseMaterial::GetType() const
     {
         return DIFFUSE;
     }
@@ -30,11 +28,6 @@ namespace AtomTraceCL
     void DiffuseMaterial::SetColor(const AtomMathCL::Vector3& color)
     {
         m_color = color;
-    }
-
-    void DiffuseMaterial::SetEmission(const AtomMathCL::Vector3& emission)
-    {
-        m_emission = emission;
     }
 
 } // namespace AtomTraceCL
