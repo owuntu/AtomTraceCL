@@ -21,6 +21,12 @@
     <Filter Include="CL_GL\OpenCL_kernels">
       <UniqueIdentifier>{167243b5-2511-47c4-813e-6442e1e6e637}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Core">
+      <UniqueIdentifier>{433a78a9-3520-49b8-bb49-01b382dd3294}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Materials">
+      <UniqueIdentifier>{fff799fe-5311-46b5-9f21-b5fc9ca26868}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Utilities.cpp">
@@ -59,6 +65,9 @@
     <ClCompile Include="Transformation.cpp">
       <Filter>Geometry</Filter>
     </ClCompile>
+    <ClCompile Include="DiffuseMaterial.cpp">
+      <Filter>Materials</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Ray.h">
@@ -96,6 +105,15 @@
     </ClInclude>
     <ClInclude Include="Transformation.h">
       <Filter>Geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="Material.h">
+      <Filter>Materials</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjectAttribute.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="DiffuseMaterial.h">
+      <Filter>Materials</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

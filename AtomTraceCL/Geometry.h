@@ -1,6 +1,8 @@
 #ifndef ATOMTRACECL_GEOMETRY_H_
 #define ATOMTRACECL_GEOMETRY_H_
 
+#include "ObjectAttribute.h"
+
 namespace AtomTraceCL
 {
     enum GeometryType
@@ -9,20 +11,8 @@ namespace AtomTraceCL
         PLANE = 2,
         TRIANGLES = 3
     };
-    class Geometry
+    class Geometry : public ObjectAttribute
     {
-    public:
-        virtual unsigned __int32 GetSize() const = 0;
-        virtual GeometryType GetType() const = 0;
-        virtual const void* GetData() const = 0;
-#if 0
-        virtual void* GetData()
-        {
-            return const_cast<void*>(
-                        reinterpret_cast<const Geometry*>(this)->GetData()
-                   );
-        }
-#endif
     };
 
 } // namespace AtomTraceCL
