@@ -3,14 +3,7 @@
 using namespace AtomMathCL;
 namespace AtomTraceCL
 {
-    Plane::Plane() :
-        m_pos(Vector3::ZERO),
-        m_normal(Vector3::UNIT_Y)
-    {}
-
-    Plane::Plane(const AtomMathCL::Vector3& ipos, const AtomMathCL::Vector3& inorm) :
-        m_pos(ipos),
-        m_normal(inorm)
+    Plane::Plane()
     {}
 
     unsigned __int32 Plane::GetSize() const
@@ -25,7 +18,7 @@ namespace AtomTraceCL
 
     const void* Plane::GetData() const
     {
-        return &m_pos;
+        return this;
     }
 
 } // namespace AtomTraceCL

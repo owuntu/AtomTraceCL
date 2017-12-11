@@ -131,19 +131,18 @@ int main(int argc, char** argv)
     ObjectList oList;
     // Load scene
     {
+        Plane pl0;
+        Sphere s0;
         // light
         {
-            //Sphere s0(0.05f, AtomMathCL::Vector3(0.0f, -2.5f, 0.f));
-            Sphere s0;
             RenderObject obj;
             obj.SetGeometry(&s0);
             obj.Scale(0.5f, 0.05f, 0.01f);
             obj.Translate(0.0f, -0.65f, -1.5f);
-            obj.m_emission = AtomMathCL::Vector3(.5f);
+            obj.m_emission = AtomMathCL::Vector3(1.f);
             oList.AddObject(obj);
         }
         {
-            Sphere s0;
             RenderObject obj;
             obj.SetGeometry(&s0);
             obj.Scale(0.3f);
@@ -153,45 +152,54 @@ int main(int argc, char** argv)
         }
         // back
         {
-            Plane pl0(AtomMathCL::Vector3(0.f, 0.f, -2.5f), AtomMathCL::Vector3::UNIT_Z);
             RenderObject obj;
             obj.SetGeometry(&pl0);
+            obj.Scale(5.f);
+            obj.Rotate(90.f, AtomMathCL::Vector3::UNIT_X);
+            obj.Translate(0.f, 0.f, -2.5f);
             obj.m_color = (AtomMathCL::Vector3(0.75f, 0.75f, 0.75f));
             oList.AddObject(obj);
         }
 
         // left
         {
-            Plane pl0(AtomMathCL::Vector3(-0.8f, 0.f, 0.f), AtomMathCL::Vector3::UNIT_X);
             RenderObject obj;
             obj.SetGeometry(&pl0);
+            obj.Scale(5.f);
+            obj.Rotate(-90.f, AtomMathCL::Vector3::UNIT_Z);
+            obj.Translate(-.8f, 0.f, 0.f);
             obj.m_color = (AtomMathCL::Vector3(0.25f, 0.75f, 0.25f));
             oList.AddObject(obj);
         }
 
         // right
         {
-            Plane pl0(AtomMathCL::Vector3(0.8f, 0.0f, 0.0f), AtomMathCL::Vector3::UNIT_X * -1.0f);
             RenderObject obj;
             obj.SetGeometry(&pl0);
+            obj.Scale(5.f);
+            obj.Rotate(90.f, AtomMathCL::Vector3::UNIT_Z);
+            obj.Translate(.8f, .0f, .0f);
             obj.m_color = (AtomMathCL::Vector3(0.25f, 0.25f, 0.75f));
             oList.AddObject(obj);
         }
 
         // top
         {
-            Plane pl0(AtomMathCL::Vector3(0.f, 0.5f, 0.f), AtomMathCL::Vector3::UNIT_Y * -1.f);
             RenderObject obj;
             obj.SetGeometry(&pl0);
-            obj.m_color = (AtomMathCL::Vector3(0.75f, 0.75f, 0.75f));
+            obj.Scale(5.f);
+            obj.Rotate(180.f, AtomMathCL::Vector3::UNIT_X);
+            obj.Translate(.0f, .5f, .0f);
+            obj.m_color = (AtomMathCL::Vector3(0.55f, 0.55f, 0.55f));
             oList.AddObject(obj);
         }
 
         // bottom
         {
-            Plane pl0(AtomMathCL::Vector3(0.0f, -0.7f, 0.0f), AtomMathCL::Vector3::UNIT_Y);
             RenderObject obj;
             obj.SetGeometry(&pl0);
+            obj.Scale(5.f);
+            obj.Translate(0.f, -0.7f, 0.f);
             obj.m_color = (AtomMathCL::Vector3(0.75f, 0.75f, 0.75f));
             oList.AddObject(obj);
         }

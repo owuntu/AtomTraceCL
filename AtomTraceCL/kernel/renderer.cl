@@ -1,4 +1,4 @@
-#define MAX_DEPTH 6
+#define MAX_DEPTH 4
 #define PI_F      3.14159265358979323846f
 #define HALF_PI_F 1.57079632679f
 #define TWO_PI_F  6.28318530718f
@@ -31,11 +31,7 @@ typedef struct
 }HitInfoGeo; // Work around for an LLVM error. These two should be put into HitInfo
 
 // --- Geometries ----
-typedef struct
-{
-    float3 pos;
-    float3 norm;
-}Plane;
+// TODO: Add triangulate objs.
 
 // -------------------
 
@@ -153,6 +149,8 @@ Ray CastCamRay(int px, int py, __constant Camera* cam, const uint npp)
 
 bool IntersectSphere(const Ray* ray, float* t)
 {
+    // Assuming ray is transform into this unit sphere's local space,
+    // which located at the origin (0,0,0).
     float a = dot(ray->dir, ray->dir);
     float b = 2.f * dot(ray->orig, ray->dir);
     float c = dot(ray->orig, ray->orig) - 1.0f;
@@ -182,20 +180,18 @@ bool IntersectSphere(const Ray* ray, float* t)
     return false;
 }
 
-bool IntersectPlane(const Plane* pOBJ, const Ray* pRAY, float* pt)
+bool IntersectPlane(const Ray* pRAY, float* pt)
 {
-    // intersect if(dot(pRAY->orig + pRAY->dir * t - pOBJ->pos, pOBJ->norm) == 0)
+    // Assuming ray is transform into plane's local space, which has normal (0,1,0)
+    //   located at the origin (0,0,0), with size [(-1,0,-1),(1,0,1)].
     float3 d = pRAY->dir;
-    float3 n = pOBJ->norm;
-    float dn = dot(d, n);
-    if (fabs(dn) < EPSILON) // ray is parallel to the plane
+    float3 pos = pRAY->orig;
+    if (d.y == 0.f) // ray is parallel to the plane
     {
         return false;
     }
 
-    float3 op = pOBJ->pos - pRAY->orig;
-    float t = dot(op, n) / dn;
-
+    float t = -pos.y / d.y;
     if (t < 0.f)
     {
         // ignore if intersection point is beind the ray.
@@ -203,6 +199,12 @@ bool IntersectPlane(const Plane* pOBJ, const Ray* pRAY, float* pt)
     }
 
     if (t >= *pt)
+    {
+        return false;
+    }
+
+    float3 hitP = pos + d *t;
+    if (hitP.x < -1.f || hitP.x > 1.f || hitP.z < -1.f || hitP.z > 1.f)
     {
         return false;
     }
@@ -238,8 +240,7 @@ bool IntersectP(__constant char* pObj, __constant int* pIndexTable, int numObjs,
         }
         else if (objh.gtype == 2) // PLANE
         {
-            Plane pl = *(__constant Plane*)(pObj + objh.geometryIndex);
-            bHit |= IntersectPlane(&pl, &ray, &t);
+            bHit |= IntersectPlane(&ray, &t);
         }
     }
     return bHit;
@@ -283,12 +284,13 @@ bool Intersect(__constant char* pObj, __constant int* pIndexTable, int numObjs, 
         }
         else if (objh.gtype == 2) // PLANE
         {
-            Plane pl = *(__constant Plane*)(pObj + objh.geometryIndex);
-            tHit = IntersectPlane(&pl, &ray, &t);
+            tHit = IntersectPlane(&ray, &t);
 
             hitP = ray.orig + ray.dir * t;
             hitP = TransformFrom(&objh.transform, &hitP);
-            hitN = normalize(pl.norm);
+
+            float3 unitY = (float3)(0.f, 1.f, 0.f);
+            hitN = normalize(VectorTransformFrom(&objh.transform, &unitY));
         }
         
         if (tHit)

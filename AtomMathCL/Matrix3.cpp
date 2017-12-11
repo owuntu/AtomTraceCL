@@ -176,7 +176,7 @@ namespace AtomMathCL
             return;
         }
 
-        float t = 1 - c;
+        float t = 1.f - c;
         float tx = t * axis.X();
         float ty = t * axis.Y();
         float tz = t * axis.Z();
