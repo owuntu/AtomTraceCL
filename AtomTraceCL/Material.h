@@ -8,11 +8,12 @@ namespace AtomTraceCL
     enum MaterialType
     {
         LIGHT   = 0,
-        DIFFUSE = 1
+        DIFFUSE = 1,
+        METAL = 2,
     };
+
     class Material : public ObjectAttribute
-    {
-    };
+    {};
 } // namespace AtomTraceCL
 
 #endif // ATOMTRACECL_MATERIAL_H_

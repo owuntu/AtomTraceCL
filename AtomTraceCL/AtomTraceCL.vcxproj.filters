@@ -68,6 +68,9 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="SceneLoader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Ray.h">
@@ -117,6 +120,12 @@
     </ClInclude>
     <ClInclude Include="Light.h">
       <Filter>Materials</Filter>
+    </ClInclude>
+    <ClInclude Include="Metal.h">
+      <Filter>Materials</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneLoader.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

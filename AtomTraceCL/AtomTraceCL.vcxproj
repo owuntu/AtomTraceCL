@@ -138,6 +138,7 @@
     <ClCompile Include="Ray.cpp" />
     <ClCompile Include="RenderImage.cpp" />
     <ClCompile Include="RenderObject.cpp" />
+    <ClCompile Include="SceneLoader.cpp" />
     <ClCompile Include="Sphere.cpp" />
     <ClCompile Include="Transformation.cpp" />
     <ClCompile Include="Utilities.cpp" />
@@ -150,12 +151,14 @@
     <ClInclude Include="Geometry.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="Material.h" />
+    <ClInclude Include="Metal.h" />
     <ClInclude Include="ObjectAttribute.h" />
     <ClInclude Include="ObjectList.h" />
     <ClInclude Include="Plane.h" />
     <ClInclude Include="Ray.h" />
     <ClInclude Include="RenderImage.h" />
     <ClInclude Include="RenderObject.h" />
+    <ClInclude Include="SceneLoader.h" />
     <ClInclude Include="Sphere.h" />
     <ClInclude Include="Transformation.h" />
     <ClInclude Include="Utilities.h" />
