@@ -1,7 +1,8 @@
 #include <cstring>
 
 #include "RenderObject.h"
-#include "Sphere.h"
+#include "Geometry.h"
+#include "Material.h"
 #include "ObjectList.h"
 
 namespace AtomTraceCL
@@ -12,6 +13,8 @@ namespace AtomTraceCL
         unsigned __int32 gtype;
         unsigned __int32 gsize;
         unsigned __int32 geometryIndex; // Geometry index from the header
+        unsigned __int32 matType;
+        unsigned __int32 matSize;
         unsigned __int32 matIndex;
     }ObjectHeader;
 
@@ -41,12 +44,15 @@ namespace AtomTraceCL
         ObjectHeader header;
         obj.PackTransformation(header.transform);
         const Geometry& geo = *obj.m_pGm;
+        const Material& mat = *obj.m_pMat;
         header.gtype = geo.GetType();
         header.gsize = geo.GetSize();
+        header.matType = mat.GetType();
+        header.matSize = mat.GetSize();
 
         unsigned __int32 inc = sizeof(header)
                              + header.gsize // Geometry data
-                             + sizeof(obj.m_emission) + sizeof(obj.m_color); // Material data
+                             + header.matSize; // Material data
         if (m_size + inc >= MAX_DATA_SIZE)
         {
             return false;
@@ -71,10 +77,11 @@ namespace AtomTraceCL
         }
 
         // Color, material
-        std::size_t v3Size = sizeof(AtomMathCL::Vector3);
-        memcpy(pCurr, &obj.m_emission, v3Size);
-        pCurr += v3Size;
-        memcpy(pCurr, &obj.m_color, v3Size);
+        if (0 != header.matSize)
+        {
+            memcpy(pCurr, mat.GetData(), header.matSize);
+            pCurr += header.matSize;
+        }
 
 
         return true;

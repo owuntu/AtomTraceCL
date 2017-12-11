@@ -15,6 +15,7 @@
 #include "RenderObject.h"
 #include "Sphere.h"
 #include "Plane.h"
+#include "DiffuseMaterial.h"
 #include "ObjectList.h"
 #include "Utilities.h"
 
@@ -139,7 +140,11 @@ int main(int argc, char** argv)
             obj.SetGeometry(&s0);
             obj.Scale(0.5f, 0.05f, 0.01f);
             obj.Translate(0.0f, -0.65f, -1.5f);
-            obj.m_emission = AtomMathCL::Vector3(1.f);
+
+            DiffuseMaterial m0;
+            m0.SetEmission(AtomMathCL::Vector3(1.f));
+            obj.SetMaterial(&m0);
+
             oList.AddObject(obj);
         }
         {
@@ -147,7 +152,10 @@ int main(int argc, char** argv)
             obj.SetGeometry(&s0);
             obj.Scale(0.3f);
             obj.Translate(-0.3f, 0.22f, -2.0f);
-            obj.m_color = (AtomMathCL::Vector3(0.75f, 0.25f, 0.25f));
+
+            DiffuseMaterial m0;
+            m0.SetColor(AtomMathCL::Vector3(0.75f, 0.25f, 0.25f));
+            obj.SetMaterial(&m0);
             oList.AddObject(obj);
         }
         // back
@@ -157,7 +165,10 @@ int main(int argc, char** argv)
             obj.Scale(5.f);
             obj.Rotate(90.f, AtomMathCL::Vector3::UNIT_X);
             obj.Translate(0.f, 0.f, -2.5f);
-            obj.m_color = (AtomMathCL::Vector3(0.75f, 0.75f, 0.75f));
+
+            DiffuseMaterial m0;
+            m0.SetColor(AtomMathCL::Vector3(0.75f, 0.75f, 0.75f));
+            obj.SetMaterial(&m0);
             oList.AddObject(obj);
         }
 
@@ -168,7 +179,10 @@ int main(int argc, char** argv)
             obj.Scale(5.f);
             obj.Rotate(-90.f, AtomMathCL::Vector3::UNIT_Z);
             obj.Translate(-.8f, 0.f, 0.f);
-            obj.m_color = (AtomMathCL::Vector3(0.25f, 0.75f, 0.25f));
+
+            DiffuseMaterial m0;
+            m0.SetColor(AtomMathCL::Vector3(0.25f, 0.75f, 0.25f));
+            obj.SetMaterial(&m0);
             oList.AddObject(obj);
         }
 
@@ -179,7 +193,10 @@ int main(int argc, char** argv)
             obj.Scale(5.f);
             obj.Rotate(90.f, AtomMathCL::Vector3::UNIT_Z);
             obj.Translate(.8f, .0f, .0f);
-            obj.m_color = (AtomMathCL::Vector3(0.25f, 0.25f, 0.75f));
+
+            DiffuseMaterial m0;
+            m0.SetColor(AtomMathCL::Vector3(0.25f, 0.25f, 0.75f));
+            obj.SetMaterial(&m0);
             oList.AddObject(obj);
         }
 
@@ -190,7 +207,10 @@ int main(int argc, char** argv)
             obj.Scale(5.f);
             obj.Rotate(180.f, AtomMathCL::Vector3::UNIT_X);
             obj.Translate(.0f, .5f, .0f);
-            obj.m_color = (AtomMathCL::Vector3(0.55f, 0.55f, 0.55f));
+
+            DiffuseMaterial m0;
+            m0.SetColor(AtomMathCL::Vector3(0.55f, 0.55f, 0.55f));
+            obj.SetMaterial(&m0);
             oList.AddObject(obj);
         }
 
@@ -200,7 +220,10 @@ int main(int argc, char** argv)
             obj.SetGeometry(&pl0);
             obj.Scale(5.f);
             obj.Translate(0.f, -0.7f, 0.f);
-            obj.m_color = (AtomMathCL::Vector3(0.75f, 0.75f, 0.75f));
+
+            DiffuseMaterial m0;
+            m0.SetColor(AtomMathCL::Vector3(0.75f, 0.75f, 0.75f));
+            obj.SetMaterial(&m0);
             oList.AddObject(obj);
         }
 

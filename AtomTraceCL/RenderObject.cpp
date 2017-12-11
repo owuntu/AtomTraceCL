@@ -1,3 +1,4 @@
+#include "Material.h"
 #include "Geometry.h"
 #include "RenderObject.h"
 
@@ -6,8 +7,12 @@ namespace AtomTraceCL
     void RenderObject::SetGeometry(Geometry* pGm)
     {
         m_pGm = pGm;
-        m_gtype = pGm->GetType();
-        m_gsize = pGm->GetSize();
     }
+
+    void RenderObject::SetMaterial(Material* pMat)
+    {
+        m_pMat = pMat;
+    }
+
 
 } // namespace AtomTraceCL

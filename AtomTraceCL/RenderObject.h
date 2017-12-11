@@ -9,26 +9,24 @@
 namespace AtomTraceCL
 {
     class Geometry;
+    class Material;
 
     class RenderObject : public Transformation
     {
     public:
-        RenderObject() : m_pGm(nullptr), m_emission(0.f), m_color(0.f) {}
+        RenderObject() : m_pGm(nullptr), m_pMat(nullptr) {}
         ~RenderObject()
         {
             m_pGm = nullptr;
+            m_pMat = nullptr;
         }
 
         void SetGeometry(Geometry* pGm);
+        void SetMaterial(Material* pMat);
 
     public:
-        unsigned __int32 m_gtype; // geometry type
-        unsigned __int32 m_gsize; // geometry size
         Geometry* m_pGm;
-
-        // TODO: Use material interface.
-        AtomMathCL::Vector3 m_emission;
-        AtomMathCL::Vector3 m_color;
+        Material* m_pMat;
 
     }; // class RenderObject
 } // namespace AtomTraceCL

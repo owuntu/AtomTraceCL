@@ -13,6 +13,8 @@ typedef struct
     uint gtype;
     uint gsize;
     uint geometryIndex; // Geometry index from start address of the scene
+    uint matType;  // Material information
+    uint matSize;
     uint matIndex;
 }ObjectHeader;
 
@@ -37,8 +39,8 @@ typedef struct
 
 typedef struct
 {
-    float3 emission;
     float3 color;
+    float3 emission;
 }DiffuseMaterial;
 
 /* This is a description of a RenderObject that store into the scene
@@ -49,7 +51,11 @@ struct
     {
         geometry data
     };
-    DiffuseMaterial mat;
+    struct
+    {
+        material data
+    };
+
 }RenderObject;
 */
 
