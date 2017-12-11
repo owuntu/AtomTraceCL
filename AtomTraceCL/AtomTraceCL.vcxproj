@@ -164,6 +164,8 @@
     <ClInclude Include="Utilities.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="kernel\ConstantDef.hcl" />
+    <None Include="kernel\Metal.hcl" />
     <None Include="kernel\Ray.hcl" />
     <None Include="kernel\renderer.cl" />
     <None Include="kernel\Transformation.hcl" />

@@ -138,5 +138,11 @@
     <None Include="kernel\Ray.hcl">
       <Filter>CL_GL\OpenCL_kernels</Filter>
     </None>
+    <None Include="kernel\ConstantDef.hcl">
+      <Filter>CL_GL\OpenCL_kernels</Filter>
+    </None>
+    <None Include="kernel\Metal.hcl">
+      <Filter>CL_GL\OpenCL_kernels</Filter>
+    </None>
   </ItemGroup>
 </Project>

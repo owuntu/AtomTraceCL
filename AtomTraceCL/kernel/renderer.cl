@@ -1,9 +1,7 @@
 #define MAX_DEPTH 6
-#define PI_F      3.14159265358979323846f
-#define HALF_PI_F 1.57079632679f
-#define TWO_PI_F  6.28318530718f
-#define EPSILON 0.001f
 
+#include "ConstantDef.hcl"
+#include "Metal.hcl"
 #include "Ray.hcl"
 #include "Transformation.hcl"
 
@@ -370,6 +368,7 @@ float3 Radiance(const Ray* ray, __constant char* pObjs, __constant int* pIndexTa
     float3 rad = (float3)(0.f);
     float cosWi2nd = 1.0f;
     DiffuseMaterial mat;
+    Metal metal;
     while(d < MAX_DEPTH)
     {
         float t = FLT_MAX;
@@ -379,9 +378,9 @@ float3 Radiance(const Ray* ray, __constant char* pObjs, __constant int* pIndexTa
 
         if (bHit)
         {
-            mat = *(__constant DiffuseMaterial*)(pObjs + hInfo.matIndex);
             if (hInfo.matType == 0) // light
             {
+                mat = *(__constant DiffuseMaterial*)(pObjs + hInfo.matIndex);
                 rad += mat.color;
                 break;
             }
@@ -397,7 +396,18 @@ float3 Radiance(const Ray* ray, __constant char* pObjs, __constant int* pIndexTa
                 break;
             }
 
-            throughput *= mat.color;
+            float3 f = (float3)(0.f);
+            if (hInfo.matType == 1) // Diffuse
+            {
+                mat = *(__constant DiffuseMaterial*)(pObjs + hInfo.matIndex);
+                f = mat.color;
+            }
+            else if (hInfo.matType == 2) // Metal
+            {
+                metal = *(__constant Metal*)(pObjs + hInfo.matIndex);
+            }
+
+
             // Direct illumination
             for (int i = 0; i < numObjs; ++i)
             {
@@ -413,9 +423,20 @@ float3 Radiance(const Ray* ray, __constant char* pObjs, __constant int* pIndexTa
                     {
                         continue;
                     }
-                    rad += Ld * throughput * fabs(cosWi) *cosWi2nd;
+
+                    if (hInfo.matType == 1) // Diffuse
+                    {
+                        rad += Ld * throughput * mat.color * fabs(cosWi) *cosWi2nd;
+                    }
+                    else if (hInfo.matType == 2) // Metal
+                    {
+                        float3 tf = MetalF(&metal, &wo, &hitN, &wi);
+                        rad += Ld * throughput * tf * fabs(cosWi) *cosWi2nd;
+                        f += tf;
+                    }
                 }
             }
+            throughput *= f;
 
             // Indirect illumination
             float3 newDir;
