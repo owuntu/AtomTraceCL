@@ -1,8 +1,8 @@
-#define MAX_DEPTH 4
+#define MAX_DEPTH 6
 #define PI_F      3.14159265358979323846f
 #define HALF_PI_F 1.57079632679f
 #define TWO_PI_F  6.28318530718f
-#define EPSILON 0.01f
+#define EPSILON 0.001f
 
 #include "Ray.hcl"
 #include "Transformation.hcl"
@@ -216,7 +216,7 @@ bool IntersectPlane(const Ray* pRAY, float* pt)
     return true;
 }
 
-bool IntersectP(__constant char* pObj, __constant int* pIndexTable, int numObjs, const Ray* pRay, const float maxt, bool bIgnoreLight)
+bool IntersectP(__constant char* pObj, __constant const int* pIndexTable, int numObjs, const Ray* pRay, const float maxt, bool bIgnoreLight)
 {
     bool bHit = false;
     float t = maxt;
@@ -244,7 +244,7 @@ bool IntersectP(__constant char* pObj, __constant int* pIndexTable, int numObjs,
     return bHit;
 }
 
-bool Intersect(__constant char* pObj, __constant int* pIndexTable, int numObjs, const Ray* pRay,
+bool Intersect(__constant char* pObj, __constant const int* pIndexTable, int numObjs, const Ray* pRay,
                ObjectHeader* pObjHead, HitInfoGeo* pHitInfoGeo, bool bIgnoreLight)
 {
     bool bHit = false;
@@ -299,65 +299,65 @@ bool Intersect(__constant char* pObj, __constant int* pIndexTable, int numObjs, 
     return bHit;
 }
 
-void SampleLights(__constant char* pObjs, __constant int* pIndexTable, int numObjs,
-                  const float3* pHitP, const float3* pN, float3* result, uint* pSeed0, uint* pSeed1)
+void SampleLight(__constant char* pObjs, const ObjectHeader* pObjHead, __constant int* pIndexTable, const int numObjs,
+                 const float3* pHitP, const float3* pN, float3* pLd, float3* pWi, float* pCosWi, uint* pSeed0, uint* pSeed1)
 {
-    for(int i = 0; i < numObjs; ++i)
+    DiffuseMaterial light = *(__constant DiffuseMaterial*)(pObjs + pObjHead->matIndex);
+    float3 sampP = (float3)(0.f);
+    if (pObjHead->gtype == 1) // SPHERE
     {
-        ObjectHeader objh = *(__constant ObjectHeader*)(pObjs + pIndexTable[i]);
+        // Sample a point on the surface that is facing the shading object.
+        float u1 = GetRandom01(pSeed0, pSeed1);
+        float u2 = GetRandom01(pSeed0, pSeed1);
 
-        if (objh.matType == 0) // light type
+        float3 az = TransformTo(&pObjHead->transform, pHitP);
+        float maxTheta = acos(1.0f / length(az));
+        az = normalize(az);
+
+        float3 ax = UNIT_X;
+        if (1.f - fabs(dot(az, ax)) <= EPSILON)
         {
-            DiffuseMaterial light = *(__constant DiffuseMaterial*)(pObjs + objh.matIndex);
-            float3 sampP = (float3)(0.f);
-            if (objh.gtype == 1) // SPHERE
-            {
-                // Sample a point on the surface that is facing the shading object.
-                float u1 = GetRandom01(pSeed0, pSeed1);
-                float u2 = GetRandom01(pSeed0, pSeed1);
-
-                float3 az = TransformTo(&objh.transform, pHitP);
-                float maxTheta = acos(1.0f / length(az));
-                az = normalize(az);
-
-                float3 ax = UNIT_X;
-                if (1.f - fabs(dot(az, ax)) <= EPSILON)
-                {
-                    ax = UNIT_Y;
-                }
-                float3 ay = cross(az, ax);
-                ax = cross(ay, az);
-                ax = normalize(ax);
-                ay = normalize(ay);
-
-                float theta = maxTheta * u1;
-                float phi = TWO_PI_F * u2;
-                float r = sin(theta);
-                sampP = ax * r * cos(phi) + ay * r * sin(phi) + az * cos(theta);
-                //sampP = normalize(sampP);
-                sampP = TransformFrom(&objh.transform, &sampP);
-            }
-            else
-            {
-                // TODO: For now only support sphere shape light.
-                continue;
-            }
-
-            // cast shadow ray
-            Ray shadowRay;
-            shadowRay.orig = *pHitP;
-            shadowRay.dir = sampP - shadowRay.orig;
-            float3 nd = normalize(shadowRay.dir);
-            float dnd = dot(*pN, nd);
-            shadowRay.orig += nd * EPSILON * dnd;
-            if (!IntersectP(pObjs, pIndexTable, numObjs, &shadowRay, 1.0f-EPSILON, true))
-            {
-                // add light contribution
-                *result += light.color * max(0.0f, dnd);
-            }            
+            ax = UNIT_Y;
         }
+        float3 ay = cross(az, ax);
+        ax = cross(ay, az);
+        ax = normalize(ax);
+        ay = normalize(ay);
+
+        float theta = maxTheta * u1;
+        float phi = TWO_PI_F * u2;
+        float r = sin(theta);
+        sampP = ax * r * cos(phi) + ay * r * sin(phi) + az * cos(theta);
+        //sampP = normalize(sampP);
+        sampP = TransformFrom(&pObjHead->transform, &sampP);
+    }
+    else
+    {
+        // TODO: For now only support sphere shape light.
+        *pLd = (float3)(0.f);
+        *pCosWi = 0.f;
+        return;
     }
 
+    // cast shadow ray
+    Ray shadowRay;
+    shadowRay.orig = *pHitP;
+    shadowRay.dir = sampP - shadowRay.orig;
+    float3 wi = normalize(shadowRay.dir);
+    float cosWi = dot(*pN, wi);
+    if (cosWi == 0.f)
+    {
+        return;
+    }
+
+    shadowRay.orig += wi * EPSILON / fabs(cosWi);
+    if (!IntersectP(pObjs, pIndexTable, numObjs, &shadowRay, 1.0f-EPSILON, true))
+    {
+        // add light contribution
+        *pLd = light.color;
+        *pCosWi = cosWi;
+        *pWi = wi;
+    }
 }
 
 float3 Radiance(const Ray* ray, __constant char* pObjs, __constant int* pIndexTable, int numObjs, uint* pSeed0, uint* pSeed1)
@@ -368,6 +368,7 @@ float3 Radiance(const Ray* ray, __constant char* pObjs, __constant int* pIndexTa
     int d = 0;
     float3 throughput = (float3)(1.f);
     float3 rad = (float3)(0.f);
+    float cosWi2nd = 1.0f;
     DiffuseMaterial mat;
     while(d < MAX_DEPTH)
     {
@@ -387,27 +388,41 @@ float3 Radiance(const Ray* ray, __constant char* pObjs, __constant int* pIndexTa
 
             float3 hitP = hInfoGeo.hitP;
             float3 hitN = hInfoGeo.hitN;
+            float3 wo = normalize(-currentRay.dir);
+            float cosWo = dot(hitN, wo);
 
-            // Ignore backface hit
-            if (dot(hitN, currentRay.dir) > 0.f)
+            // Ignore backface hit;
+            if (cosWo <= 0.f)
             {
                 break;
             }
 
-            // Direct illumination
-            float3 Ld = (float3)(0.f);
-            SampleLights(pObjs, pIndexTable, numObjs, &hitP, &hitN, &Ld, pSeed0, pSeed1);
             throughput *= mat.color;
-            Ld *= throughput;
-            rad += Ld;
+            // Direct illumination
+            for (int i = 0; i < numObjs; ++i)
+            {
+                ObjectHeader lightHead = *(__constant ObjectHeader*)(pObjs + pIndexTable[i]);
+                if (lightHead.matType == 0) // LIGHT type
+                { 
+                    float3 Ld = (float3)(0.f);
+                    float3 wi = (float3)(0.f);
+                    float cosWi = 0.f;
+                    SampleLight(pObjs, &lightHead, pIndexTable, numObjs, &hitP, &hitN, &Ld, &wi, &cosWi, pSeed0, pSeed1);
+
+                    if (cosWo * cosWi <= 0.f)
+                    {
+                        continue;
+                    }
+                    rad += Ld * throughput * fabs(cosWi) *cosWi2nd;
+                }
+            }
 
             // Indirect illumination
-            float3 newDir = hitN;
-            SampleHemiSphere(
-                GetRandom01(pSeed0, pSeed1), GetRandom01(pSeed0, pSeed1),
-                &hitN, &newDir);
+            float3 newDir;
+            SampleHemiSphere( GetRandom01(pSeed0, pSeed1), GetRandom01(pSeed0, pSeed1), &hitN, &newDir );
             currentRay.orig = hitP + hitN * EPSILON;
             currentRay.dir = newDir;
+            cosWi2nd = dot(newDir, hitN);
         }
         else // miss
         {
