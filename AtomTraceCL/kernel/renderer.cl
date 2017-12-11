@@ -349,10 +349,13 @@ void SampleLight(__constant char* pObjs, const ObjectHeader* pObjHead, __constan
     }
 
     shadowRay.orig += wi * EPSILON / fabs(cosWi);
+    // Shadow check
     if (!IntersectP(pObjs, pIndexTable, numObjs, &shadowRay, 1.0f-EPSILON, true))
     {
         // add light contribution
-        *pLd = light.color;
+        //float l2 = length(shadowRay.dir);
+        //l2 *= l2;
+        *pLd = light.color;// / l2;
         *pCosWi = cosWi;
         *pWi = wi;
     }
@@ -364,8 +367,9 @@ float3 Radiance(const Ray* ray, __constant char* pObjs, __constant int* pIndexTa
     currentRay.orig = ray->orig;
     currentRay.dir = ray->dir;
     int d = 0;
-    float3 throughput = (float3)(1.f);
+    //float3 throughput = (float3)(1.f);
     float3 rad = (float3)(0.f);
+    float3 preCi = (float3)(1.f);
     float cosWi2nd = 1.0f;
     DiffuseMaterial mat;
     Metal metal;
@@ -396,17 +400,14 @@ float3 Radiance(const Ray* ray, __constant char* pObjs, __constant int* pIndexTa
                 break;
             }
 
-            float3 f = (float3)(0.f);
             if (hInfo.matType == 1) // Diffuse
             {
                 mat = *(__constant DiffuseMaterial*)(pObjs + hInfo.matIndex);
-                f = mat.color;
             }
             else if (hInfo.matType == 2) // Metal
             {
                 metal = *(__constant Metal*)(pObjs + hInfo.matIndex);
             }
-
 
             // Direct illumination
             for (int i = 0; i < numObjs; ++i)
@@ -426,17 +427,17 @@ float3 Radiance(const Ray* ray, __constant char* pObjs, __constant int* pIndexTa
 
                     if (hInfo.matType == 1) // Diffuse
                     {
-                        rad += Ld * throughput * mat.color * fabs(cosWi) *cosWi2nd;
+                        //rad += Ld * fabs(cosWi) * f;
+                        rad += Ld * fabs(cosWi) * (preCi * mat.color);
                     }
                     else if (hInfo.matType == 2) // Metal
                     {
                         float3 tf = MetalF(&metal, &wo, &hitN, &wi);
-                        rad += Ld * throughput * tf * fabs(cosWi) *cosWi2nd;
-                        f += tf;
+                        rad += Ld * tf * fabs(cosWi) * preCi;
+
                     }
                 }
             }
-            throughput *= f;
 
             // Indirect illumination
             float3 newDir;
@@ -444,6 +445,15 @@ float3 Radiance(const Ray* ray, __constant char* pObjs, __constant int* pIndexTa
             currentRay.orig = hitP + hitN * EPSILON;
             currentRay.dir = newDir;
             cosWi2nd = dot(newDir, hitN);
+
+            if (hInfo.matType == 1) // Diffuse
+            {
+                preCi *= cosWi2nd * mat.color;
+            }
+            else if (hInfo.matType == 2) // Metal
+            {
+                preCi *= cosWi2nd * MetalF(&metal, &wo, &hitN, &newDir);
+            }
         }
         else // miss
         {
