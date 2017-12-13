@@ -57,6 +57,7 @@ bool InitGLFWWindow(int width, int height)
     glfwMakeContextCurrent(gs_pWindow);
     glfwSwapInterval(1);
     glfwSetKeyCallback(gs_pWindow, key_callback);
+
     return true;
 }
 
@@ -194,7 +195,9 @@ int main(int argc, char** argv)
         {
             error = kernel.setArg(9, currentSample);
             CheckError(error, "Set kernel args8 (currentSample)");
-            currentSample++;
+            // This increase magic number should match the one in the kernel.
+            // TODO: Pass it into kernel parameter.
+            currentSample += 64;
 
             // Tell the device, through the command queue, to execute queue Kernel
             error = cq.enqueueNDRangeKernel(kernel, 0, worksize, 256);
@@ -204,7 +207,7 @@ int main(int argc, char** argv)
         }
 
         // Read the result back into image
-        error = cq.enqueueReadBuffer(pixelBuffer, CL_FALSE, 0, worksize * 3, image.GetRawData());
+        error = cq.enqueueReadBuffer(pixelBuffer, CL_TRUE, 0, worksize * 3, image.GetRawData());
         CheckError(error, "Enqueue read buffer");
 
         glDrawPixels(IMAGE_WIDTH, IMAGE_HEIGHT, GL_RGB, GL_UNSIGNED_BYTE, image.GetRawData());
