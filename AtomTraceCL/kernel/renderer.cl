@@ -488,9 +488,10 @@ __kernel void RenderKernel(__global uchar* pOutput, int width, int height,
         color[pid * 3 + 1] = sNs * color[pid*3 + 1] + rad.y * invNs;
         color[pid * 3 + 2] = sNs * color[pid*3 + 2] + rad.z * invNs;
 
-        pOutput[pid * 3] =      clamp(color[pid*3],      0.f, 1.0f) * 255;
-        pOutput[pid * 3 + 1 ] = clamp(color[pid*3 + 1 ], 0.f, 1.0f) * 255;
-        pOutput[pid * 3 + 2 ] = clamp(color[pid*3 + 2 ], 0.f, 1.0f) * 255;
+        // Apply Gamma correction, use sqrt(x) as approximation.
+        pOutput[pid * 3] =      clamp(sqrt(color[pid*3]),      0.f, 1.0f) * 255;
+        pOutput[pid * 3 + 1 ] = clamp(sqrt(color[pid*3 + 1 ]), 0.f, 1.0f) * 255;
+        pOutput[pid * 3 + 2 ] = clamp(sqrt(color[pid*3 + 2 ]), 0.f, 1.0f) * 255;
 
         pSeeds[pid] = seed0;
         pSeeds[worksize + pid] = seed1;
