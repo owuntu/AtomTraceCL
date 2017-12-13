@@ -17,7 +17,7 @@ namespace AtomTraceCL
         wall.SetColor(AtomMathCL::Vector3(1.0f, 1.0f, 1.0f));
 
         DiffuseMaterial ball;
-        ball.SetColor(AtomMathCL::Vector3(0.75f, 0.25f, 0.25f));
+        ball.SetColor(AtomMathCL::Vector3(1.f, 0.3f, 0.3f));
         
         Metal metal;
         metal.m_eta = (AtomMathCL::Vector3(0.2f, 0.924f, 1.102f));
@@ -28,7 +28,7 @@ namespace AtomTraceCL
             RenderObject obj;
             obj.SetGeometry(&s0);
             obj.Scale(1.0f);
-            obj.Translate(-0.5f, -22.f, 10.f);
+            obj.Translate(1.0f, -22.f, 10.f);
 
             Light l0;
             l0.SetEmission(AtomMathCL::Vector3(1.f));
@@ -51,7 +51,6 @@ namespace AtomTraceCL
             obj.SetGeometry(&s0);
             obj.Scale(4.0f);
             obj.Translate(8.0f, -4.0f, 6.f);
-
             
             obj.SetMaterial(&ball);
             oList.AddObject(obj);
@@ -63,11 +62,21 @@ namespace AtomTraceCL
             obj.SetGeometry(&pl0);
             obj.Scale(50.f);
             obj.Rotate(90.f, AtomMathCL::Vector3::UNIT_X);
-            obj.Translate(0.f, 0.f, -30.5f);
+            obj.Translate(0.f, 0.f, -30.f);
 
-            DiffuseMaterial m0;
-            m0.SetColor(AtomMathCL::Vector3(0.25f, 0.25f, 0.25f));
-            obj.SetMaterial(&m0);
+            obj.SetMaterial(&wall);
+            oList.AddObject(obj);
+        }
+
+        // front
+        {
+            RenderObject obj;
+            obj.SetGeometry(&pl0);
+            obj.Scale(50.f);
+            obj.Rotate(-90.f, AtomMathCL::Vector3::UNIT_X);
+            obj.Translate(0.f, 0.f, 70.f);
+
+            obj.SetMaterial(&wall);
             oList.AddObject(obj);
         }
 #if 1
@@ -80,7 +89,7 @@ namespace AtomTraceCL
             obj.Translate(-15.f, 0.f, 0.f);
 
             DiffuseMaterial m0;
-            m0.SetColor(AtomMathCL::Vector3(0.25f, 0.75f, 0.25f));
+            m0.SetColor(AtomMathCL::Vector3(0.25f, 0.25f, 0.75f));
             obj.SetMaterial(&m0);
             oList.AddObject(obj);
         }
@@ -94,7 +103,7 @@ namespace AtomTraceCL
             obj.Translate(15.f, .0f, .0f);
 
             DiffuseMaterial m0;
-            m0.SetColor(AtomMathCL::Vector3(0.25f, 0.25f, 0.75f));
+            m0.SetColor(AtomMathCL::Vector3(0.25f, 0.75f, 0.25f));
             obj.SetMaterial(&m0);
             oList.AddObject(obj);
         }
