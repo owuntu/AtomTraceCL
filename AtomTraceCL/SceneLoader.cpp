@@ -20,6 +20,7 @@ namespace AtomTraceCL
         ball.SetColor(AtomMathCL::Vector3(1.f, 0.3f, 0.3f));
         
         Metal metal;
+        // Hard coded cooper data.
         metal.m_eta = (AtomMathCL::Vector3(0.2f, 0.924f, 1.102f));
         metal.m_kk = AtomMathCL::Vector3(3.91f, 2.45f, 2.14f);
 

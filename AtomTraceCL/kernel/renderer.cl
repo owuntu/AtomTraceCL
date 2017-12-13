@@ -1,4 +1,4 @@
-#define MAX_DEPTH 6
+#define MAX_DEPTH 3
 
 #include "ConstantDef.hcl"
 #include "Metal.hcl"
@@ -467,7 +467,7 @@ float3 Radiance(const Ray* ray, __constant char* pObjs, __constant int* pIndexTa
 __kernel void RenderKernel(__global uchar* pOutput, int width, int height,
                            __constant Camera* cam,
                            __constant char* pObjs, __constant int* pIndexTable, int numObjs,
-                           __global uint* pSeeds, __global float* color, const uint currentSample)
+                           __global uint* pSeeds, __global float* color, uint currentSample)
 {
     int pid = get_global_id(0);
     int worksize = width*height;
@@ -479,19 +479,24 @@ __kernel void RenderKernel(__global uchar* pOutput, int width, int height,
         uint seed0 = pSeeds[pid];
         uint seed1 = pSeeds[worksize + pid];
 
-        Ray cRay = CastCamRay(px, py, cam, currentSample);
+        // This increase magic number should match the one in the host.
+        // TODO: Take it from kernel parameter.
+        for (int i = 0; i < 64; ++i)
+        {
+            Ray cRay = CastCamRay(px, py, cam, currentSample);
 
-        float3 rad = Radiance(&cRay, pObjs, pIndexTable, numObjs, &seed0, &seed1);
-        float invNs = 1.0f / (currentSample + 1);
-        float sNs = (float)currentSample * invNs;
-        color[pid * 3]     = sNs * color[pid*3    ] + rad.x * invNs;
-        color[pid * 3 + 1] = sNs * color[pid*3 + 1] + rad.y * invNs;
-        color[pid * 3 + 2] = sNs * color[pid*3 + 2] + rad.z * invNs;
-
-        // Apply Gamma correction, use sqrt(x) as approximation.
-        pOutput[pid * 3] =      clamp(sqrt(color[pid*3]),      0.f, 1.0f) * 255;
-        pOutput[pid * 3 + 1 ] = clamp(sqrt(color[pid*3 + 1 ]), 0.f, 1.0f) * 255;
-        pOutput[pid * 3 + 2 ] = clamp(sqrt(color[pid*3 + 2 ]), 0.f, 1.0f) * 255;
+            float3 rad = Radiance(&cRay, pObjs, pIndexTable, numObjs, &seed0, &seed1);
+            float invNs = 1.0f / (currentSample + 1);
+            float sNs = (float)currentSample * invNs;
+            color[pid * 3] = sNs * color[pid * 3] + rad.x * invNs;
+            color[pid * 3 + 1] = sNs * color[pid * 3 + 1] + rad.y * invNs;
+            color[pid * 3 + 2] = sNs * color[pid * 3 + 2] + rad.z * invNs;
+            currentSample++;
+        }
+        // Apply Gamma correction
+        pOutput[pid * 3] =      clamp(powr(color[pid*3],      1.f / 2.2f), 0.f, 1.0f) * 255;
+        pOutput[pid * 3 + 1 ] = clamp(powr(color[pid*3 + 1 ], 1.f / 2.2f), 0.f, 1.0f) * 255;
+        pOutput[pid * 3 + 2 ] = clamp(powr(color[pid*3 + 2 ], 1.f / 2.2f), 0.f, 1.0f) * 255;
 
         pSeeds[pid] = seed0;
         pSeeds[worksize + pid] = seed1;
