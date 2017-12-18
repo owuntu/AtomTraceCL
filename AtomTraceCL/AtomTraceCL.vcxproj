@@ -140,6 +140,7 @@
     <ClCompile Include="RenderObject.cpp" />
     <ClCompile Include="SceneLoader.cpp" />
     <ClCompile Include="Sphere.cpp" />
+    <ClCompile Include="Timer.cpp" />
     <ClCompile Include="Transformation.cpp" />
     <ClCompile Include="Utilities.cpp" />
   </ItemGroup>
@@ -160,6 +161,7 @@
     <ClInclude Include="RenderObject.h" />
     <ClInclude Include="SceneLoader.h" />
     <ClInclude Include="Sphere.h" />
+    <ClInclude Include="Timer.h" />
     <ClInclude Include="Transformation.h" />
     <ClInclude Include="Utilities.h" />
   </ItemGroup>
@@ -169,6 +171,7 @@
     <None Include="kernel\Ray.hcl" />
     <None Include="kernel\renderer.cl" />
     <None Include="kernel\Transformation.hcl" />
+    <None Include="Timer.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

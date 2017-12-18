@@ -15,6 +15,7 @@
 #include "CLResourceManager.h"
 #include "RenderImage.h"
 #include "SceneLoader.h"
+#include "Timer.h"
 #include "ObjectList.h"
 #include "Utilities.h"
 
@@ -187,10 +188,13 @@ int main(int argc, char** argv)
 
     std::cout << "\n";
 
+    Timer::Init();
+
     unsigned int currentSample = 0;
     // OpenGL viewport loop
     while (!glfwWindowShouldClose(gs_pWindow))
     {
+        Timer::Tick tstart = Timer::GetCurrentTick();
         if (currentSample < 0xffffffff)
         {
             error = kernel.setArg(9, currentSample);
@@ -214,6 +218,10 @@ int main(int argc, char** argv)
 
         glfwSwapBuffers(gs_pWindow);
         glfwPollEvents();
+        Timer::Tick tend = Timer::GetCurrentTick();
+        float msElp = Timer::GetDifferentTickToMS(tstart, tend);
+        float fps = 1000.f / msElp;
+        std::cout << "\t render time: " << msElp << "ms. fps: " << fps;
     }
 
     std::cout << "\n";

@@ -27,6 +27,9 @@
     <Filter Include="Materials">
       <UniqueIdentifier>{fff799fe-5311-46b5-9f21-b5fc9ca26868}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Profiling">
+      <UniqueIdentifier>{659afbb9-0e09-44a9-97e1-5d9fe7e380be}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Utilities.cpp">
@@ -70,6 +73,9 @@
     </ClCompile>
     <ClCompile Include="SceneLoader.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Timer.cpp">
+      <Filter>Profiling</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -127,6 +133,9 @@
     <ClInclude Include="SceneLoader.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="Timer.h">
+      <Filter>Profiling</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="kernel\renderer.cl">
@@ -143,6 +152,9 @@
     </None>
     <None Include="kernel\Metal.hcl">
       <Filter>CL_GL\OpenCL_kernels</Filter>
+    </None>
+    <None Include="Timer.inl">
+      <Filter>Profiling</Filter>
     </None>
   </ItemGroup>
 </Project>
