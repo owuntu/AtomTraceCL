@@ -157,7 +157,7 @@ int main(int argc, char** argv)
     cl::Kernel kernel = cl::Kernel(program, "RenderKernel", &error);
     CheckError(error, "Create kernel");
 
-    // Set the kernel parameters
+    // Setup kernel parameters
     error = kernel.setArg(0, pixelBuffer);
     CheckError(error, "Set kernel args0");
 
