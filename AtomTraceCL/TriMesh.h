@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 
+#include "Geometry.h"
 #include "Vector3.h"
 
 namespace AtomTraceCL
@@ -12,16 +13,21 @@ namespace AtomTraceCL
     class TriMesh
     {
     public:
-        typedef struct
+        struct TriFace
         {
             unsigned __int32 v[3]; // vertices index
-        }TriFace;
+            TriFace() { v[0] = v[1] = v[2] = 0; }
+        };
 
     public:
         TriMesh();
         ~TriMesh();
 
         bool LoadObjFromFile(const std::string& fileName);
+
+        __int32 GetType() const;
+        unsigned __int32 GetSize() const;
+        const void* GetData() const;
 
     private:
         void Clear();
@@ -34,6 +40,8 @@ namespace AtomTraceCL
         std::vector<TriFace> m_faces;
         std::vector<TriFace> m_ftexture;
         std::vector<TriFace> m_fNormal;
+
+        char* m_buffer;
 
     };
 } // namespace AtomTraceCL

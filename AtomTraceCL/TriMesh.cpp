@@ -25,7 +25,7 @@ namespace AtomTraceCL
         sstream >> vec.X() >> vec.Y() >> vec.Z();
     }
 
-    TriMesh::TriMesh()
+    TriMesh::TriMesh() : m_buffer(nullptr)
     {
         m_vertices.clear();
         m_normals.clear();
@@ -37,6 +37,24 @@ namespace AtomTraceCL
         this->Clear();
     }
 
+    __int32 TriMesh::GetType() const
+    {
+        return TRIANGLES;
+    }
+
+    unsigned __int32 TriMesh::GetSize() const
+    {
+        std::size_t size = (sizeof(AtomMathCL::Vector3) * (m_vertices.size() + m_normals.size() + m_vtexture.size())
+                          + sizeof(TriFace) * (m_faces.size() + m_ftexture.size() + m_fNormal.size()));
+        size += sizeof(unsigned __int32) * 2; // storage for number of vertices and number of faces.
+        size += sizeof(unsigned __int32) * 2; // storage for whether it contain normals and texture coordinates data.
+        return static_cast<unsigned __int32>(size);
+    }
+
+    const void* TriMesh::GetData() const
+    {
+        return m_buffer;
+    }
 
     void TriMesh::ReadFaces(const std::string& buffer)
     {
@@ -112,6 +130,8 @@ namespace AtomTraceCL
             return false;
         }
 
+        this->Clear();
+
         std::string line;
         while (!objFile.eof())
         {
@@ -169,6 +189,11 @@ namespace AtomTraceCL
         }
 
         objFile.close();
+
+        // pack all data into m_buffer
+        std::size_t numVert = m_vertices.size();
+        std::size_t numFace = m_faces.size();
+
         return true;
     }
 
@@ -177,6 +202,12 @@ namespace AtomTraceCL
         m_vertices.clear();
         m_normals.clear();
         m_faces.clear();
+        
+        if (nullptr != m_buffer)
+        {
+            delete[] m_buffer;
+            m_buffer = nullptr;
+        }
     }
 
 } // namespace AtomTraceCL
