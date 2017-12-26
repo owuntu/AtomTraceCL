@@ -77,6 +77,9 @@
     <ClCompile Include="Timer.cpp">
       <Filter>Profiling</Filter>
     </ClCompile>
+    <ClCompile Include="TriMesh.cpp">
+      <Filter>Geometry</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Ray.h">
@@ -135,6 +138,9 @@
     </ClInclude>
     <ClInclude Include="Timer.h">
       <Filter>Profiling</Filter>
+    </ClInclude>
+    <ClInclude Include="TriMesh.h">
+      <Filter>Geometry</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

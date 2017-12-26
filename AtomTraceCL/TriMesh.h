@@ -25,11 +25,15 @@ namespace AtomTraceCL
 
     private:
         void Clear();
+        void ReadFaces(const std::string& buffer);
 
     public:
-        std::vector<AtomMathCL::Vector3> vertices;
-        std::vector<AtomMathCL::Vector3> normals;
-        std::vector<TriFace> faces;
+        std::vector<AtomMathCL::Vector3> m_vertices;
+        std::vector<AtomMathCL::Vector3> m_normals;
+        std::vector<AtomMathCL::Vector3> m_vtexture; // texture vertex
+        std::vector<TriFace> m_faces;
+        std::vector<TriFace> m_ftexture;
+        std::vector<TriFace> m_fNormal;
 
     };
 } // namespace AtomTraceCL
