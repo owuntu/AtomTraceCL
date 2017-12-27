@@ -217,7 +217,7 @@ bool IntersectPlane(const Ray* pRAY, float* pt)
 bool IntersectTriangle(const Ray* pRAY, __constant float3* pVertices,
                        __constant uint3* pFaces, uint faceID, float* pt)
 {
-    uint3 face = *(pFace + faceID);
+    uint3 face = *(pFaces + faceID);
     float3 A = *(pVertices + face.x);
     float3 B = *(pVertices + face.y);
     float3 C = *(pVertices + face.z);
@@ -236,7 +236,7 @@ bool IntersectTriMesh(const Ray* pRAY, __constant char* pGeo, float* pt)
     uint bitNT = *(__constant uint*)pCurr;
     pCurr += sizeof(uint);
 
-    uint vOffset = numVert * sizeof(float3)
+    uint vOffset = numVert * sizeof(float3);
     uint offset = vOffset;
     if (bitNT & 0x1) // texture coord vertices offset
         offset += vOffset;
