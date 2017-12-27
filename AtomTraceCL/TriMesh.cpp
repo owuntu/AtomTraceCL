@@ -56,6 +56,7 @@ namespace AtomTraceCL
         return m_buffer;
     }
 
+    // Only handle faces with 3 or 4 vertices
     void TriMesh::ReadFaces(const std::string& buffer)
     {
         using namespace std;
@@ -63,58 +64,76 @@ namespace AtomTraceCL
         TriFace ft;
         TriFace fn;
 
+        bool bft = false; // marker to check if ft or fn exist
+        bool bfn = false;
+
         size_t faceVert = 0;
         std::stringstream sstream(buffer);
         while (!sstream.eof())
         {
-            if (faceVert == 3)
-            {
-                m_faces.push_back(face);
-                m_ftexture.push_back(ft);
-                m_fNormal.push_back(fn);
-
-                face.v[1] = face.v[2];
-                ft.v[1] = ft.v[2];
-                fn.v[1] = fn.v[2];
-                faceVert = 2;
-            }
-
             string str;
             sstream >> str;
+            if (str.size() == 0)
+            {
+                break;
+            }
 
             unsigned __int32 index = 0;
             int type = 0;
 
             for (std::size_t i = 0; i < str.size(); ++i)
             {
-                if (str[i] == '/' || i == str.size() - 1)
-                {
-                    switch (type)
-                    {
-                        case 0: // face
-                            face.v[faceVert] = index-1;
-                            break;
-                        case 1:
-                            ft.v[faceVert] = index-1;
-                            break;
-                        case 2:
-                            fn.v[faceVert] = index-1;
-                            break;
-                    }
-
-                    index = 0;
-                    type++;
-                    continue;
-                }
-
                 if (str[i] <= '9' && str[i] >= '0')
                 {
                     unsigned __int32 t = str[i] - '0';
                     index = index * 10 + t;
                 }
+
+                if ( (str[i] == '/' || i == str.size() - 1) )
+                {
+                    if (0 != index)
+                    {
+                        switch (type)
+                        {
+                            case 0: // face
+                                face.v[faceVert] = index - 1;
+                                break;
+                            case 1:
+                                ft.v[faceVert] = index - 1;
+                                bft = true;
+                                break;
+                            case 2:
+                                fn.v[faceVert] = index - 1;
+                                bfn = true;
+                                break;
+                        }
+                    }
+
+                    index = 0;
+                    type++;
+                }
             }
-            faceVert++;
+
+            if (faceVert == 2)
+            {
+                m_faces.push_back(face);
+                face.v[1] = face.v[2];
+                if (bft)
+                {
+                    m_ftexture.push_back(ft);
+                    ft.v[1] = ft.v[2];
+                }
+
+                if (bfn)
+                {
+                    m_fNormal.push_back(fn);
+                    fn.v[1] = fn.v[2];
+                }
+            }
+            else
+                faceVert++;
         }
+
     }
 
     bool TriMesh::LoadObjFromFile(const std::string& fileName)
@@ -190,7 +209,7 @@ namespace AtomTraceCL
 
         objFile.close();
 
-        // pack all data into m_buffer
+        // TODO: pack all data into m_buffer
         std::size_t numVert = m_vertices.size();
         std::size_t numFace = m_faces.size();
 
