@@ -108,7 +108,6 @@ namespace AtomTraceCL
                                 break;
                         }
                     }
-
                     index = 0;
                     type++;
                 }
@@ -209,7 +208,7 @@ namespace AtomTraceCL
 
         objFile.close();
 
-        // TODO: pack all data into m_buffer
+        // Pack all data into m_buffer
         if (nullptr != m_pBuffer)
         {
             delete[] m_pBuffer;

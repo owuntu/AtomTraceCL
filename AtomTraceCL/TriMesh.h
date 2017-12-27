@@ -16,6 +16,7 @@ namespace AtomTraceCL
         struct TriFace
         {
             unsigned __int32 v[3]; // vertices index
+            unsigned __int32 padding;
             TriFace() { v[0] = v[1] = v[2] = 0; }
         };
 

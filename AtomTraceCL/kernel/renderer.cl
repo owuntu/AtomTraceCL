@@ -214,6 +214,44 @@ bool IntersectPlane(const Ray* pRAY, float* pt)
     return true;
 }
 
+bool IntersectTriangle(const Ray* pRAY, __constant float3* pVertices,
+                       __constant uint3* pFaces, uint faceID, float* pt)
+{
+    uint3 face = *(pFace + faceID);
+    float3 A = *(pVertices + face.x);
+    float3 B = *(pVertices + face.y);
+    float3 C = *(pVertices + face.z);
+    // TODO: Intersect triangle.
+}
+
+bool IntersectTriMesh(const Ray* pRAY, __constant char* pGeo, float* pt)
+{
+    __constant char* pCurr = pGeo;
+    uint numVert = *(__constant uint*)pCurr;
+    pCurr += sizeof(uint);
+
+    uint numFace = *(__constant uint*)pCurr;
+    pCurr += sizeof(uint);
+
+    uint bitNT = *(__constant uint*)pCurr;
+    pCurr += sizeof(uint);
+
+    uint vOffset = numVert * sizeof(float3)
+    uint offset = vOffset;
+    if (bitNT & 0x1) // texture coord vertices offset
+        offset += vOffset;
+    if (bitNT & 0x2) // normals offset
+        offset += vOffset;
+
+    bool bHit = false;
+    __constant uint3* pFaces = (__constant uint3*)(pCurr + offset);
+    for (uint i = 0; i < numFace; ++i)
+    {
+        bHit |= IntersectTriangle(pRAY, pCurr, pFaces, i, pt);
+    }
+    return bHit;
+}
+
 bool IntersectP(__constant char* pObj, __constant const int* pIndexTable, int numObjs, const Ray* pRay, const float maxt, bool bIgnoreLight)
 {
     bool bHit = false;
