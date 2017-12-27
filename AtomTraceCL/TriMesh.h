@@ -41,9 +41,28 @@ namespace AtomTraceCL
         std::vector<TriFace> m_ftexture;
         std::vector<TriFace> m_fNormal;
 
-        char* m_buffer;
+        char* m_pBuffer;
 
     };
+
+    template<typename T>
+    inline void CopyAndMovePtr(char*& pDest, std::vector<T>& vec)
+    {
+        std::size_t tsize = vec.size() * sizeof(T);
+        if (tsize != 0)
+        {
+            memcpy(pDest, &vec[0], tsize);
+            pDest += tsize;
+        }
+    }
+
+    template<typename T>
+    inline void CopyAndMovePtr(char*& pDest, const T& val)
+    {
+        memcpy(pDest, &val, sizeof(val));
+        pDest += sizeof(val);
+    }
+
 } // namespace AtomTraceCL
 
 #endif // ATOMTRACE_CL_TRIMESH_H_

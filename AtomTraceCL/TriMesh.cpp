@@ -25,7 +25,7 @@ namespace AtomTraceCL
         sstream >> vec.X() >> vec.Y() >> vec.Z();
     }
 
-    TriMesh::TriMesh() : m_buffer(nullptr)
+    TriMesh::TriMesh() : m_pBuffer(nullptr)
     {
         m_vertices.clear();
         m_normals.clear();
@@ -47,13 +47,13 @@ namespace AtomTraceCL
         std::size_t size = (sizeof(AtomMathCL::Vector3) * (m_vertices.size() + m_normals.size() + m_vtexture.size())
                           + sizeof(TriFace) * (m_faces.size() + m_ftexture.size() + m_fNormal.size()));
         size += sizeof(unsigned __int32) * 2; // storage for number of vertices and number of faces.
-        size += sizeof(unsigned __int32) * 2; // storage for whether it contain normals and texture coordinates data.
+        size += sizeof(unsigned __int32); // storage for whether it contain normals and texture coordinates data.
         return static_cast<unsigned __int32>(size);
     }
 
     const void* TriMesh::GetData() const
     {
-        return m_buffer;
+        return m_pBuffer;
     }
 
     // Only handle faces with 3 or 4 vertices
@@ -210,8 +210,39 @@ namespace AtomTraceCL
         objFile.close();
 
         // TODO: pack all data into m_buffer
-        std::size_t numVert = m_vertices.size();
-        std::size_t numFace = m_faces.size();
+        if (nullptr != m_pBuffer)
+        {
+            delete[] m_pBuffer;
+        }
+        m_pBuffer = new char[this->GetSize()];
+        char* pCurr = m_pBuffer;
+
+        unsigned __int32 numVert = static_cast<unsigned __int32>(m_vertices.size());
+        unsigned __int32 numFace = static_cast<unsigned __int32>(m_faces.size());
+        unsigned __int32 bitNT = 0; // bit field to record whether has normal and texture coordinate data
+        if (m_vtexture.size() != 0)
+        {
+            bitNT |= 0x1;
+        }
+        if (m_normals.size() != 0)
+        {
+            bitNT |= 0x2;
+        }
+
+        // Copy number of vertices and faces
+        CopyAndMovePtr<unsigned __int32>(pCurr, numVert);
+        CopyAndMovePtr<unsigned __int32>(pCurr, numFace);
+        CopyAndMovePtr<unsigned __int32>(pCurr, bitNT);
+
+        // Copy vertices
+        CopyAndMovePtr<Vector3>(pCurr, m_vertices);
+        CopyAndMovePtr<Vector3>(pCurr, m_vtexture);
+        CopyAndMovePtr<Vector3>(pCurr, m_normals);
+
+        // Copy face index
+        CopyAndMovePtr<TriFace>(pCurr, m_faces);
+        CopyAndMovePtr<TriFace>(pCurr, m_ftexture);
+        CopyAndMovePtr<TriFace>(pCurr, m_fNormal);
 
         return true;
     }
@@ -222,10 +253,10 @@ namespace AtomTraceCL
         m_normals.clear();
         m_faces.clear();
         
-        if (nullptr != m_buffer)
+        if (nullptr != m_pBuffer)
         {
-            delete[] m_buffer;
-            m_buffer = nullptr;
+            delete[] m_pBuffer;
+            m_pBuffer = nullptr;
         }
     }
 
