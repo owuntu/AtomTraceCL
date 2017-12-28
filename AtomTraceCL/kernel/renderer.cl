@@ -1,26 +1,11 @@
 #define MAX_DEPTH 3
 
 #include "ConstantDef.hcl"
+#include "InfoDef.hcl"
 #include "Metal.hcl"
 #include "Ray.hcl"
 #include "Transformation.hcl"
-
-typedef struct
-{
-    Transformation transform;
-    int  gtype;
-    uint gsize;
-    uint geometryIndex; // Geometry index from start address of the scene
-    int  matType;  // Material information
-    uint matSize;
-    uint matIndex;
-}ObjectHeader;
-
-typedef struct
-{
-    float3 hitP;
-    float3 hitN;
-}HitInfoGeo; // Work around for an LLVM error. These two should be put into HitInfo
+#include "Triangles.hcl"
 
 // --- Geometries ----
 // TODO: Add triangulate objs.
@@ -214,17 +199,8 @@ bool IntersectPlane(const Ray* pRAY, float* pt)
     return true;
 }
 
-bool IntersectTriangle(const Ray* pRAY, __constant float3* pVertices,
-                       __constant uint3* pFaces, uint faceID, float* pt)
-{
-    uint3 face = *(pFaces + faceID);
-    float3 A = *(pVertices + face.x);
-    float3 B = *(pVertices + face.y);
-    float3 C = *(pVertices + face.z);
-    // TODO: Intersect triangle.
-}
 
-bool IntersectTriMesh(const Ray* pRAY, __constant char* pGeo, float* pt)
+bool IntersectTriMesh(const Ray* pRAY, __constant char* pGeo, HitInfoGeo* pInfogeo, float* pt)
 {
     __constant char* pCurr = pGeo;
     uint numVert = *(__constant uint*)pCurr;
@@ -237,17 +213,22 @@ bool IntersectTriMesh(const Ray* pRAY, __constant char* pGeo, float* pt)
     pCurr += sizeof(uint);
 
     uint vOffset = numVert * sizeof(float3);
-    uint offset = vOffset;
+    uint offset = vOffset; // vertices offset
     if (bitNT & 0x1) // texture coord vertices offset
         offset += vOffset;
+
+    __constant float3* pNormal = (__constant float3*)(pCurr + offset);
+
     if (bitNT & 0x2) // normals offset
         offset += vOffset;
 
     bool bHit = false;
     __constant uint3* pFaces = (__constant uint3*)(pCurr + offset);
+    __constant uint3* pFaceN = pFaces + numFace * 2; // skip face vertices and face texture
+
     for (uint i = 0; i < numFace; ++i)
     {
-        bHit |= IntersectTriangle(pRAY, pCurr, pFaces, i, pt);
+        bHit |= IntersectTriangle(pRAY, pCurr, pNormal, pFaces, pFaceN, i, pInfogeo, pt);
     }
     return bHit;
 }

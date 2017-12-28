@@ -162,5 +162,11 @@
     <None Include="Timer.inl">
       <Filter>Profiling</Filter>
     </None>
+    <None Include="kernel\Triangles.hcl">
+      <Filter>CL_GL\OpenCL_kernels</Filter>
+    </None>
+    <None Include="kernel\InfoDef.hcl">
+      <Filter>CL_GL\OpenCL_kernels</Filter>
+    </None>
   </ItemGroup>
 </Project>

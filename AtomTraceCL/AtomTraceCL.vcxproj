@@ -169,10 +169,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="kernel\ConstantDef.hcl" />
+    <None Include="kernel\InfoDef.hcl" />
     <None Include="kernel\Metal.hcl" />
     <None Include="kernel\Ray.hcl" />
     <None Include="kernel\renderer.cl" />
     <None Include="kernel\Transformation.hcl" />
+    <None Include="kernel\Triangles.hcl" />
     <None Include="Timer.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
