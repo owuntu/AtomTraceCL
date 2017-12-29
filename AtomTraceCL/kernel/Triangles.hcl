@@ -5,14 +5,14 @@
 
 const float3 BaryCentricHelp(const float3 v01, const float3 v02, const float3 v0p, const float3 faceN)
 {
-    float a0 = dot(cross(v01, v02), faceN);// * 0.5f;
-    float a1 = dot(cross(v01, v0p), faceN);// * 0.5f;
-    float a2 = dot(cross(v0p, v02), faceN);// * 0.5f;
+    float a0 = dot(cross(v01, v02), faceN);
+    float a1 = dot(cross(v01, v0p), faceN);
+    float a2 = dot(cross(v0p, v02), faceN);
 
     float3 bc;
-    bc[0] = a1 / a0;
-    bc[1] = a2 / a0;
-    bc[2] = 1 - bc[0] - bc[1];
+    bc.x = a1 / a0;
+    bc.y = a2 / a0;
+    bc.z = 1 - bc.x - bc.y;
     return bc;
 }
 
@@ -21,7 +21,6 @@ bool IntersectTriangle(const Ray* pRAY, __constant float3* pVertices, __constant
 {
     uint3 face = *(pFaces + faceID);
     float3 v0 = *(pVertices + face.x);
-    // TODO: Intersect triangle.
 
     float3 v01;
     float3 v02;
@@ -55,7 +54,7 @@ bool IntersectTriangle(const Ray* pRAY, __constant float3* pVertices, __constant
     float3 vn1 = *(pNormal + (*(pFaceN + faceID)).y);
     float3 vn2 = *(pNormal + (*(pFaceN + faceID)).z);
     pInfoGeo->hitP = hp;
-    pInfoGeo->hitN = vn0 * bc[2] + vn1 * bc[1] + vn2 * bc[0];
+    pInfoGeo->hitN = vn0 * bc.z + vn1 * bc.y + vn2 * bc.x;
     return true;
 }
 

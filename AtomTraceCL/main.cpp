@@ -97,12 +97,10 @@ int main(int argc, char** argv)
     CheckError(error, "Create program");
 
     // Compile the kernel code (after this we could extract the compiled version)
-    error = program.build({device}, "-I kernel");
-    if (!CheckError(error, "Build program"))
+    error = program.build({ device }, "-I kernel");
     {
         char* msg = nullptr;
         std::size_t len = 0;
-        //program.getBuildInfo(device, CL_PROGRAM_BUILD_LOG, msg);
         clGetProgramBuildInfo(program(), device(), CL_PROGRAM_BUILD_LOG, 0, nullptr, &len);
         if (len > 0)
         {
@@ -111,6 +109,9 @@ int main(int argc, char** argv)
             std::cerr << msg << std::endl;
             delete[] msg;
         }
+    }
+    if (!CheckError(error, "Build program"))
+    {
         ShutDownGLFW();
         system("pause");
         return 1;

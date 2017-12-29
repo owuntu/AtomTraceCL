@@ -10,7 +10,7 @@
 namespace AtomTraceCL
 {
 
-    class TriMesh
+    class TriMesh : public Geometry
     {
     public:
         struct TriFace

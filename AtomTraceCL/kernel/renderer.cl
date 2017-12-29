@@ -199,36 +199,39 @@ bool IntersectPlane(const Ray* pRAY, float* pt)
     return true;
 }
 
+inline uint CopyUintAndmvptr(__constant char** pptr)
+{
+    uint res = **(__constant uint**)pptr;
+    *pptr += sizeof(uint);
+    return res;
+}
 
 bool IntersectTriMesh(const Ray* pRAY, __constant char* pGeo, HitInfoGeo* pInfogeo, float* pt)
 {
     __constant char* pCurr = pGeo;
-    uint numVert = *(__constant uint*)pCurr;
-    pCurr += sizeof(uint);
+    // Copy overhead information
+    uint numVert = CopyUintAndmvptr(&pCurr);
+    uint numText = CopyUintAndmvptr(&pCurr);
+    uint numNorm = CopyUintAndmvptr(&pCurr);
 
-    uint numFace = *(__constant uint*)pCurr;
-    pCurr += sizeof(uint);
+    uint numFace = CopyUintAndmvptr(&pCurr);
+    uint numFt = CopyUintAndmvptr(&pCurr);
+    uint numFn = CopyUintAndmvptr(&pCurr);
 
-    uint bitNT = *(__constant uint*)pCurr;
-    pCurr += sizeof(uint);
-
-    uint vOffset = numVert * sizeof(float3);
-    uint offset = vOffset; // vertices offset
-    if (bitNT & 0x1) // texture coord vertices offset
-        offset += vOffset;
-
-    __constant float3* pNormal = (__constant float3*)(pCurr + offset);
-
-    if (bitNT & 0x2) // normals offset
-        offset += vOffset;
+    __constant float3* pVertices = (__constant float3*)pCurr;
+    uint offset = (numVert + numText) * sizeof(float3); // vertices and texture coord vertices offset
+    pCurr += offset;
+    
+    __constant float3* pNormal = (__constant float3*)(pCurr);
+    pCurr += numNorm * sizeof(float3);
 
     bool bHit = false;
-    __constant uint3* pFaces = (__constant uint3*)(pCurr + offset);
-    __constant uint3* pFaceN = pFaces + numFace * 2; // skip face vertices and face texture
+    __constant uint3* pFaces = (__constant uint3*)(pCurr);
+    __constant uint3* pFaceN = pFaces + numFace + numFt; // skip face vertices and face texture
 
     for (uint i = 0; i < numFace; ++i)
     {
-        bHit |= IntersectTriangle(pRAY, pCurr, pNormal, pFaces, pFaceN, i, pInfogeo, pt);
+        bHit |= IntersectTriangle(pRAY, pVertices, pNormal, pFaces, pFaceN, i, pInfogeo, pt);
     }
     return bHit;
 }
@@ -302,6 +305,13 @@ bool Intersect(__constant char* pObj, __constant const int* pIndexTable, int num
 
             float3 uy = (float3)(0.f, 1.f, 0.f);
             hitN = normalize(VectorTransformFrom(&objh.transform, &uy));
+        }
+        else if (objh.gtype == 3) // Triangles object
+        {
+            tHit = IntersectTriMesh(&ray, pObj + objh.geometryIndex, pHitInfoGeo, &t);
+            // Transform back into world coordinate
+            hitP = TransformFrom(&objh.transform, &(pHitInfoGeo->hitP));
+            hitN = normalize(VectorTransformFrom(&objh.transform, &(pHitInfoGeo->hitN)));
         }
         
         if (tHit)
