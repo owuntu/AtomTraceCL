@@ -6,6 +6,26 @@
 
 namespace AtomTraceCL
 {
+    typedef struct 
+    {
+        unsigned __int32 index;
+        unsigned __int32 size;
+    }ArrayInfo;
+
+    typedef struct  
+    {
+        // bvh data
+        ArrayInfo nodes;
+        ArrayInfo elements;
+        // triangle geometry data
+        ArrayInfo vertices;
+        ArrayInfo vts;
+        ArrayInfo vns;
+        ArrayInfo faces;
+        ArrayInfo fts;
+        ArrayInfo fns;
+    }TriMeshHeader;
+
     // Utility functions
     static inline void ReadLine(std::ifstream& file, std::string& line)
     {
@@ -45,10 +65,11 @@ namespace AtomTraceCL
     unsigned __int32 TriMesh::GetSize() const
     {
         // TODO: add bvh size
-        std::size_t size = (sizeof(AtomMathCL::Vector3) * (m_vertices.size() + m_normals.size() + m_vtexture.size())
+        std::size_t size = m_bvh.m_numNodes * sizeof(cyBVH::Node)
+                          + m_faces.size() * sizeof(unsigned __int32) // bvh elements list
+                          + (sizeof(AtomMathCL::Vector3) * (m_vertices.size() + m_normals.size() + m_vtexture.size())
                           + sizeof(TriFace) * (m_faces.size() + m_ftexture.size() + m_fNormal.size()));
-        size += sizeof(unsigned __int32) * 3; // storage for number of vertices, v textures and normals.
-        size += sizeof(unsigned __int32) * 3; // storage for number of face, f texture and f normal indices.
+        size += sizeof(TriMeshHeader);
         return static_cast<unsigned __int32>(size);
     }
 
@@ -212,6 +233,26 @@ namespace AtomTraceCL
         m_bvh.SetMesh(this);
 
         // Pack all data into m_buffer
+        TriMeshHeader header;
+        header.nodes.size = m_bvh.m_numNodes;
+        header.elements.size = m_faces.size();
+        header.vertices.size = m_vertices.size();
+        header.vts.size = m_vtexture.size();
+        header.vns.size = m_normals.size();
+        header.faces.size = m_faces.size();
+        header.fts.size = m_ftexture.size();
+        header.fns.size = m_fNormal.size();
+
+        header.nodes.index    = sizeof(header);
+        header.elements.index = header.nodes.index    + header.nodes.size * sizeof(cyBVH::Node);
+        header.vertices.index = header.elements.index + header.elements.size * sizeof(unsigned __int32);
+        header.vts.index      = header.vertices.index + header.vertices.size * sizeof(AtomMathCL::Vector3);
+        header.vns.index      = header.vts.index      + header.vts.size * sizeof(AtomMathCL::Vector3);
+        header.faces.index    = header.vns.index      + header.vns.size * sizeof(AtomMathCL::Vector3);
+        header.fts.index      = header.faces.index    + header.faces.size * sizeof(TriFace);
+        header.fns.index      = header.fts.index      + header.fts.size * sizeof(TriFace);
+        
+        // TODO: Pack BVH data
         if (nullptr != m_pBuffer)
         {
             delete[] m_pBuffer;
@@ -219,16 +260,12 @@ namespace AtomTraceCL
         m_pBuffer = new char[this->GetSize()];
         char* pCurr = m_pBuffer;
 
-        unsigned __int32 numVert = static_cast<unsigned __int32>(m_vertices.size());
-        unsigned __int32 numFace = static_cast<unsigned __int32>(m_faces.size());
+        // Copy TriMesh header
+        CopyAndMovePtr<>(pCurr, header);
 
-        // Copy number of vertices and faces
-        CopyAndMovePtr<unsigned __int32>(pCurr, numVert);
-        CopyAndMovePtr<unsigned __int32>(pCurr, m_vtexture.size());
-        CopyAndMovePtr<unsigned __int32>(pCurr, m_normals.size());
-        CopyAndMovePtr<unsigned __int32>(pCurr, numFace);
-        CopyAndMovePtr<unsigned __int32>(pCurr, m_ftexture.size());
-        CopyAndMovePtr<unsigned __int32>(pCurr, m_fNormal.size());
+        // Copy BVH nodes and elements list
+        CopyAndMovePtr<cyBVH::Node>(pCurr, m_bvh.nodes, m_bvh.m_numNodes);
+        CopyAndMovePtr<unsigned __int32>(pCurr, m_bvh.elements, header.elements.size);
 
         // Copy vertices
         CopyAndMovePtr<Vector3>(pCurr, m_vertices);

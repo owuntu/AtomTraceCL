@@ -210,26 +210,16 @@ bool IntersectTriMesh(const Ray* pRAY, __constant char* pGeo, HitInfoGeo* pInfog
 {
     __constant char* pCurr = pGeo;
     // Copy overhead information
-    uint numVert = CopyUintAndmvptr(&pCurr);
-    uint numText = CopyUintAndmvptr(&pCurr);
-    uint numNorm = CopyUintAndmvptr(&pCurr);
+    TriMeshHeader header = *(__constant TriMeshHeader*)pCurr;
 
-    uint numFace = CopyUintAndmvptr(&pCurr);
-    uint numFt = CopyUintAndmvptr(&pCurr);
-    uint numFn = CopyUintAndmvptr(&pCurr);
-
-    __constant float3* pVertices = (__constant float3*)pCurr;
-    uint offset = (numVert + numText) * sizeof(float3); // vertices and texture coord vertices offset
-    pCurr += offset;
-    
-    __constant float3* pNormal = (__constant float3*)(pCurr);
-    pCurr += numNorm * sizeof(float3);
+    __constant float3* pVertices = (__constant float3*)(pCurr + header.vertices.index);
+    __constant float3* pNormal = (__constant float3*)(pCurr + header.vns.index);
 
     bool bHit = false;
-    __constant uint3* pFaces = (__constant uint3*)(pCurr);
-    __constant uint3* pFaceN = pFaces + numFace + numFt; // skip face vertices and face texture
+    __constant uint3* pFaces = (__constant uint3*)(pCurr + header.faces.index);
+    __constant uint3* pFaceN = (__constant uint3*)(pCurr + header.fns.index);
 
-    for (uint i = 0; i < numFace; ++i)
+    for (uint i = 0; i < header.faces.size; ++i)
     {
         bHit |= IntersectTriangle(pRAY, pVertices, pNormal, pFaces, pFaceN, i, pInfogeo, pt);
     }

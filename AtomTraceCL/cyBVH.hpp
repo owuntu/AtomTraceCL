@@ -199,13 +199,14 @@ protected:
 		bool			IsLeafNode()	const { return (data&_CY_BVH_LEAF_BIT_MASK)>0; }										//!< returns true if this is a leaf node
 		const float*	GetBounds()		const { return box.b; }																//!< returns the bounding box of the node
 	private:
-		Box				box;	//!< bounding box of the node
-		unsigned int	data;	//!< node data bits that keep the leaf node flag and the child node index or element count and element offset.
-	};
+		Box				  box;	   //!< bounding box of the node
+		unsigned __int32  data;	   //!< node data bits that keep the leaf node flag and the child node index or element count and element offset.
+        //unsigned __int32  padding; //!< padding for OpenCL data alignment.
+    };
 
-	Node			*nodes;		//!< the tree structure that keeps all the node data (nodeData[0] is not used for cache coherency)
-    unsigned int     m_numNodes;
-    unsigned int	*elements;	//!< indices of all elements in all nodes
+	Node			 *nodes;		//!< the tree structure that keeps all the node data (nodeData[0] is not used for cache coherency)
+    unsigned __int32  m_numNodes;
+    unsigned __int32 *elements;	    //!< indices of all elements in all nodes
 
 	//////////////////////////////////////////////////////////////////////////!//!//!
 	//@ Internal methods for building the BVH tree

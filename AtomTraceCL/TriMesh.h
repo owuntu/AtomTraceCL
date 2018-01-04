@@ -60,6 +60,17 @@ namespace AtomTraceCL
     }
 
     template<typename T>
+    inline void CopyAndMovePtr(char*& pDest, const T* pSrc, std::size_t numElements)
+    {
+        std::size_t tsize = numElements * sizeof(T);
+        if (tsize != 0)
+        {
+            memcpy(pDest, pSrc, tsize);
+            pDest += tsize;
+        }
+    }
+
+    template<typename T>
     inline void CopyAndMovePtr(char*& pDest, const T& val)
     {
         memcpy(pDest, &val, sizeof(val));

@@ -9,6 +9,7 @@ namespace AtomTraceCL
 
     class BVHTriMesh : public cyBVH
     {
+        friend class TriMesh;
     public:
         //!@name Constructors
         BVHTriMesh() : mesh(0) {}

@@ -16,6 +16,26 @@ typedef struct
 
 typedef struct
 {
+    uint index;
+    uint size;
+}ArrayInfo;
+
+typedef struct
+{
+    // bvh data
+    ArrayInfo nodes;
+    ArrayInfo elements;
+    // triangle geometry data
+    ArrayInfo vertices;
+    ArrayInfo vts;
+    ArrayInfo vns;
+    ArrayInfo faces;
+    ArrayInfo fts;
+    ArrayInfo fns;
+}TriMeshHeader;
+
+typedef struct
+{
     float3 hitP;
     float3 hitN;
 }HitInfoGeo; // Work around for an LLVM error. These two should be put into HitInfo
