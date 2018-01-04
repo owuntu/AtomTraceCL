@@ -12,9 +12,6 @@
     <Filter Include="Geometry">
       <UniqueIdentifier>{9bc62434-9183-401e-94d3-4ae5bfcfeeb0}</UniqueIdentifier>
     </Filter>
-    <Filter Include="lodePNG">
-      <UniqueIdentifier>{848c48a8-9a73-43db-b216-56d65e4f4c63}</UniqueIdentifier>
-    </Filter>
     <Filter Include="CL_GL">
       <UniqueIdentifier>{140be90a-1fca-471c-9836-e8892ed71d45}</UniqueIdentifier>
     </Filter>
@@ -30,6 +27,15 @@
     <Filter Include="Profiling">
       <UniqueIdentifier>{659afbb9-0e09-44a9-97e1-5d9fe7e380be}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Extern">
+      <UniqueIdentifier>{b4b88fa2-9b23-4811-aae5-c8ee7991c391}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Extern\lodePNG">
+      <UniqueIdentifier>{848c48a8-9a73-43db-b216-56d65e4f4c63}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Extern\cyCodebase">
+      <UniqueIdentifier>{8e286514-af22-400d-bafd-2fb6dc9b0f63}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Utilities.cpp">
@@ -42,7 +48,7 @@
       <Filter>Geometry</Filter>
     </ClCompile>
     <ClCompile Include="..\External\lodePNG\lodepng.cpp">
-      <Filter>lodePNG</Filter>
+      <Filter>Extern\lodePNG</Filter>
     </ClCompile>
     <ClCompile Include="Camera.cpp">
       <Filter>Source Files</Filter>
@@ -80,6 +86,9 @@
     <ClCompile Include="TriMesh.cpp">
       <Filter>Geometry</Filter>
     </ClCompile>
+    <ClCompile Include="BVHTriMesh.cpp">
+      <Filter>Geometry</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Ray.h">
@@ -89,7 +98,7 @@
       <Filter>Geometry</Filter>
     </ClInclude>
     <ClInclude Include="..\External\lodePNG\lodepng.h">
-      <Filter>lodePNG</Filter>
+      <Filter>Extern\lodePNG</Filter>
     </ClInclude>
     <ClInclude Include="Camera.h">
       <Filter>Source Files</Filter>
@@ -140,6 +149,12 @@
       <Filter>Profiling</Filter>
     </ClInclude>
     <ClInclude Include="TriMesh.h">
+      <Filter>Geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="cyBVH.hpp">
+      <Filter>Extern\cyCodebase</Filter>
+    </ClInclude>
+    <ClInclude Include="BVHTriMesh.h">
       <Filter>Geometry</Filter>
     </ClInclude>
   </ItemGroup>

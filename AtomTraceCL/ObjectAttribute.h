@@ -13,7 +13,7 @@ namespace AtomTraceCL
         virtual void* GetData()
         {
             return const_cast<void*>(
-                reinterpret_cast<const Geometry*>(this)->GetData()
+                reinterpret_cast<const ObjectAttribute*>(this)->GetData()
                 );
         }
 #endif

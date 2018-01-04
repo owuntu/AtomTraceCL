@@ -44,6 +44,7 @@ namespace AtomTraceCL
 
     unsigned __int32 TriMesh::GetSize() const
     {
+        // TODO: add bvh size
         std::size_t size = (sizeof(AtomMathCL::Vector3) * (m_vertices.size() + m_normals.size() + m_vtexture.size())
                           + sizeof(TriFace) * (m_faces.size() + m_ftexture.size() + m_fNormal.size()));
         size += sizeof(unsigned __int32) * 3; // storage for number of vertices, v textures and normals.
@@ -207,6 +208,8 @@ namespace AtomTraceCL
         }
 
         objFile.close();
+
+        m_bvh.SetMesh(this);
 
         // Pack all data into m_buffer
         if (nullptr != m_pBuffer)

@@ -49,7 +49,7 @@ namespace AtomTraceCL
             obj.SetMaterial(&ball);
             oList.AddObject(obj);
         }
-#if 0
+#if 1
         // back
         {
             RenderObject obj;

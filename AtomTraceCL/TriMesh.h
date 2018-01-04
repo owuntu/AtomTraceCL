@@ -7,6 +7,8 @@
 #include "Geometry.h"
 #include "Vector3.h"
 
+#include "BVHTriMesh.h"
+
 namespace AtomTraceCL
 {
 
@@ -43,7 +45,7 @@ namespace AtomTraceCL
         std::vector<TriFace> m_fNormal;
 
         char* m_pBuffer;
-
+        BVHTriMesh m_bvh;
     };
 
     template<typename T>

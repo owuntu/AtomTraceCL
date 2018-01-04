@@ -126,6 +126,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\External\lodePNG\lodepng.cpp" />
+    <ClCompile Include="BVHTriMesh.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="CLResourceManager.cpp" />
     <ClCompile Include="DiffuseMaterial.cpp" />
@@ -147,8 +148,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\External\lodePNG\lodepng.h" />
+    <ClInclude Include="BVHTriMesh.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="CLResourceManager.h" />
+    <ClInclude Include="cyBVH.hpp" />
     <ClInclude Include="DiffuseMaterial.h" />
     <ClInclude Include="Geometry.h" />
     <ClInclude Include="Light.h" />
