@@ -1,7 +1,34 @@
 #ifndef ATOMTRACECL_TRIANGLES_HCL_
 #define ATOMTRACECL_TRIANGLES_HCL_
 
+#include "ConstantDef.hcl"
 #include "InfoDef.hcl"
+
+typedef struct
+{
+    // bvh data
+    ArrayInfo nodes;
+    ArrayInfo elements;
+    // triangle geometry data
+    ArrayInfo vertices;
+    ArrayInfo vts;
+    ArrayInfo vns;
+    ArrayInfo faces;
+    ArrayInfo fts;
+    ArrayInfo fns;
+}TriMeshHeader;
+
+// Axis aligned box
+typedef struct
+{
+    float b[6];
+}Box;
+
+typedef struct
+{
+    Box box;
+    uint data;
+}BVHNode;
 
 const float3 BaryCentricHelp(const float3 v01, const float3 v02, const float3 v0p, const float3 faceN)
 {
@@ -55,6 +82,44 @@ bool IntersectTriangle(const Ray* pRAY, __constant float3* pVertices, __constant
     float3 vn2 = *(pNormal + (*(pFaceN + faceID)).z);
     pInfoGeo->hitP = hp;
     pInfoGeo->hitN = vn0 * bc.z + vn1 * bc.y + vn2 * bc.x;
+    return true;
+}
+
+bool IntersectBox(const Ray* pRAY, const Box* pBox, float* pt)
+{
+    // TODO: Ray-box intersection.
+    float tEnter, tExit;
+    float3 minp, maxp;
+    minp.x = pBox->b[0] - pRAY->orig.x;
+    minp.y = pBox->b[1] - pRAY->orig.y;
+    minp.z = pBox->b[2] - pRAY->orig.z;
+
+    maxp.x = pBox->b[3] - pRAY->orig.x;
+    maxp.y = pBox->b[4] - pRAY->orig.y;
+    maxp.z = pBox->b[5] - pRAY->orig.z;
+
+    float tmin[3];
+    float tmax[3];
+
+    for (int i = 0; i < 3; ++i)
+    {
+        // Check parallel
+        if (pRAY->dir[i] < EPSILON && pRAY->dir[i] > -EPSILON)
+        {
+            tmin[i] = -FLT_MAX;
+            tmax[i] = FLT_MAX;
+            continue;
+        }
+
+        tmin[i] = minp[i] / pRAY->dir[i];
+        tmax[i] = maxp[i] / pRAY->dir[i];
+    }
+
+    tEnter = max(tmin[0], max(tmin[1], tmin[2]));
+    tExit =  min(tmax[0], min(tmax[1], tmax[2]));
+
+    if (tEnter > tExit)
+        return false;
     return true;
 }
 

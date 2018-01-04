@@ -199,13 +199,6 @@ bool IntersectPlane(const Ray* pRAY, float* pt)
     return true;
 }
 
-inline uint CopyUintAndmvptr(__constant char** pptr)
-{
-    uint res = **(__constant uint**)pptr;
-    *pptr += sizeof(uint);
-    return res;
-}
-
 bool IntersectTriMesh(const Ray* pRAY, __constant char* pGeo, HitInfoGeo* pInfogeo, float* pt)
 {
     __constant char* pCurr = pGeo;
