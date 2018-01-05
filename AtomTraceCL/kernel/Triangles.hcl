@@ -85,41 +85,30 @@ bool IntersectTriangle(const Ray* pRAY, __constant float3* pVertices, __constant
     return true;
 }
 
-bool IntersectBox(const Ray* pRAY, const Box* pBox, float* pt)
+bool IntersectBox(const Ray* pRAY, const Box* pBox, float t)
 {
     // TODO: Ray-box intersection.
-    float tEnter, tExit;
-    float3 minp, maxp;
-    minp.x = pBox->b[0] - pRAY->orig.x;
-    minp.y = pBox->b[1] - pRAY->orig.y;
-    minp.z = pBox->b[2] - pRAY->orig.z;
-
-    maxp.x = pBox->b[3] - pRAY->orig.x;
-    maxp.y = pBox->b[4] - pRAY->orig.y;
-    maxp.z = pBox->b[5] - pRAY->orig.z;
-
-    float tmin[3];
-    float tmax[3];
+    float tmin = -FLT_MAX;
+    float tmax = FLT_MAX;
 
     for (int i = 0; i < 3; ++i)
     {
         // Check parallel
-        if (pRAY->dir[i] < EPSILON && pRAY->dir[i] > -EPSILON)
+        if (pRAY->dir[i] != 0.f)
         {
-            tmin[i] = -FLT_MAX;
-            tmax[i] = FLT_MAX;
-            continue;
+            float t1 = (pBox->b[i] - pRAY->orig[i]) / pRAY->dir[i];
+            float t2 = (pBox->b[i + 3] - pRAY->orig[i]) / pRAY->dir[i];
+            tmin = max(tmin, min(t1, t2));
+            tmax = min(tmax, max(t1, t2));
         }
-
-        tmin[i] = minp[i] / pRAY->dir[i];
-        tmax[i] = maxp[i] / pRAY->dir[i];
     }
 
-    tEnter = max(tmin[0], max(tmin[1], tmin[2]));
-    tExit =  min(tmax[0], min(tmax[1], tmax[2]));
+    tmin = max(tmin, 0.f);
 
-    if (tEnter > tExit)
+    if (tmin > tmax)
         return false;
+    if (tmin > t)
+        return false; // z depth test
     return true;
 }
 
