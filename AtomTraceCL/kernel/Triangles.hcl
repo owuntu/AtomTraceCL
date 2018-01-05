@@ -87,7 +87,6 @@ bool IntersectTriangle(const Ray* pRAY, __constant float3* pVertices, __constant
 
 bool IntersectBox(const Ray* pRAY, const Box* pBox, float t)
 {
-    // TODO: Ray-box intersection.
     float tmin = -FLT_MAX;
     float tmax = FLT_MAX;
 
@@ -105,10 +104,8 @@ bool IntersectBox(const Ray* pRAY, const Box* pBox, float t)
 
     tmin = max(tmin, 0.f);
 
-    if (tmin > tmax)
+    if (tmin > max(t, tmax))
         return false;
-    if (tmin > t)
-        return false; // z depth test
     return true;
 }
 
