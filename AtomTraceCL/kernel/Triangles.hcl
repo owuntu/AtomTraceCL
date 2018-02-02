@@ -104,7 +104,7 @@ bool IntersectBox(const Ray* pRAY, const Box* pBox, float t)
 
     tmin = max(tmin, 0.f);
 
-    if (tmin > max(t, tmax))
+    if (tmin > tmax || tmin > t)
         return false;
     return true;
 }
