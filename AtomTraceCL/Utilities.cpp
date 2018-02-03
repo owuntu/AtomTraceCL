@@ -47,3 +47,15 @@ float GetRandomNumber01()
     static std::uniform_real_distribution<float> s_distr(0.0f, 1.0f);
     return s_distr(s_randEngine);
 }
+
+void ReadLine(std::ifstream& file, std::string& line)
+{
+    char c;
+    line.clear();
+    file.read(&c, sizeof(c));
+    while (c != '\n' && !file.eof())
+    {
+        line += c;
+        file.read(&c, sizeof(c));
+    }
+}

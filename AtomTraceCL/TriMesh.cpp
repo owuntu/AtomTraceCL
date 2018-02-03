@@ -1,8 +1,7 @@
-#include <iostream>
-#include <fstream>
 #include <sstream>
 
 #include "TriMesh.h"
+#include "Utilities.h"
 
 namespace AtomTraceCL
 {
@@ -25,19 +24,6 @@ namespace AtomTraceCL
         ArrayInfo fts;
         ArrayInfo fns;
     }TriMeshHeader;
-
-    // Utility functions
-    static inline void ReadLine(std::ifstream& file, std::string& line)
-    {
-        char c;
-        line.clear();
-        file.read(&c, sizeof(c));
-        while (c != '\n' && !file.eof())
-        {
-            line += c;
-            file.read(&c, sizeof(c));
-        }
-    }
 
     static inline void ReadVertex(const std::string& buffer, AtomMathCL::Vector3& vec)
     {
