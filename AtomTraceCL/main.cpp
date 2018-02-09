@@ -97,7 +97,7 @@ int main(int argc, char** argv)
     CheckError(error, "Create program");
 
     // Compile the kernel code (after this we could extract the compiled version)
-    error = program.build({ device }, "-I kernel");
+    error = program.build({ device }, "-I kernel -D OPENCL_COMPILER");
     {
         char* msg = nullptr;
         std::size_t len = 0;

@@ -36,6 +36,9 @@
     <Filter Include="Extern\cyCodebase">
       <UniqueIdentifier>{8e286514-af22-400d-bafd-2fb6dc9b0f63}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Share">
+      <UniqueIdentifier>{a233f1bf-053f-4dc1-b59e-8ddc11900e0d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Utilities.cpp">
@@ -156,6 +159,18 @@
     </ClInclude>
     <ClInclude Include="BVHTriMesh.h">
       <Filter>Geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="ArrayInfo.h">
+      <Filter>Share</Filter>
+    </ClInclude>
+    <ClInclude Include="TypeDef.h">
+      <Filter>Share</Filter>
+    </ClInclude>
+    <ClInclude Include="vec3.h">
+      <Filter>Share</Filter>
+    </ClInclude>
+    <ClInclude Include="TriMeshHeader.h">
+      <Filter>Share</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

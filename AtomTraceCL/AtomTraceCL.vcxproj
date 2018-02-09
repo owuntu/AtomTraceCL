@@ -148,6 +148,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\External\lodePNG\lodepng.h" />
+    <ClInclude Include="ArrayInfo.h" />
     <ClInclude Include="BVHTriMesh.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="CLResourceManager.h" />
@@ -168,7 +169,10 @@
     <ClInclude Include="Timer.h" />
     <ClInclude Include="Transformation.h" />
     <ClInclude Include="TriMesh.h" />
+    <ClInclude Include="TriMeshHeader.h" />
+    <ClInclude Include="TypeDef.h" />
     <ClInclude Include="Utilities.h" />
+    <ClInclude Include="vec3.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="kernel\ConstantDef.hcl" />

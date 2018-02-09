@@ -1,30 +1,11 @@
 #include <sstream>
 
 #include "TriMesh.h"
+#include "TriMeshHeader.h"
 #include "Utilities.h"
 
 namespace AtomTraceCL
 {
-    typedef struct 
-    {
-        unsigned __int32 index;
-        unsigned __int32 size;
-    }ArrayInfo;
-
-    typedef struct  
-    {
-        // bvh data
-        ArrayInfo nodes;
-        ArrayInfo elements;
-        // triangle geometry data
-        ArrayInfo vertices;
-        ArrayInfo vts;
-        ArrayInfo vns;
-        ArrayInfo faces;
-        ArrayInfo fts;
-        ArrayInfo fns;
-    }TriMeshHeader;
-
     static inline void ReadVertex(const std::string& buffer, AtomMathCL::Vector3& vec)
     {
         std::stringstream sstream(buffer);

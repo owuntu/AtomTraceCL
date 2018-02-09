@@ -1,6 +1,8 @@
+#ifdef OPENCL_COMPILER
 #ifndef ATOMTRACECL_INFODEF_HCL_
 #define ATOMTRACECL_INFODEF_HCL_
 
+#include "..\ArrayInfo.h"
 #include "Transformation.hcl"
 
 typedef struct
@@ -16,14 +18,9 @@ typedef struct
 
 typedef struct
 {
-    uint index;
-    uint size;
-}ArrayInfo;
-
-typedef struct
-{
     float3 hitP;
     float3 hitN;
 }HitInfoGeo; // Work around for an LLVM error. These two should be put into HitInfo
 
 #endif // ATOMTRACECL_INFODEF_HCL_
+#endif // OPENCL_COMPILER

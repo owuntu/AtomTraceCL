@@ -3,20 +3,7 @@
 
 #include "ConstantDef.hcl"
 #include "InfoDef.hcl"
-
-typedef struct
-{
-    // bvh data
-    ArrayInfo nodes;
-    ArrayInfo elements;
-    // triangle geometry data
-    ArrayInfo vertices;
-    ArrayInfo vts;
-    ArrayInfo vns;
-    ArrayInfo faces;
-    ArrayInfo fts;
-    ArrayInfo fns;
-}TriMeshHeader;
+#include "..\TriMeshHeader.h"
 
 // Axis aligned box
 typedef struct
@@ -66,12 +53,12 @@ bool IntersectTriangle(const Ray* pRAY, __constant float3* pVertices, __constant
 
     vN = normalize(vN);
 
-    float nDd = dot(vN, pRAY->dir);
-    float t = dot(vN, v0 - pRAY->orig) / nDd;
+    float nDd = dot(vN, pRAY->m_dir);
+    float t = dot(vN, v0 - pRAY->m_orig) / nDd;
     if (t < 0.f || t > *pt)
         return false;
 
-    float3 hp = pRAY->orig + pRAY->dir * t;
+    float3 hp = pRAY->m_orig + pRAY->m_dir * t;
     float3 v0p = hp - v0;
     float3 bc = BaryCentricHelp(v01, v02, v0p, vN);
     if (bc.x < 0.f || bc.y < 0.f || bc.z < 0.f)
@@ -93,10 +80,10 @@ bool IntersectBox(const Ray* pRAY, const Box* pBox, float t)
     for (int i = 0; i < 3; ++i)
     {
         // Check parallel
-        if (pRAY->dir[i] != 0.f)
+        if (pRAY->m_dir[i] != 0.f)
         {
-            float t1 = (pBox->b[i] - pRAY->orig[i]) / pRAY->dir[i];
-            float t2 = (pBox->b[i + 3] - pRAY->orig[i]) / pRAY->dir[i];
+            float t1 = (pBox->b[i] - pRAY->m_orig[i]) / pRAY->m_dir[i];
+            float t2 = (pBox->b[i + 3] - pRAY->m_orig[i]) / pRAY->m_dir[i];
             tmin = max(tmin, min(t1, t2));
             tmax = min(tmax, max(t1, t2));
         }

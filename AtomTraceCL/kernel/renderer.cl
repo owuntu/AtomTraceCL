@@ -126,9 +126,9 @@ Ray CastCamRay(int px, int py, __constant Camera* cam, const uint npp)
     float3 orig = cam->pos;
 
     Ray ray;
-    ray.dir = tar - orig;
-    //ray.dir = normalize(ray.dir);
-    ray.orig = orig;
+    ray.m_dir = tar - orig;
+    //ray.m_dir = normalize(ray.m_dir);
+    ray.m_orig = orig;
     return ray;
 }
 
@@ -136,9 +136,9 @@ bool IntersectSphere(const Ray* ray, float* t)
 {
     // Assuming ray is transform into this unit sphere's local space,
     // which located at the origin (0,0,0).
-    float a = dot(ray->dir, ray->dir);
-    float b = 2.f * dot(ray->orig, ray->dir);
-    float c = dot(ray->orig, ray->orig) - 1.0f;
+    float a = dot(ray->m_dir, ray->m_dir);
+    float b = 2.f * dot(ray->m_orig, ray->m_dir);
+    float c = dot(ray->m_orig, ray->m_orig) - 1.0f;
 
     float h = b*b - 4.0f * a * c;
     if (h<0) return false;
@@ -169,8 +169,8 @@ bool IntersectPlane(const Ray* pRAY, float* pt)
 {
     // Assuming ray is transform into plane's local space, which has normal (0,1,0)
     //   located at the origin (0,0,0), with size [(-1,0,-1),(1,0,1)].
-    float3 d = pRAY->dir;
-    float3 pos = pRAY->orig;
+    float3 d = pRAY->m_dir;
+    float3 pos = pRAY->m_orig;
     if (d.y == 0.f) // ray is parallel to the plane
     {
         return false;
@@ -273,7 +273,7 @@ bool Intersect(__constant char* pObj, __constant const int* pIndexTable, int num
         {
             tHit = IntersectSphere(&ray, &t);
 
-            hitP = ray.orig + ray.dir * t;
+            hitP = ray.m_orig + ray.m_dir * t;
             hitN = normalize(hitP);
 
             hitP = TransformFrom(&objh.transform, &hitP);
@@ -283,7 +283,7 @@ bool Intersect(__constant char* pObj, __constant const int* pIndexTable, int num
         {
             tHit = IntersectPlane(&ray, &t);
 
-            hitP = ray.orig + ray.dir * t;
+            hitP = ray.m_orig + ray.m_dir * t;
             hitP = TransformFrom(&objh.transform, &hitP);
 
             float3 uy = (float3)(0.f, 1.f, 0.f);
@@ -351,21 +351,21 @@ void SampleLight(__constant char* pObjs, const ObjectHeader* pObjHead, __constan
 
     // cast shadow ray
     Ray shadowRay;
-    shadowRay.orig = *pHitP;
-    shadowRay.dir = sampP - shadowRay.orig;
-    float3 wi = normalize(shadowRay.dir);
+    shadowRay.m_orig = *pHitP;
+    shadowRay.m_dir = sampP - shadowRay.m_orig;
+    float3 wi = normalize(shadowRay.m_dir);
     float cosWi = dot(*pN, wi);
     if (cosWi == 0.f)
     {
         return;
     }
 
-    shadowRay.orig += wi * EPSILON / fabs(cosWi);
+    shadowRay.m_orig += wi * EPSILON / fabs(cosWi);
     // Shadow check
     if (!IntersectP(pObjs, pIndexTable, numObjs, &shadowRay, 1.0f-EPSILON, true))
     {
         // add light contribution
-        //float l2 = length(shadowRay.dir);
+        //float l2 = length(shadowRay.m_dir);
         //l2 *= l2;
         *pLd = light.color;// / l2;
         *pCosWi = cosWi;
@@ -376,8 +376,8 @@ void SampleLight(__constant char* pObjs, const ObjectHeader* pObjHead, __constan
 float3 Radiance(const Ray* ray, __constant char* pObjs, __constant int* pIndexTable, int numObjs, uint* pSeed0, uint* pSeed1)
 {
     Ray currentRay;
-    currentRay.orig = ray->orig;
-    currentRay.dir = ray->dir;
+    currentRay.m_orig = ray->m_orig;
+    currentRay.m_dir = ray->m_dir;
     int d = 0;
     //float3 throughput = (float3)(1.f);
     float3 rad = (float3)(0.f);
@@ -403,7 +403,7 @@ float3 Radiance(const Ray* ray, __constant char* pObjs, __constant int* pIndexTa
 
             float3 hitP = hInfoGeo.hitP;
             float3 hitN = hInfoGeo.hitN;
-            float3 wo = normalize(-currentRay.dir);
+            float3 wo = normalize(-currentRay.m_dir);
             float cosWo = dot(hitN, wo);
 
             // Ignore backface hit;
@@ -454,8 +454,8 @@ float3 Radiance(const Ray* ray, __constant char* pObjs, __constant int* pIndexTa
             // Indirect illumination
             float3 newDir;
             SampleHemiSphere( GetRandom01(pSeed0, pSeed1), GetRandom01(pSeed0, pSeed1), &hitN, &newDir );
-            currentRay.orig = hitP + hitN * EPSILON;
-            currentRay.dir = newDir;
+            currentRay.m_orig = hitP + hitN * EPSILON;
+            currentRay.m_dir = newDir;
             cosWi2nd = dot(newDir, hitN);
 
             if (hInfo.matType == 1) // Diffuse
