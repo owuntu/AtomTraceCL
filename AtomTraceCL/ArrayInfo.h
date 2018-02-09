@@ -3,7 +3,7 @@
 
 #include "TypeDef.h"
 
-NAMESPACE_CPU_BEGIN
+NAMESPACE_ATOMTRACECL_BEGIN
 
 typedef struct
 {
@@ -11,6 +11,6 @@ typedef struct
     CL_UINT size;
 }ArrayInfo;
 
-NAMESPACE_CPU_END
+NAMESPACE_END
 
 #endif // ATOMTRACE_CL_ARRAY_INFO_H_

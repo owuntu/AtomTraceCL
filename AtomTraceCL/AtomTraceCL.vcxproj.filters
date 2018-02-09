@@ -172,6 +172,9 @@
     <ClInclude Include="TriMeshHeader.h">
       <Filter>Share</Filter>
     </ClInclude>
+    <ClInclude Include="cyBVHMacro.h">
+      <Filter>Extern\cyCodebase</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="kernel\renderer.cl">

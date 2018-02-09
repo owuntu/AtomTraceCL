@@ -3,7 +3,7 @@
 
 #include "ArrayInfo.h"
 
-NAMESPACE_CPU_BEGIN
+NAMESPACE_ATOMTRACECL_BEGIN
 
 typedef struct
 {
@@ -19,6 +19,6 @@ typedef struct
     ArrayInfo fns;
 }TriMeshHeader;
 
-NAMESPACE_CPU_END
+NAMESPACE_END
 
 #endif // ATOMTRACE_CL_TRIMESH_HEADER_H_
