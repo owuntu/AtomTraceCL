@@ -218,8 +218,7 @@ namespace AtomTraceCL
         header.faces.index    = header.vns.index      + header.vns.size * sizeof(AtomMathCL::Vector3);
         header.fts.index      = header.faces.index    + header.faces.size * sizeof(TriFace);
         header.fns.index      = header.fts.index      + header.fts.size * sizeof(TriFace);
-        
-        // TODO: Pack BVH data
+
         if (nullptr != m_pBuffer)
         {
             delete[] m_pBuffer;
@@ -230,6 +229,7 @@ namespace AtomTraceCL
         // Copy TriMesh header
         CopyAndMovePtr<>(pCurr, header);
 
+        // Pack BVH data
         // Copy BVH nodes and elements list
         CopyAndMovePtr<cyBVH::Node>(pCurr, m_bvh.nodes, m_bvh.m_numNodes);
         CopyAndMovePtr<unsigned __int32>(pCurr, m_bvh.elements, header.elements.size);

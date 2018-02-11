@@ -8,7 +8,7 @@ NAMESPACE_ATOMTRACECL_BEGIN
 typedef struct
 {
     CL_UINT index;
-    CL_UINT size;
+    CL_UINT size;  // number of elements in the array
 }ArrayInfo;
 
 NAMESPACE_END

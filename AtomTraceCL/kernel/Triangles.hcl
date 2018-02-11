@@ -1,6 +1,8 @@
 #ifndef ATOMTRACECL_TRIANGLES_HCL_
 #define ATOMTRACECL_TRIANGLES_HCL_
 
+#include "..\cyBVHMacro.h"
+
 #include "ConstantDef.hcl"
 #include "InfoDef.hcl"
 #include "..\TriMeshHeader.h"
@@ -94,6 +96,20 @@ bool IntersectBox(const Ray* pRAY, const Box* pBox, float t)
     if (tmin > tmax || tmin > t)
         return false;
     return true;
+}
+
+bool BVHisLeafNode(__constant const BVHNode* pROOT, uint nodeID)
+{
+    __constant const BVHNode* pNode = pROOT + nodeID;
+    uint data = pNode->data;
+    return (data&_CY_BVH_LEAF_BIT_MASK) > 0;
+}
+
+uint BVHgetNodeElementCount(__constant const BVHNode* pROOT, uint nodeID)
+{
+    __constant const BVHNode* pNode = pROOT + nodeID;
+    uint data = pNode->data;
+    return ((data >> _CY_BVH_ELEMENT_OFFSET_BITS) & _CY_BVH_ELEMENT_COUNT_MASK);
 }
 
 #endif // ATOMTRACECL_TRIANGLES_HCL_
