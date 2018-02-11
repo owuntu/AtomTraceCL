@@ -100,16 +100,20 @@ bool IntersectBox(const Ray* pRAY, const Box* pBox, float t)
 
 bool BVHisLeafNode(__constant const BVHNode* pROOT, uint nodeID)
 {
-    __constant const BVHNode* pNode = pROOT + nodeID;
-    uint data = pNode->data;
+    uint data = (pROOT + nodeID)->data;
     return (data&_CY_BVH_LEAF_BIT_MASK) > 0;
 }
 
 uint BVHgetNodeElementCount(__constant const BVHNode* pROOT, uint nodeID)
 {
-    __constant const BVHNode* pNode = pROOT + nodeID;
-    uint data = pNode->data;
+    uint data = (pROOT + nodeID)->data;
     return ((data >> _CY_BVH_ELEMENT_OFFSET_BITS) & _CY_BVH_ELEMENT_COUNT_MASK);
+}
+
+uint BVHgetNodeElementsOffset(__constant const BVHNode* pROOT, uint nodeID)
+{
+    uint data = (pROOT + nodeID)->data;
+    return (data&_CY_BVH_ELEMENT_OFFSET_MASK);
 }
 
 #endif // ATOMTRACECL_TRIANGLES_HCL_
