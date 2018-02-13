@@ -98,7 +98,7 @@ bool IntersectTriMesh(const Ray* pRAY, __constant char* pGeo, HitInfoGeo* pInfog
     bool bHit = false;
     __constant uint3* pFaces = (__constant uint3*)(pCurr + header.faces.index);
     __constant uint3* pFaceN = (__constant uint3*)(pCurr + header.fns.index);
-#if 0
+#if 1
     for (uint i = 0; i < header.faces.size; ++i)
     {
         bHit |= IntersectTriangle(pRAY, pVertices, pNormal, pFaces, pFaceN, i, pInfogeo, pt);
@@ -107,6 +107,7 @@ bool IntersectTriMesh(const Ray* pRAY, __constant char* pGeo, HitInfoGeo* pInfog
 #else
     // BVH intersection
     __constant const BVHNode* pROOT = (__constant BVHNode*)(pCurr + header.nodes.index);
+    __constant uint* pElementList = (__constant uint*)(pCurr + header.elements.index);
     __constant BVHNode* pNode = pROOT;
     uint nodeID = 0;
     Box box;
@@ -126,7 +127,18 @@ bool IntersectTriMesh(const Ray* pRAY, __constant char* pGeo, HitInfoGeo* pInfog
         {
             if (BVHisLeafNode(pNode))
             {
-                // TODO: intersect triangle.
+                // TODO: Intersect triangle.
+                // Get all the triangle face ID
+                uint offset = BVHgetNodeElementsOffset(pNode);
+                uint numEle = BVHgetNodeElementCount(pNode);
+                __constant uint* pElements = pElementList + offset;
+
+                // Intersect them
+                for (uint i = 0; i < numEle; ++i)
+                {
+                    uint faceID = pElements[i];
+                    bHit |= IntersectTriangle(pRAY, pVertices, pNormal, pFaces, pFaceN, i, pInfogeo, pt);
+                }
             }
             else
             {
