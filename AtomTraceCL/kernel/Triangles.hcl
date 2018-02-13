@@ -109,7 +109,7 @@ bool IntersectTriMesh(const Ray* pRAY, __constant char* pGeo, HitInfoGeo* pInfog
     __constant const BVHNode* pROOT = (__constant BVHNode*)(pCurr + header.nodes.index);
     __constant uint* pElementList = (__constant uint*)(pCurr + header.elements.index);
     __constant BVHNode* pNode = pROOT;
-    uint nodeID = 0;
+    uint nodeID = 1; // cyBVH root nodeID start as 1
     Box box;
     UintStack stack;
     UintStackInit(&stack);
