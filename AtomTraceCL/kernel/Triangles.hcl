@@ -137,7 +137,7 @@ bool IntersectTriMesh(const Ray* pRAY, __constant char* pGeo, HitInfoGeo* pInfog
                 for (uint i = 0; i < numEle; ++i)
                 {
                     uint faceID = pElements[i];
-                    bHit |= IntersectTriangle(pRAY, pVertices, pNormal, pFaces, pFaceN, i, pInfogeo, pt);
+                    bHit |= IntersectTriangle(pRAY, pVertices, pNormal, pFaces, pFaceN, faceID, pInfogeo, pt);
                 }
             }
             else
