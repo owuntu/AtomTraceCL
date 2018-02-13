@@ -201,5 +201,11 @@
     <None Include="kernel\InfoDef.hcl">
       <Filter>CL_GL\OpenCL_kernels</Filter>
     </None>
+    <None Include="kernel\UintStack.hcl">
+      <Filter>CL_GL\OpenCL_kernels</Filter>
+    </None>
+    <None Include="kernel\BVHUtil.hcl">
+      <Filter>CL_GL\OpenCL_kernels</Filter>
+    </None>
   </ItemGroup>
 </Project>

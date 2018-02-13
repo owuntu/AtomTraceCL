@@ -176,6 +176,7 @@
     <ClInclude Include="vec3.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="kernel\BVHUtil.hcl" />
     <None Include="kernel\ConstantDef.hcl" />
     <None Include="kernel\InfoDef.hcl" />
     <None Include="kernel\Metal.hcl" />
@@ -183,6 +184,7 @@
     <None Include="kernel\renderer.cl" />
     <None Include="kernel\Transformation.hcl" />
     <None Include="kernel\Triangles.hcl" />
+    <None Include="kernel\UintStack.hcl" />
     <None Include="Timer.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

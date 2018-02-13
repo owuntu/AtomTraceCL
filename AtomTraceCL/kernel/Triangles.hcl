@@ -1,23 +1,11 @@
 #ifndef ATOMTRACECL_TRIANGLES_HCL_
 #define ATOMTRACECL_TRIANGLES_HCL_
 
-#include "..\cyBVHMacro.h"
-
+#include "BVHUtil.hcl"
 #include "ConstantDef.hcl"
 #include "InfoDef.hcl"
 #include "..\TriMeshHeader.h"
-
-// Axis aligned box
-typedef struct
-{
-    float b[6];
-}Box;
-
-typedef struct
-{
-    Box box;
-    uint data;
-}BVHNode;
+#include "UintStack.hcl"
 
 const float3 BaryCentricHelp(const float3 v01, const float3 v02, const float3 v0p, const float3 faceN)
 {
@@ -98,22 +86,61 @@ bool IntersectBox(const Ray* pRAY, const Box* pBox, float t)
     return true;
 }
 
-bool BVHisLeafNode(__constant const BVHNode* pROOT, uint nodeID)
+bool IntersectTriMesh(const Ray* pRAY, __constant char* pGeo, HitInfoGeo* pInfogeo, float* pt)
 {
-    uint data = (pROOT + nodeID)->data;
-    return (data&_CY_BVH_LEAF_BIT_MASK) > 0;
-}
+    __constant char* pCurr = pGeo;
+    // Copy overhead information
+    TriMeshHeader header = *(__constant TriMeshHeader*)pCurr;
 
-uint BVHgetNodeElementCount(__constant const BVHNode* pROOT, uint nodeID)
-{
-    uint data = (pROOT + nodeID)->data;
-    return ((data >> _CY_BVH_ELEMENT_OFFSET_BITS) & _CY_BVH_ELEMENT_COUNT_MASK);
-}
+    __constant float3* pVertices = (__constant float3*)(pCurr + header.vertices.index);
+    __constant float3* pNormal = (__constant float3*)(pCurr + header.vns.index);
 
-uint BVHgetNodeElementsOffset(__constant const BVHNode* pROOT, uint nodeID)
-{
-    uint data = (pROOT + nodeID)->data;
-    return (data&_CY_BVH_ELEMENT_OFFSET_MASK);
+    bool bHit = false;
+    __constant uint3* pFaces = (__constant uint3*)(pCurr + header.faces.index);
+    __constant uint3* pFaceN = (__constant uint3*)(pCurr + header.fns.index);
+#if 0
+    for (uint i = 0; i < header.faces.size; ++i)
+    {
+        bHit |= IntersectTriangle(pRAY, pVertices, pNormal, pFaces, pFaceN, i, pInfogeo, pt);
+    }
+    return bHit;
+#else
+    // BVH intersection
+    __constant const BVHNode* pROOT = (__constant BVHNode*)(pCurr + header.nodes.index);
+    __constant BVHNode* pNode = pROOT;
+    uint nodeID = 0;
+    Box box;
+    UintStack stack;
+    UintStackInit(&stack);
+
+    UintStackPush(&stack, nodeID);
+
+    while (!UintStackIsEmpty(&stack))
+    {
+        nodeID = UintStackTop(&stack);
+        UintStackPop(&stack);
+        pNode = pROOT + nodeID;
+        box = pNode->box;
+        // intersect box
+        if (IntersectBox(pRAY, &box, *pt))
+        {
+            if (BVHisLeafNode(pNode))
+            {
+                // TODO: intersect triangle.
+            }
+            else
+            {
+                // Internal node, continue to intersect its children
+                uint child1, child2;
+                BVHgetNodeChildrenIndex(pNode, &child1, &child2);
+                UintStackPush(&stack, child2);
+                UintStackPush(&stack, child1);
+            }
+        }
+    }
+
+    return bHit;
+#endif
 }
 
 #endif // ATOMTRACECL_TRIANGLES_HCL_

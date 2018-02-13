@@ -199,26 +199,6 @@ bool IntersectPlane(const Ray* pRAY, float* pt)
     return true;
 }
 
-bool IntersectTriMesh(const Ray* pRAY, __constant char* pGeo, HitInfoGeo* pInfogeo, float* pt)
-{
-    __constant char* pCurr = pGeo;
-    // Copy overhead information
-    TriMeshHeader header = *(__constant TriMeshHeader*)pCurr;
-
-    __constant float3* pVertices = (__constant float3*)(pCurr + header.vertices.index);
-    __constant float3* pNormal = (__constant float3*)(pCurr + header.vns.index);
-
-    bool bHit = false;
-    __constant uint3* pFaces = (__constant uint3*)(pCurr + header.faces.index);
-    __constant uint3* pFaceN = (__constant uint3*)(pCurr + header.fns.index);
-
-    for (uint i = 0; i < header.faces.size; ++i)
-    {
-        bHit |= IntersectTriangle(pRAY, pVertices, pNormal, pFaces, pFaceN, i, pInfogeo, pt);
-    }
-    return bHit;
-}
-
 bool IntersectP(__constant char* pObj, __constant const int* pIndexTable, int numObjs, const Ray* pRay, const float maxt, bool bIgnoreLight)
 {
     bool bHit = false;
