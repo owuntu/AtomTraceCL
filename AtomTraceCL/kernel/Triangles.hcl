@@ -62,30 +62,6 @@ bool IntersectTriangle(const Ray* pRAY, __constant float3* pVertices, __constant
     return true;
 }
 
-bool IntersectBox(const Ray* pRAY, const Box* pBox, float t)
-{
-    float tmin = -FLT_MAX;
-    float tmax = FLT_MAX;
-
-    for (int i = 0; i < 3; ++i)
-    {
-        // Check parallel
-        if (pRAY->m_dir[i] != 0.f)
-        {
-            float t1 = (pBox->b[i] - pRAY->m_orig[i]) / pRAY->m_dir[i];
-            float t2 = (pBox->b[i + 3] - pRAY->m_orig[i]) / pRAY->m_dir[i];
-            tmin = max(tmin, min(t1, t2));
-            tmax = min(tmax, max(t1, t2));
-        }
-    }
-
-    tmin = max(tmin, 0.f);
-
-    if (tmin > tmax || tmin > t)
-        return false;
-    return true;
-}
-
 bool IntersectTriMesh(const Ray* pRAY, __constant char* pGeo, HitInfoGeo* pInfogeo, float* pt)
 {
     __constant char* pCurr = pGeo;
@@ -123,6 +99,11 @@ bool IntersectTriMesh(const Ray* pRAY, __constant char* pGeo, HitInfoGeo* pInfog
         pNode = pROOT + nodeID;
         box = pNode->box;
         // intersect box
+        if (IsBoxEmpty(&box))
+        {
+            return false;
+        }
+
         if (IntersectBox(pRAY, &box, *pt))
         {
             if (BVHisLeafNode(pNode))

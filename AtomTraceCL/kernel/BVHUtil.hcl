@@ -15,6 +15,37 @@ typedef struct
     uint data;
 }BVHNode;
 
+bool IntersectBox(const Ray* pRAY, const Box* pBox, float t)
+{
+    float tmin = -FLT_MAX;
+    float tmax = FLT_MAX;
+
+    for (int i = 0; i < 3; ++i)
+    {
+        // Check parallel
+        if (pRAY->m_dir[i] != 0.f)
+        {
+            float t1 = (pBox->b[i] - pRAY->m_orig[i]) / pRAY->m_dir[i];
+            float t2 = (pBox->b[i + 3] - pRAY->m_orig[i]) / pRAY->m_dir[i];
+            tmin = max(tmin, min(t1, t2));
+            tmax = min(tmax, max(t1, t2));
+        }
+    }
+
+    tmin = max(tmin, 0.f);
+
+    if (tmin > tmax || tmin > t)
+        return false;
+    return true;
+}
+
+bool IsBoxEmpty(const Box* pBox)
+{
+    return pBox->b[0] > pBox->b[3]
+        || pBox->b[1] > pBox->b[4]
+        || pBox->b[2] > pBox->b[5];
+}
+
 bool BVHisLeafNode(__constant const BVHNode* pNode)
 {
     return ((pNode->data)&_CY_BVH_LEAF_BIT_MASK) > 0;
