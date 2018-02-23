@@ -74,13 +74,13 @@ bool IntersectTriMesh(const Ray* pRAY, __constant char* pGeo, HitInfoGeo* pInfog
     bool bHit = false;
     __constant uint3* pFaces = (__constant uint3*)(pCurr + header.faces.index);
     __constant uint3* pFaceN = (__constant uint3*)(pCurr + header.fns.index);
-#if 1
+#if 0 // Brute force traverse all triangles
     for (uint i = 0; i < header.faces.size; ++i)
     {
         bHit |= IntersectTriangle(pRAY, pVertices, pNormal, pFaces, pFaceN, i, pInfogeo, pt);
     }
-    return bHit;
-#else
+    return bHit
+#else // Using BVH
     // BVH intersection
     __constant const BVHNode* pROOT = (__constant BVHNode*)(pCurr + header.nodes.index);
     __constant uint* pElementList = (__constant uint*)(pCurr + header.elements.index);
@@ -133,7 +133,7 @@ bool IntersectTriMesh(const Ray* pRAY, __constant char* pGeo, HitInfoGeo* pInfog
     }
 
     return bHit;
-#endif
+#endif // Using BVH
 }
 
 #endif // ATOMTRACECL_TRIANGLES_HCL_

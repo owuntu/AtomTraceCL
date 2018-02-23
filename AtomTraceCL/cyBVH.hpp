@@ -174,7 +174,14 @@ protected:
 	class Node
 	{
 	public:
-		void SetLeafNode( const Box &bound, unsigned int elemCount, unsigned int elemOffset ) { box=bound; data=(elemOffset&_CY_BVH_ELEMENT_OFFSET_MASK)|((elemCount-1)<<_CY_BVH_ELEMENT_OFFSET_BITS)|_CY_BVH_LEAF_BIT_MASK; }
+		void SetLeafNode( const Box &bound, unsigned int elemCount, unsigned int elemOffset )
+        {
+            box=bound;
+            data =
+                (elemOffset&_CY_BVH_ELEMENT_OFFSET_MASK)
+                |((elemCount-1)<<_CY_BVH_ELEMENT_OFFSET_BITS)
+                |_CY_BVH_LEAF_BIT_MASK;
+        }
 		void SetInternalNode( const Box &bound, unsigned int chilIndex ) { box=bound; data=(chilIndex&_CY_BVH_CHILD_INDEX_MASK); }
 		unsigned int	ChildIndex()	const { return (data&_CY_BVH_CHILD_INDEX_MASK); }									//!< returns the index to the first child (must be internal node)
 		unsigned int	ElementOffset()	const { return (data&_CY_BVH_ELEMENT_OFFSET_MASK); }									//!< returns the offset to the first element (must be leaf node)

@@ -53,7 +53,7 @@ bool BVHisLeafNode(__constant const BVHNode* pNode)
 
 uint BVHgetNodeElementCount(__constant const BVHNode* pNode)
 {
-    return (((pNode->data) >> _CY_BVH_ELEMENT_OFFSET_BITS) & _CY_BVH_ELEMENT_COUNT_MASK);
+    return (((pNode->data) >> _CY_BVH_ELEMENT_OFFSET_BITS) & _CY_BVH_ELEMENT_COUNT_MASK) + 1;
 }
 
 uint BVHgetNodeElementsOffset(__constant const BVHNode* pNode)
