@@ -79,7 +79,7 @@ bool IntersectTriMesh(const Ray* pRAY, __constant char* pGeo, HitInfoGeo* pInfog
     {
         bHit |= IntersectTriangle(pRAY, pVertices, pNormal, pFaces, pFaceN, i, pInfogeo, pt);
     }
-    return bHit
+    return bHit;
 #else // Using BVH
     // BVH intersection
     __constant const BVHNode* pROOT = (__constant BVHNode*)(pCurr + header.nodes.index);
