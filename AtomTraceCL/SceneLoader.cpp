@@ -117,6 +117,7 @@ namespace AtomTraceCL
             oList.AddObject(obj);
         }
 
+
         {
             TriMesh tMesh;
             tMesh.LoadObjFromFile("scene\\teapot-low.obj");
@@ -124,15 +125,28 @@ namespace AtomTraceCL
             obj.SetGeometry(&tMesh);
             //obj.Rotate(90.f, AtomMathCL::Vector3::UNIT_X);
             //obj.Translate(0.f, 2.f, 0.f);
+            obj.Scale(0.1f);
             obj.SetMaterial(&ball);
             oList.AddObject(obj);
         }
-        LoadCornelBox(oList);
+
+        for (int i = 0; i < 4; ++i)
+        {
+            TriMesh tMesh;
+            tMesh.LoadObjFromFile("scene\\teapot-low.obj");
+            RenderObject obj;
+            obj.SetGeometry(&tMesh);
+            obj.Scale(0.1f);
+            obj.Translate(10.f - (float)(i) * 0.5f, 0.f, 0.f);
+            obj.SetMaterial(&ball);
+            oList.AddObject(obj);
+        }
+        //LoadCornelBox(oList);
         return true;
     }
     bool LoadScene(ObjectList& oList)
     {
-        //return LoadUnitTestObj(oList);
+        return LoadUnitTestObj(oList);
 
         Plane pl0;
         Sphere s0;
