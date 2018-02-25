@@ -135,10 +135,10 @@ int main(int argc, char** argv)
     LoadScene(oList);
 
     cl::Buffer clScene;
-    clScene = cl::Buffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, oList.m_size, nullptr);
+    clScene = cl::Buffer(context, CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR, oList.m_size, nullptr);
     CheckError(error, "Create clScene");
 
-    error = cq.enqueueWriteBuffer(clScene, CL_FALSE, 0, oList.m_size, oList.m_pData);
+    error = cq.enqueueWriteBuffer(clScene, CL_TRUE, 0, oList.m_size, oList.m_pData);
     CheckError(error, "Enqueue scene buffer");
 
     cl::Buffer clIndexTable = cl::Buffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, oList.m_indexTable.size() * sizeof(int), &oList.m_indexTable[0]);
