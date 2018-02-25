@@ -130,7 +130,7 @@ namespace AtomTraceCL
             oList.AddObject(obj);
         }
 
-        for (int i = 0; i < 4; ++i)
+        for (int i = 0; i < 25; ++i)
         {
             TriMesh tMesh;
             tMesh.LoadObjFromFile("scene\\teapot-low.obj");

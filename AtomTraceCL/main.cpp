@@ -91,7 +91,7 @@ int main(int argc, char** argv)
     cl::Device device = myOpenCL.Device();
     cl::Context context = myOpenCL.Context();
     cl::CommandQueue cq = myOpenCL.CommandQueue();
-    
+
     // Submit the source code of the kernel to OpenCL, and create a program object with it
     cl::Program program = cl::Program(context, kernelStr.c_str(), false, &error);
     CheckError(error, "Create program");
@@ -135,8 +135,11 @@ int main(int argc, char** argv)
     LoadScene(oList);
 
     cl::Buffer clScene;
-    clScene = cl::Buffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, oList.m_size, oList.m_pData);
+    clScene = cl::Buffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, oList.m_size, nullptr);
     CheckError(error, "Create clScene");
+
+    error = cq.enqueueWriteBuffer(clScene, CL_FALSE, 0, oList.m_size, oList.m_pData);
+    CheckError(error, "Enqueue scene buffer");
 
     cl::Buffer clIndexTable = cl::Buffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, oList.m_indexTable.size() * sizeof(int), &oList.m_indexTable[0]);
     CheckError(error, "Create clIndexTable");
