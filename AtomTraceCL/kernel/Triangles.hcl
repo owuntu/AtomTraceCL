@@ -74,7 +74,7 @@ bool IntersectTriMesh(const Ray* pRAY, __constant char* pGeo, HitInfoGeo* pInfog
     bool bHit = false;
     __constant uint3* pFaces = (__constant uint3*)(pCurr + header.faces.index);
     __constant uint3* pFaceN = (__constant uint3*)(pCurr + header.fns.index);
-#if 0 // Brute force traverse all triangles
+#if 0 // Brute force iterate all triangles
     for (uint i = 0; i < header.faces.size; ++i)
     {
         bHit |= IntersectTriangle(pRAY, pVertices, pNormal, pFaces, pFaceN, i, pInfogeo, pt);
