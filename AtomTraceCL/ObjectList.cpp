@@ -18,7 +18,7 @@ namespace AtomTraceCL
         unsigned __int32 matIndex;
     }ObjectHeader;
 
-    const static unsigned int MAX_DATA_SIZE = 65536; // size in byte
+    const static unsigned int MAX_DATA_SIZE = 0xFFFFFFF0; // size in byte
 
     ObjectList::ObjectList() :
         m_size(0), m_numObj(0), m_pData(nullptr)
