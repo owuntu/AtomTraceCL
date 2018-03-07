@@ -223,6 +223,11 @@ bool IntersectP(__constant char* pObj, __constant const int* pIndexTable, int nu
         {
             bHit |= IntersectPlane(&ray, &t);
         }
+        else if (objh.gtype == 3) // Triangles object
+        {
+            HitInfoGeo hInfo;
+            bHit |= IntersectTriMesh(&ray, pObj + objh.geometryIndex, &hInfo, &t);
+        }
     }
     return bHit;
 }
@@ -473,7 +478,7 @@ __kernel void RenderKernel(__global uchar* pOutput, int width, int height,
 
         // This increase magic number should match the one in the host.
         // TODO: Take it from kernel parameter.
-        for (int i = 0; i < 64; ++i)
+        for (int i = 0; i < 8; ++i)
         {
             Ray cRay = CastCamRay(px, py, cam, currentSample);
 
