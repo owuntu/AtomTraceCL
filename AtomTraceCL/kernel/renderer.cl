@@ -223,6 +223,11 @@ bool IntersectP(__constant char* pObj, __constant const int* pIndexTable, int nu
         {
             bHit |= IntersectPlane(&ray, &t);
         }
+        else if (objh.gtype == 3) // Triangles object
+        {
+            HitInfoGeo hInfo;
+            bHit |= IntersectTriMesh(&ray, pObj + objh.geometryIndex, &hInfo, &t);
+        }
     }
     return bHit;
 }
