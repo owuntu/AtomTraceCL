@@ -131,7 +131,16 @@ int main(int argc, char** argv)
     CheckError(error, "Create clCam");
 
     // Create the scene
-    ObjectList oList;
+    // Get maximum memory size that can be allocate on GPU device
+    cl_ulong maxMem = 0;
+    error = device.getInfo(CL_DEVICE_MAX_MEM_ALLOC_SIZE, &maxMem);
+    CheckError(error, "Get GPU memory allocation size");
+    if (0 == maxMem)
+    {
+        std::cerr << "Fail to get maximum GPU memory allocation size.\n";
+    }
+    // Allocate memory buffer on CPU side for object list
+    ObjectList oList(maxMem / 1024);
     LoadScene(oList);
 
     cl::Buffer clScene;
