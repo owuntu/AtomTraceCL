@@ -1,4 +1,5 @@
 #include <cstring>
+#include <iostream>
 
 #include "RenderObject.h"
 #include "Geometry.h"
@@ -18,13 +19,11 @@ namespace AtomTraceCL
         unsigned __int32 matIndex;
     }ObjectHeader;
 
-    const static unsigned int MAX_DATA_SIZE = 0xFFFFFFF0; // size in byte
-
-    ObjectList::ObjectList() :
-        m_size(0), m_numObj(0), m_pData(nullptr)
+    ObjectList::ObjectList(unsigned long maxDataSize) :
+        m_size(0), m_numObj(0), m_pData(nullptr), m_MAX_DATA_SIZE(maxDataSize)
     {
-        m_pData = new char[MAX_DATA_SIZE];
-        memset(m_pData, 0, MAX_DATA_SIZE);
+        m_pData = new char[m_MAX_DATA_SIZE];
+        memset(m_pData, 0, m_MAX_DATA_SIZE);
         m_indexTable.clear();
     }
 
@@ -53,8 +52,9 @@ namespace AtomTraceCL
         unsigned __int32 inc = sizeof(header)
                              + header.gsize // Geometry data
                              + header.matSize; // Material data
-        if (m_size + inc >= MAX_DATA_SIZE)
+        if (m_size + inc >= m_MAX_DATA_SIZE)
         {
+            std::cerr << "ERROR: ObjectList::AddObject: Not enough memory to add new object.\n";
             return false;
         }
         m_indexTable.push_back(m_size);
