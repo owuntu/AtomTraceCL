@@ -140,7 +140,9 @@ int main(int argc, char** argv)
         std::cerr << "Fail to get maximum GPU memory allocation size.\n";
     }
     // Allocate memory buffer on CPU side for object list
-    ObjectList oList(maxMem / 1024);
+    ObjectList oList(maxMem / 8);
+
+    std::cout << "Loading scene...\n";
     LoadScene(oList);
 
     cl::Buffer clScene;
@@ -201,6 +203,7 @@ int main(int argc, char** argv)
     Timer::Init();
 
     unsigned int currentSample = 0;
+    unsigned int sampleIncresment = 8;
     // OpenGL viewport loop
     while (!glfwWindowShouldClose(gs_pWindow))
     {
@@ -211,7 +214,7 @@ int main(int argc, char** argv)
             CheckError(error, "Set kernel args8 (currentSample)");
             // This increase magic number should match the one in the kernel.
             // TODO: Pass it into kernel parameter.
-            currentSample += 64;
+            currentSample += sampleIncresment;
 
             // Tell the device, through the command queue, to execute queue Kernel
             error = cq.enqueueNDRangeKernel(kernel, 0, worksize, 256);
@@ -231,7 +234,8 @@ int main(int argc, char** argv)
         Timer::Tick tend = Timer::GetCurrentTick();
         float msElp = Timer::GetDifferentTickToMS(tstart, tend);
         float fps = 1000.f / msElp;
-        std::cout << "\t render time: " << msElp << "ms. fps: " << fps;
+        float msSample = msElp / static_cast<float>(sampleIncresment);
+        std::cout << "\t render time: " << msElp << "ms. fps: " << fps << ". Sample render time: " << msSample << "ms. Sample per frame: " << sampleIncresment;
     }
 
     std::cout << "\n";

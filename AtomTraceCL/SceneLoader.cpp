@@ -108,7 +108,7 @@ namespace AtomTraceCL
             RenderObject obj;
             obj.SetGeometry(&s0);
             obj.Scale(1.0f);
-            obj.Translate(1.0f, -22.f, 10.f);
+            obj.Translate(1.0f, -22.f, 15.f);
 
             Light l0;
             l0.SetEmission(AtomMathCL::Vector3(1.f));
@@ -116,7 +116,8 @@ namespace AtomTraceCL
 
             oList.AddObject(obj);
         }
-
+#if 0
+        // load teapot
         {
             TriMesh tMesh;
             tMesh.LoadObjFromFile("scene\\teapot-low.obj");
@@ -127,12 +128,26 @@ namespace AtomTraceCL
             obj.SetMaterial(&ball);
             oList.AddObject(obj);
         }
+#endif
+        // load dragon
+        {
+            TriMesh tMesh;
+            tMesh.LoadObjFromFile("scene\\dragon.obj");
+            RenderObject obj;
+            obj.SetGeometry(&tMesh);
+            obj.Rotate(180.f, AtomMathCL::Vector3::UNIT_X);
+            obj.Scale(50.f);
+            obj.Translate(0.f, 2.5f, 15.f);
+            obj.SetMaterial(&metal);
+            oList.AddObject(obj);
+        }
+
         LoadCornelBox(oList);
         return true;
     }
     bool LoadScene(ObjectList& oList)
     {
-        //return LoadUnitTestObj(oList);
+        return LoadUnitTestObj(oList);
 
         Plane pl0;
         Sphere s0;
