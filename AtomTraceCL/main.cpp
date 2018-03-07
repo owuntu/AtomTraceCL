@@ -91,7 +91,7 @@ int main(int argc, char** argv)
     cl::Device device = myOpenCL.Device();
     cl::Context context = myOpenCL.Context();
     cl::CommandQueue cq = myOpenCL.CommandQueue();
-    
+
     // Submit the source code of the kernel to OpenCL, and create a program object with it
     cl::Program program = cl::Program(context, kernelStr.c_str(), false, &error);
     CheckError(error, "Create program");
