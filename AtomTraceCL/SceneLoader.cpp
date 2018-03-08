@@ -48,7 +48,7 @@ namespace AtomTraceCL
             obj.Translate(-15.f, 0.f, 0.f);
 
             DiffuseMaterial m0;
-            m0.SetColor(AtomMathCL::Vector3(0.25f, 0.25f, 0.75f));
+            m0.SetColor(AtomMathCL::Vector3(0.25f, 0.75f, 0.25f));
             obj.SetMaterial(&m0);
             oList.AddObject(obj);
         }
@@ -62,7 +62,7 @@ namespace AtomTraceCL
             obj.Translate(15.f, .0f, .0f);
 
             DiffuseMaterial m0;
-            m0.SetColor(AtomMathCL::Vector3(0.25f, 0.75f, 0.25f));
+            m0.SetColor(AtomMathCL::Vector3(0.75f, 0.25f, 0.25f));
             obj.SetMaterial(&m0);
             oList.AddObject(obj);
         }
@@ -136,10 +136,10 @@ namespace AtomTraceCL
             tMesh.LoadObjFromFile("scene\\dragon.obj");
             RenderObject obj;
             obj.SetGeometry(&tMesh);
-            obj.Rotate(180.f, AtomMathCL::Vector3::UNIT_X);
-            obj.Scale(50.f);
-            obj.Translate(0.f, 2.5f, 15.f);
             obj.SetMaterial(&metal);
+            obj.Rotate(180.f, AtomMathCL::Vector3::UNIT_Z);
+            obj.Scale(100.f);
+            obj.Translate(0.f, 5.5f, 12.f);
             oList.AddObject(obj);
         }
 
