@@ -115,6 +115,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(SolutionDir)External\lightOCLSDK\include;$(SolutionDir)External\GLFW3\include;$(SolutionDir)AtomMathCL\;$(SolutionDir)External\;$(SolutionDir)External\lodePNG;$(SolutionDir)External\GLAD\include</AdditionalIncludeDirectories>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
