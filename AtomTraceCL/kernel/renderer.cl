@@ -89,6 +89,24 @@ void UniformSampleSphere(float u1, float u2, float3* p)
     p->y = r * sin(phi);
 }
 
+void GetAxisBaseGivenDir(const float3* pN, float3* pAx, float3* pAy)
+{
+    float3 ax;
+    if (1.f - fabs(dot(UNIT_X, *pN)) < 0.01f)
+    {
+        ax = cross(*pN, UNIT_Y);
+    }
+    else
+    {
+        ax = cross(*pN, UNIT_X);
+    }
+
+    float3 ay = cross(ax, *pN);
+
+    *pAx = normalize(ax);
+    *pAy = normalize(ay);
+}
+
 void SampleHemiSphere(float u1, float u2, const float3* pN, float3* p)
 {
     float3 ax;
