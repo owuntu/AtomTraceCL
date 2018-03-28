@@ -27,8 +27,8 @@ float3 FresnelCond(const float cosi, const float3* pEta, const float3* pK)
 
 float BlinnMD_D(const float3* pWh, const float3* pN)
 {
-    const float EXP = 1000.0f;
-    return ((EXP + 2.0f) * pow(dot(*pWh, *pN), EXP) * INV_PI_F * 0.5f);
+    const float EXP = 1000.f;
+    return ((EXP + 2.0f) * pow(fabs(dot(*pWh, *pN)), EXP) * INV_PI_F * 0.5f);
 }
 
 

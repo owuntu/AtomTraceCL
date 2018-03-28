@@ -368,6 +368,7 @@ void SampleLight(__constant char* pObjs, const ObjectHeader* pObjHead, __constan
     if (!IntersectP(pObjs, pIndexTable, numObjs, &shadowRay, 1.0f-EPSILON, true))
     {
         // add light contribution
+        // Inverse square fall off.
         //float l2 = length(shadowRay.m_dir);
         //l2 *= l2;
         *pLd = light.color;// / l2;
@@ -382,7 +383,6 @@ float3 Radiance(const Ray* ray, __constant char* pObjs, __constant int* pIndexTa
     currentRay.m_orig = ray->m_orig;
     currentRay.m_dir = ray->m_dir;
     int d = 0;
-    //float3 throughput = (float3)(1.f);
     float3 rad = (float3)(0.f);
     float3 preCi = (float3)(1.f);
     float cosWi2nd = 1.0f;
@@ -442,32 +442,68 @@ float3 Radiance(const Ray* ray, __constant char* pObjs, __constant int* pIndexTa
 
                     if (hInfo.matType == 1) // Diffuse
                     {
-                        //rad += Ld * fabs(cosWi) * f;
                         rad += Ld * fabs(cosWi) * (preCi * mat.color);
                     }
                     else if (hInfo.matType == 2) // Metal
                     {
-                        float3 tf = MetalF(&metal, &wo, &hitN, &wi);
-                        rad += Ld * tf * fabs(cosWi) * preCi;
-
+                        float3 f = MetalF(&metal, &wo, &hitN, &wi);
+                        rad += Ld * f * fabs(cosWi) * preCi;
                     }
                 }
             }
 
             // Indirect illumination
-            float3 newDir;
-            SampleHemiSphere( GetRandom01(pSeed0, pSeed1), GetRandom01(pSeed0, pSeed1), &hitN, &newDir );
             currentRay.m_orig = hitP + hitN * EPSILON;
-            currentRay.m_dir = newDir;
-            cosWi2nd = dot(newDir, hitN);
-
             if (hInfo.matType == 1) // Diffuse
             {
+                float3 newDir;
+                SampleHemiSphere(GetRandom01(pSeed0, pSeed1), GetRandom01(pSeed0, pSeed1), &hitN, &newDir);
+                newDir = normalize(newDir);
+				currentRay.m_dir = newDir;
+				cosWi2nd = dot(newDir, hitN);
                 preCi *= cosWi2nd * mat.color;
             }
             else if (hInfo.matType == 2) // Metal
             {
-                preCi *= cosWi2nd * MetalF(&metal, &wo, &hitN, &newDir);
+                float3 newDir;
+#if 1
+                float3 h;
+                float u1 = GetRandom01(pSeed0, pSeed1);
+                float u2 = GetRandom01(pSeed0, pSeed1);
+                const float EXP = 1000.f;
+                float costheta = pow(u1, 1.f / (EXP + 1.f));
+
+                float sintheta = sqrt(max(0.f, 1.f - costheta*costheta));
+                float phi = u2 * TWO_PI_F;
+                float3 ax, ay;
+                GetAxisBaseGivenDir(&hitN, &ax, &ay);
+                h = ax   * sintheta * cos(phi)
+                  + ay   * sintheta * sin(phi)
+                  + hitN * costheta;
+                h = normalize(h);
+                float vh = dot(wo, h);
+                float blinn_pdf = ((EXP + 1.f) * pow(costheta, EXP))
+                                / (2.f * PI_F * 4.f * vh);
+                if (vh <= 0.f)
+                    blinn_pdf = 0.f;
+                if (vh < 0.f)
+                {
+                    h = -h;
+                    vh = -vh;
+                }
+                newDir = h * 2.0f * min(1.f, vh) - wo;
+#else
+                float blinn_pdf = 1.f;
+                SampleHemiSphere(GetRandom01(pSeed0, pSeed1), GetRandom01(pSeed0, pSeed1), &hitN, &newDir);
+#endif
+                if (0.f == blinn_pdf)
+                {
+                    break;
+                }
+                newDir = normalize(newDir);
+                currentRay.m_dir = newDir;
+                cosWi2nd = dot(newDir, hitN);
+                preCi *= cosWi2nd * MetalF(&metal, &wo, &hitN, &newDir) / blinn_pdf;
             }
         }
         else // miss
