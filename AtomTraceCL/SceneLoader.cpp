@@ -10,6 +10,12 @@
 
 namespace AtomTraceCL
 {
+    // Hard coded cooper data.
+    static Metal s_cooper(AtomMathCL::Vector3(0.2f, 0.924f, 1.102f), AtomMathCL::Vector3(3.91f, 2.45f, 2.14f));
+
+    // Hard coded gold data.
+    static Metal s_gold(AtomMathCL::Vector3(0.143f, 0.375f, 1.44f), AtomMathCL::Vector3(3.983f, 2.386f, 1.603f));
+
     void LoadCornelBox(ObjectList& oList)
     {
         Plane pl0;
@@ -98,11 +104,6 @@ namespace AtomTraceCL
         DiffuseMaterial ball;
         ball.SetColor(AtomMathCL::Vector3(1.f, 0.3f, 0.3f));
 
-        Metal metal;
-        // Hard coded cooper data.
-        metal.m_eta = (AtomMathCL::Vector3(0.2f, 0.924f, 1.102f));
-        metal.m_kk = AtomMathCL::Vector3(3.91f, 2.45f, 2.14f);
-
         // light
         {
             RenderObject obj;
@@ -136,7 +137,7 @@ namespace AtomTraceCL
             tMesh.LoadObjFromFile("scene\\dragon.obj");
             RenderObject obj;
             obj.SetGeometry(&tMesh);
-            obj.SetMaterial(&metal);
+            obj.SetMaterial(&s_gold);
             obj.Rotate(180.f, AtomMathCL::Vector3::UNIT_Z);
             obj.Scale(100.f);
             obj.Translate(0.f, 5.5f, 12.f);
@@ -157,16 +158,6 @@ namespace AtomTraceCL
 
         DiffuseMaterial ball;
         ball.SetColor(AtomMathCL::Vector3(1.f, 0.3f, 0.3f));
-        
-        Metal cooper;
-        // Hard coded cooper data.
-        cooper.m_eta = AtomMathCL::Vector3(0.2f, 0.924f, 1.102f);
-        cooper.m_kk  = AtomMathCL::Vector3(3.91f, 2.45f, 2.14f);
-
-        Metal gold;
-        // Hard coded gold data.
-        gold.m_eta = AtomMathCL::Vector3(0.143f, 0.375f, 1.44f);
-        gold.m_kk  = AtomMathCL::Vector3(3.983f, 2.386f, 1.603f);
 
         // light
         {
@@ -187,7 +178,7 @@ namespace AtomTraceCL
             obj.Scale(4.0f);
             obj.Translate(-8.0f, -4.0f, 6.f);
             
-            obj.SetMaterial(&cooper);
+            obj.SetMaterial(&s_cooper);
             oList.AddObject(obj);
         }
         //if (false)
