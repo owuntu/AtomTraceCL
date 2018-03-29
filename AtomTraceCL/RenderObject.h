@@ -14,19 +14,19 @@ namespace AtomTraceCL
     class RenderObject : public Transformation
     {
     public:
-        RenderObject() : m_pGm(nullptr), m_pMat(nullptr) {}
+        RenderObject() : m_pGM(nullptr), m_pMAT(nullptr) {}
         ~RenderObject()
         {
-            m_pGm = nullptr;
-            m_pMat = nullptr;
+            m_pGM = nullptr;
+            m_pMAT = nullptr;
         }
 
-        void SetGeometry(Geometry* pGm);
-        void SetMaterial(Material* pMat);
+        void SetGeometry(const Geometry* pGM);
+        void SetMaterial(const Material* pMAT);
 
     public:
-        Geometry* m_pGm;
-        Material* m_pMat;
+        const Geometry* m_pGM;
+        const Material* m_pMAT;
 
     }; // class RenderObject
 } // namespace AtomTraceCL

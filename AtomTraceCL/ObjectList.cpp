@@ -42,8 +42,8 @@ namespace AtomTraceCL
         char* pCurr = reinterpret_cast<char*>(m_pData) + m_size;
         ObjectHeader header;
         obj.PackTransformation(header.transform);
-        const Geometry& geo = *obj.m_pGm;
-        const Material& mat = *obj.m_pMat;
+        const Geometry& geo = *obj.m_pGM;
+        const Material& mat = *obj.m_pMAT;
         header.gtype = geo.GetType();
         header.gsize = geo.GetSize();
         header.matType = mat.GetType();

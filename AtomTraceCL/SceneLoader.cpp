@@ -11,10 +11,10 @@
 namespace AtomTraceCL
 {
     // Hard coded cooper data.
-    static Metal s_cooper(AtomMathCL::Vector3(0.2f, 0.924f, 1.102f), AtomMathCL::Vector3(3.91f, 2.45f, 2.14f));
+    static const Metal s_COOPER(AtomMathCL::Vector3(0.2f, 0.924f, 1.102f), AtomMathCL::Vector3(3.91f, 2.45f, 2.14f));
 
     // Hard coded gold data.
-    static Metal s_gold(AtomMathCL::Vector3(0.143f, 0.375f, 1.44f), AtomMathCL::Vector3(3.983f, 2.386f, 1.603f));
+    static const Metal s_GOLD(AtomMathCL::Vector3(0.143f, 0.375f, 1.44f), AtomMathCL::Vector3(3.983f, 2.386f, 1.603f));
 
     void LoadCornelBox(ObjectList& oList)
     {
@@ -127,7 +127,7 @@ namespace AtomTraceCL
             //obj.Rotate(90.f, AtomMathCL::Vector3::UNIT_X);
             //obj.Translate(0.f, 2.f, 0.f);
             obj.Scale(0.1f);
-            obj.SetMaterial(&ball);
+            obj.SetMaterial(&s_gold);
             oList.AddObject(obj);
         }
 #endif
@@ -137,7 +137,7 @@ namespace AtomTraceCL
             tMesh.LoadObjFromFile("scene\\dragon.obj");
             RenderObject obj;
             obj.SetGeometry(&tMesh);
-            obj.SetMaterial(&s_gold);
+            obj.SetMaterial(&s_GOLD);
             obj.Rotate(180.f, AtomMathCL::Vector3::UNIT_Z);
             obj.Scale(100.f);
             obj.Translate(0.f, 5.5f, 12.f);
@@ -178,7 +178,7 @@ namespace AtomTraceCL
             obj.Scale(4.0f);
             obj.Translate(-8.0f, -4.0f, 6.f);
             
-            obj.SetMaterial(&s_cooper);
+            obj.SetMaterial(&s_COOPER);
             oList.AddObject(obj);
         }
         //if (false)

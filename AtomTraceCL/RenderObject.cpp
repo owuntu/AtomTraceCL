@@ -4,14 +4,14 @@
 
 namespace AtomTraceCL
 {
-    void RenderObject::SetGeometry(Geometry* pGm)
+    void RenderObject::SetGeometry(const Geometry* pGM)
     {
-        m_pGm = pGm;
+        m_pGM = pGM;
     }
 
-    void RenderObject::SetMaterial(Material* pMat)
+    void RenderObject::SetMaterial(const Material* pMAT)
     {
-        m_pMat = pMat;
+        m_pMAT = pMAT;
     }
 
 
