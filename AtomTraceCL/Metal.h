@@ -11,12 +11,17 @@ namespace AtomTraceCL
     class Metal : public Material
     {
     public:
-        Metal() : m_eta(AtomMathCL::Vector3::ZERO), m_kk(AtomMathCL::Vector3::ZERO)
+        Metal() : m_eta(AtomMathCL::Vector3::ZERO), m_kk(AtomMathCL::Vector3::ZERO), m_exp(1000.f)
         {}
 
-        Metal(const AtomMathCL::Vector3& eta, const AtomMathCL::Vector3& kk) :
-            m_eta(eta), m_kk(kk)
-        {}
+        Metal(const AtomMathCL::Vector3& eta, const AtomMathCL::Vector3& kk, const float exp) :
+            m_eta(eta), m_kk(kk), m_exp(exp)
+        {
+            if (m_exp > 1000.f)
+            {
+                m_exp = 1000.f;
+            }
+        }
 
         inline __int32 GetType() const
         {
@@ -35,6 +40,7 @@ namespace AtomTraceCL
 
         AtomMathCL::Vector3 m_eta;
         AtomMathCL::Vector3 m_kk;
+        float m_exp; // exponent
     };
 } // namespace AtomTraceCL
 

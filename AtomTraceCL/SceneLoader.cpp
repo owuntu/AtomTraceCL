@@ -11,10 +11,10 @@
 namespace AtomTraceCL
 {
     // Hard coded cooper data.
-    static const Metal s_COOPER(AtomMathCL::Vector3(0.2f, 0.924f, 1.102f), AtomMathCL::Vector3(3.91f, 2.45f, 2.14f));
+    static const Metal s_COOPER(AtomMathCL::Vector3(0.2f, 0.924f, 1.102f), AtomMathCL::Vector3(3.91f, 2.45f, 2.14f), 1000.f);
 
     // Hard coded gold data.
-    static const Metal s_GOLD(AtomMathCL::Vector3(0.143f, 0.375f, 1.44f), AtomMathCL::Vector3(3.983f, 2.386f, 1.603f));
+    static const Metal s_GOLD(AtomMathCL::Vector3(0.143f, 0.375f, 1.44f), AtomMathCL::Vector3(3.983f, 2.386f, 1.603f), 1000.f);
 
     void LoadCornelBox(ObjectList& oList)
     {

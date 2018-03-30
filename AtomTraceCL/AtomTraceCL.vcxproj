@@ -186,6 +186,7 @@
     <None Include="kernel\Transformation.hcl" />
     <None Include="kernel\Triangles.hcl" />
     <None Include="kernel\UintStack.hcl" />
+    <None Include="kernel\Utilities.hcl" />
     <None Include="Timer.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

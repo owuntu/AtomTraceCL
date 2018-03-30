@@ -2,11 +2,13 @@
 #define ATOMTRACECL_METAL_HCL_
 
 #include "ConstantDef.hcl"
+#include "Utilities.hcl"
 
 typedef struct
 {
     float3 eta;
     float3 kk;
+    float exp;
 }Metal;
 
 // Return Color
@@ -25,12 +27,37 @@ float3 FresnelCond(const float cosi, const float3* pEta, const float3* pK)
     return (Rperp2 + Rparl2) * 0.5f;
 }
 
-float BlinnMD_D(const float3* pWh, const float3* pN)
+float BlinnMD_D(const float3* pWh, const float3* pN, const float EXP)
 {
-    const float EXP = 1000.f;
     return ((EXP + 2.0f) * pow(fabs(dot(*pWh, *pN)), EXP) * INV_PI_F * 0.5f);
 }
 
+void BlinnMD_SampleF(const float u1, const float u2, const float EXP, const float3* pN, const float3* pWo, float3* pWi, float* pPdf)
+{
+    float3 h;
+    float costheta = pow(u1, 1.f / (EXP + 1.f));
+
+    float sintheta = sqrt(max(0.f, 1.f - costheta*costheta));
+    float phi = u2 * TWO_PI_F;
+    float3 ax, ay;
+    GetAxisBaseGivenDir(pN, &ax, &ay);
+    h =   ax  * sintheta * cos(phi)
+        + ay  * sintheta * sin(phi)
+        + *pN * costheta;
+    h = normalize(h);
+    float vh = dot(*pWo, h);
+    float blinn_pdf = ((EXP + 1.f) * pow(costheta, EXP))
+        / (2.f * PI_F * 4.f * vh);
+    if (vh <= 0.f)
+        blinn_pdf = 0.f;
+    if (vh < 0.f)
+    {
+        h = -h;
+        vh = -vh;
+    }
+    *pWi = h * 2.0f * min(1.f, vh) - *pWo;
+    *pPdf = blinn_pdf;
+}
 
 float MicrofacetG(const float3* pWo, const float3* pN, const float3* pWi)
 {
@@ -60,7 +87,7 @@ const float3 MetalF(const Metal* pMetal, const float3* pWo, const float3* pN, co
     wh = normalize(wh);
     float cosThetaH = dot(wh, *pWo);
     float3 F = FresnelCond(cosThetaH, &pMetal->eta, &pMetal->kk);
-    return /* m_R * */  BlinnMD_D(&wh, pN) * MicrofacetG(pWo, pN, pWi) * F /
+    return /* m_R * */  BlinnMD_D(&wh, pN, pMetal->exp) * MicrofacetG(pWo, pN, pWi) * F /
         (4.f * cosThetaI * cosThetaO);
 }
 

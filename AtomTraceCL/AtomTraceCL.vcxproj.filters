@@ -207,5 +207,8 @@
     <None Include="kernel\BVHUtil.hcl">
       <Filter>CL_GL\OpenCL_kernels</Filter>
     </None>
+    <None Include="kernel\Utilities.hcl">
+      <Filter>CL_GL\OpenCL_kernels</Filter>
+    </None>
   </ItemGroup>
 </Project>

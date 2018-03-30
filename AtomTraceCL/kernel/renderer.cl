@@ -1,4 +1,4 @@
-#define MAX_DEPTH 3
+#define MAX_DEPTH 4
 
 #include "ConstantDef.hcl"
 #include "InfoDef.hcl"
@@ -7,10 +7,6 @@
 #include "Transformation.hcl"
 #include "Triangles.hcl"
 
-// --- Geometries ----
-// TODO: Add triangulate objs.
-
-// -------------------
 
 typedef struct
 {
@@ -466,34 +462,14 @@ float3 Radiance(const Ray* ray, __constant char* pObjs, __constant int* pIndexTa
             else if (hInfo.matType == 2) // Metal
             {
                 float3 newDir;
+                float blinn_pdf = 1.f;
 #if 1
-                float3 h;
                 float u1 = GetRandom01(pSeed0, pSeed1);
                 float u2 = GetRandom01(pSeed0, pSeed1);
-                const float EXP = 1000.f;
-                float costheta = pow(u1, 1.f / (EXP + 1.f));
 
-                float sintheta = sqrt(max(0.f, 1.f - costheta*costheta));
-                float phi = u2 * TWO_PI_F;
-                float3 ax, ay;
-                GetAxisBaseGivenDir(&hitN, &ax, &ay);
-                h = ax   * sintheta * cos(phi)
-                  + ay   * sintheta * sin(phi)
-                  + hitN * costheta;
-                h = normalize(h);
-                float vh = dot(wo, h);
-                float blinn_pdf = ((EXP + 1.f) * pow(costheta, EXP))
-                                / (2.f * PI_F * 4.f * vh);
-                if (vh <= 0.f)
-                    blinn_pdf = 0.f;
-                if (vh < 0.f)
-                {
-                    h = -h;
-                    vh = -vh;
-                }
-                newDir = h * 2.0f * min(1.f, vh) - wo;
+                // Calculate wi(newDir) and blinn_pdf
+                BlinnMD_SampleF(u1, u2, metal.exp, &hitN, &wo, &newDir, &blinn_pdf);
 #else
-                float blinn_pdf = 1.f;
                 SampleHemiSphere(GetRandom01(pSeed0, pSeed1), GetRandom01(pSeed0, pSeed1), &hitN, &newDir);
 #endif
                 if (0.f == blinn_pdf)
