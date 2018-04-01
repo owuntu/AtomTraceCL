@@ -379,12 +379,10 @@ float3 Radiance(const Ray* ray, __constant char* pObjs, __constant int* pIndexTa
                 float blinn_pdf = 1.f;
                 float u1 = GetRandom01(pSeed0, pSeed1);
                 float u2 = GetRandom01(pSeed0, pSeed1);
-#if 1
+
                 // Calculate wi(newDir) and blinn_pdf
                 BlinnMD_SampleF(u1, u2, metal.exp, &hitN, &wo, &newDir, &blinn_pdf);
-#else
-                SampleHemiSphere(u1, u2, &hitN, &newDir);
-#endif
+
                 if (0.f == blinn_pdf)
                 {
                     break;
