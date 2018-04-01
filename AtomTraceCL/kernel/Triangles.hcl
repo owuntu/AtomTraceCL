@@ -82,9 +82,9 @@ bool IntersectTriMesh(const Ray* pRAY, __constant char* pGeo, HitInfoGeo* pInfog
     return bHit;
 #else // Using BVH
     // BVH intersection
-    __constant const BVHNode* pROOT = (__constant BVHNode*)(pCurr + header.nodes.index);
+    __constant const BVHNode* const pROOT = (__constant BVHNode*)(pCurr + header.nodes.index);
     __constant uint* pElementList = (__constant uint*)(pCurr + header.elements.index);
-    __constant BVHNode* pNode = pROOT;
+    __constant const BVHNode* pNode = pROOT;
     uint nodeID = 1; // cyBVH root nodeID start as 1
     Box box;
     UintStack stack;
@@ -108,7 +108,7 @@ bool IntersectTriMesh(const Ray* pRAY, __constant char* pGeo, HitInfoGeo* pInfog
         {
             if (BVHisLeafNode(pNode))
             {
-                // TODO: Intersect triangle.
+                // Intersect triangle.
                 // Get all the triangle face ID
                 uint offset = BVHgetNodeElementsOffset(pNode);
                 uint numEle = BVHgetNodeElementCount(pNode);

@@ -17,9 +17,9 @@ namespace AtomTraceCL
         Metal(const AtomMathCL::Vector3& eta, const AtomMathCL::Vector3& kk, const float exp) :
             m_eta(eta), m_kk(kk), m_exp(exp)
         {
-            if (m_exp > 1000.f)
+            if (m_exp > 10000.f)
             {
-                m_exp = 1000.f;
+                m_exp = 10000.f;
             }
         }
 
