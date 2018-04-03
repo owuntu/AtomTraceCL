@@ -337,6 +337,7 @@ float3 Radiance(const Ray* ray, __constant char* pObjs, __constant int* pIndexTa
             // Direct illumination
             for (int i = 0; i < numObjs; ++i)
             {
+                // Find light sources
                 ObjectHeader lightHead = *(__constant ObjectHeader*)(pObjs + pIndexTable[i]);
                 if (lightHead.matType == 0) // LIGHT type
                 { 
@@ -350,48 +351,48 @@ float3 Radiance(const Ray* ray, __constant char* pObjs, __constant int* pIndexTa
                         continue;
                     }
 
+                    float3 f = (float3)(0.f);
                     if (hInfo.matType == 1) // Diffuse
                     {
-                        rad += Ld * fabs(cosWi) * (preCi * mat.color);
+                        f = mat.color;
                     }
                     else if (hInfo.matType == 2) // Metal
                     {
-                        float3 f = MetalF(&metal, &wo, &hitN, &wi);
-                        rad += Ld * f * fabs(cosWi) * preCi;
+                        f = MetalF(&metal, &wo, &hitN, &wi);
                     }
+                    rad += Ld * f * fabs(cosWi) * preCi;
                 }
             }
 
             // Indirect illumination
             currentRay.m_orig = hitP + hitN * EPSILON;
+            float u1 = GetRandom01(pSeed0, pSeed1);
+            float u2 = GetRandom01(pSeed0, pSeed1);
+            float3 wi;
+            float pdf = 1.f;
+            float3 f = (float3)(0.f);
             if (hInfo.matType == 1) // Diffuse
             {
-                float3 newDir;
-                SampleHemiSphere(GetRandom01(pSeed0, pSeed1), GetRandom01(pSeed0, pSeed1), &hitN, &newDir);
-                newDir = normalize(newDir);
-				currentRay.m_dir = newDir;
-				cosWi2nd = dot(newDir, hitN);
-                preCi *= cosWi2nd * mat.color;
+                SampleHemiSphere(u1, u2, &hitN, &wi);
+                wi = normalize(wi);
+                f = mat.color;
+                
             }
             else if (hInfo.matType == 2) // Metal
             {
-                float3 newDir;
-                float blinn_pdf = 1.f;
-                float u1 = GetRandom01(pSeed0, pSeed1);
-                float u2 = GetRandom01(pSeed0, pSeed1);
+                // Calculate wi(newDir) and pdf
+                BlinnMD_SampleF(u1, u2, metal.exp, &hitN, &wo, &wi, &pdf);
 
-                // Calculate wi(newDir) and blinn_pdf
-                BlinnMD_SampleF(u1, u2, metal.exp, &hitN, &wo, &newDir, &blinn_pdf);
-
-                if (0.f == blinn_pdf)
+                if (0.f == pdf)
                 {
                     break;
                 }
-                newDir = normalize(newDir);
-                currentRay.m_dir = newDir;
-                cosWi2nd = dot(newDir, hitN);
-                preCi *= cosWi2nd * MetalF(&metal, &wo, &hitN, &newDir) / blinn_pdf;
+                wi = normalize(wi);
+                f = MetalF(&metal, &wo, &hitN, &wi);
             }
+            currentRay.m_dir = wi;
+            cosWi2nd = dot(wi, hitN);
+            preCi *= cosWi2nd * f / pdf;
         }
         else // miss
         {
