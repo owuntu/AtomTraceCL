@@ -1,5 +1,6 @@
 #include <cstdlib>
 #include <iostream>
+#include <iomanip>
 
 #define CL_HPP_TARGET_OPENCL_VERSION 200
 #include <CL\cl2.hpp> // main OpenCL include file 
@@ -204,16 +205,21 @@ int main(int argc, char** argv)
 
     unsigned int currentSample = 0;
     unsigned int sampleIncresment = 8;
+    
+    error = kernel.setArg(9, sampleIncresment);
+    CheckError(error, "Set kernel arg9 (sampleInc)");
+
+    bool isFinished = false;
+    Timer::Tick loopStart = Timer::GetCurrentTick();
     // OpenGL viewport loop
     while (!glfwWindowShouldClose(gs_pWindow))
     {
         Timer::Tick tstart = Timer::GetCurrentTick();
         if (currentSample < 0xffffffff)
         {
-            error = kernel.setArg(9, currentSample);
+            error = kernel.setArg(10, currentSample);
             CheckError(error, "Set kernel args8 (currentSample)");
-            // This increase magic number should match the one in the kernel.
-            // TODO: Pass it into kernel parameter.
+
             currentSample += sampleIncresment;
 
             // Tell the device, through the command queue, to execute queue Kernel
@@ -221,6 +227,10 @@ int main(int argc, char** argv)
             CheckError(error, "Enqueue NDRange kernel");
 
             std::cout << "\rCurrent samples: " << currentSample << ".";
+        }
+        else
+        {
+            isFinished = true;
         }
 
         // Read the result back into image
@@ -231,11 +241,28 @@ int main(int argc, char** argv)
 
         glfwSwapBuffers(gs_pWindow);
         glfwPollEvents();
-        Timer::Tick tend = Timer::GetCurrentTick();
-        float msElp = Timer::GetDifferentTickToMS(tstart, tend);
-        float fps = 1000.f / msElp;
-        float msSample = msElp / static_cast<float>(sampleIncresment);
-        std::cout << "\t render time: " << msElp << "ms. fps: " << fps << ". Sample render time: " << msSample << "ms. Sample per frame: " << sampleIncresment;
+        if (!isFinished)
+        {
+            Timer::Tick tend = Timer::GetCurrentTick();
+            float msElp = Timer::GetDifferentTickToMS(tstart, tend);
+            float fps = 1000.f / msElp;
+            float msSample = msElp / static_cast<float>(sampleIncresment);
+
+            float msLoop = Timer::GetDifferentTickToMS(loopStart, tend);
+            float avgSpt = msLoop / static_cast<float>(currentSample);
+            std::cout << std::fixed;
+            std::cout.precision(2);
+            std::cout << "\t frame: " << msElp << "ms. fps: " << fps << ". Sample: " << msSample << "ms. Sample avg: " << avgSpt << "ms. Sample per frame: " << sampleIncresment << " ";
+        }
+        else
+        {
+            static bool printOnce = false;
+            if (!printOnce)
+            {
+                printOnce = true;
+                std::cout << "\nRender Done.\n";
+            }
+        }
     }
 
     std::cout << "\n";

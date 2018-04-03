@@ -406,7 +406,7 @@ float3 Radiance(const Ray* ray, __constant char* pObjs, __constant int* pIndexTa
 __kernel void RenderKernel(__global uchar* pOutput, int width, int height,
                            __constant Camera* cam,
                            __constant char* pObjs, __constant int* pIndexTable, int numObjs,
-                           __global uint* pSeeds, __global float* color, uint currentSample)
+                           __global uint* pSeeds, __global float* color, const uint sampleInc, uint currentSample)
 {
     int pid = get_global_id(0);
     int worksize = width*height;
@@ -418,9 +418,7 @@ __kernel void RenderKernel(__global uchar* pOutput, int width, int height,
         uint seed0 = pSeeds[pid];
         uint seed1 = pSeeds[worksize + pid];
 
-        // This increase magic number should match the one in the host.
-        // TODO: Take it from kernel parameter.
-        for (int i = 0; i < 8; ++i)
+        for (int i = 0; i < sampleInc; ++i)
         {
             Ray cRay = CastCamRay(px, py, cam, currentSample);
 
