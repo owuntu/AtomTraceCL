@@ -2,7 +2,11 @@
 
 #include "ConstantDef.hcl"
 #include "InfoDef.hcl"
+
+// Materials
 #include "Metal.hcl"
+#include "Transmission.hcl"
+
 #include "Ray.hcl"
 #include "Transformation.hcl"
 #include "Triangles.hcl"
@@ -297,6 +301,7 @@ float3 Radiance(const Ray* ray, __constant char* pObjs, __constant int* pIndexTa
     // Pre allocate buffer to store material info
     DiffuseMaterial mat;
     Metal metal;
+    Transmission trmMat;
     
     while(d < MAX_DEPTH)
     {
@@ -325,13 +330,22 @@ float3 Radiance(const Ray* ray, __constant char* pObjs, __constant int* pIndexTa
                 break;
             }
 
+            __constant char* pMaterial = pObjs + hInfo.matIndex;
             if (hInfo.matType == 1) // Diffuse
             {
-                mat = *(__constant DiffuseMaterial*)(pObjs + hInfo.matIndex);
+                mat = *(__constant DiffuseMaterial*)(pMaterial);
             }
             else if (hInfo.matType == 2) // Metal
             {
-                metal = *(__constant Metal*)(pObjs + hInfo.matIndex);
+                metal = *(__constant Metal*)(pMaterial);
+            }
+            else if (hInfo.matType == 3) // Specular reflection
+            {
+                // TODO
+            }
+            else if (hInfo.matType == 4) // Specular transmission
+            {
+                trmMat = *(__constant Transmission*)(pMaterial);
             }
 
             // Direct illumination
@@ -359,6 +373,10 @@ float3 Radiance(const Ray* ray, __constant char* pObjs, __constant int* pIndexTa
                     else if (hInfo.matType == 2) // Metal
                     {
                         f = MetalF(&metal, &wo, &hitN, &wi);
+                    }
+                    else if (hInfo.matType == 3 || hInfo.matType == 4) // Specular reflection & transmission
+                    {
+                        // no direct illumination need to be compute
                     }
                     rad += Ld * f * fabs(cosWi) * preCi;
                 }
@@ -389,6 +407,14 @@ float3 Radiance(const Ray* ray, __constant char* pObjs, __constant int* pIndexTa
                 }
                 wi = normalize(wi);
                 f = MetalF(&metal, &wo, &hitN, &wi);
+            }
+            else if (hInfo.matType == 3) // Specular reflectioin
+            {
+                // TODO
+            }
+            else if (hInfo.matType == 4) // Specular transmission
+            {
+                f = TransmissionSampleF(u1, &trmMat, 1.f, &hitN, &wo, &wi, &pdf);
             }
             currentRay.m_dir = wi;
             cosWi2nd = dot(wi, hitN);

@@ -92,6 +92,9 @@
     <ClCompile Include="BVHTriMesh.cpp">
       <Filter>Geometry</Filter>
     </ClCompile>
+    <ClCompile Include="Transmission.cpp">
+      <Filter>Materials</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Ray.h">
@@ -175,6 +178,9 @@
     <ClInclude Include="cyBVHMacro.h">
       <Filter>Extern\cyCodebase</Filter>
     </ClInclude>
+    <ClInclude Include="Transmission.h">
+      <Filter>Materials</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="kernel\renderer.cl">
@@ -208,6 +214,9 @@
       <Filter>CL_GL\OpenCL_kernels</Filter>
     </None>
     <None Include="kernel\Utilities.hcl">
+      <Filter>CL_GL\OpenCL_kernels</Filter>
+    </None>
+    <None Include="kernel\Transmission.hcl">
       <Filter>CL_GL\OpenCL_kernels</Filter>
     </None>
   </ItemGroup>

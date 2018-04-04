@@ -10,6 +10,8 @@ namespace AtomTraceCL
         LIGHT   = 0,
         DIFFUSE = 1,
         METAL = 2,
+        SPECULAR = 3,     // Ideal specular reflection
+        TRANSMISSION = 4  // Ideal transmission refraction
     };
 
     class Material : public ObjectAttribute

@@ -144,6 +144,7 @@
     <ClCompile Include="Sphere.cpp" />
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="Transformation.cpp" />
+    <ClCompile Include="Transmission.cpp" />
     <ClCompile Include="TriMesh.cpp" />
     <ClCompile Include="Utilities.cpp" />
   </ItemGroup>
@@ -170,6 +171,7 @@
     <ClInclude Include="Sphere.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="Transformation.h" />
+    <ClInclude Include="Transmission.h" />
     <ClInclude Include="TriMesh.h" />
     <ClInclude Include="TriMeshHeader.h" />
     <ClInclude Include="TypeDef.h" />
@@ -184,6 +186,7 @@
     <None Include="kernel\Ray.hcl" />
     <None Include="kernel\renderer.cl" />
     <None Include="kernel\Transformation.hcl" />
+    <None Include="kernel\Transmission.hcl" />
     <None Include="kernel\Triangles.hcl" />
     <None Include="kernel\UintStack.hcl" />
     <None Include="kernel\Utilities.hcl" />
