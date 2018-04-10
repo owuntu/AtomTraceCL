@@ -21,9 +21,9 @@ float3 TransmissionSampleF(const float u1, const Transmission* pTrm, const float
 {
     // Figure out whether it is entering or exiting the material
     float3 N = normalize(*pN);
-    float cosTi = max(-1.f, min(1.f, dot(*pWo, N)));
+    float cosTi = dot(*pWo, N);
     
-    float3 wR = N * 2.f * min(1.f, cosTi) - *pWo;// reflection direction
+    float3 wR = N * 2.f * cosTi - *pWo;// reflection direction
 
     bool isEntering = cosTi > 0.f;
     float ei = etai, et = pTrm->etat;
@@ -40,8 +40,6 @@ float3 TransmissionSampleF(const float u1, const Transmission* pTrm, const float
     float sinTi = sqrt(1.f - cosTi * cosTi);
     float sinTt = eta * sinTi;
 
-    float3 ret = (float3)(0.f);
-
     float T, R;
     if (sinTt >= 1.f)// Total internal reflections
     {
@@ -53,25 +51,22 @@ float3 TransmissionSampleF(const float u1, const Transmission* pTrm, const float
     {
         float cosTt = sqrt(1.f - sinTt*sinTt);
         R = FresnelDie(fabs(cosTi), fabs(cosTt), ei, et);
-        //R = 1.f;
         T = 1.f - R;
 
         if (u1 < T)
         {
             // Transmission direction
             *pWi = normalize(N * cosTt + (*pWo - N * cosTi) * eta) * -1.f;
-            ret = pTrm->color;
         }
         else
         {
             // Reflection direction
             *pWi = wR;
-            ret = pTrm->color;
         }
     }
 
     *pPdf = 1.f;
-    return ret;
+    return pTrm->color;
 }
 
 #endif // ATOMTRACECL_TRANSMISSION_HCL_
