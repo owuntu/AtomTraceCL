@@ -7,7 +7,7 @@
 
 namespace AtomTraceCL
 {
-    class Transmission
+    class Transmission : public Material
     {
     public:
         Transmission();

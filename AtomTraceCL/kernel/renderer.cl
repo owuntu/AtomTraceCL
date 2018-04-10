@@ -1,4 +1,4 @@
-#define MAX_DEPTH 4
+#define MAX_DEPTH 6
 
 #include "ConstantDef.hcl"
 #include "InfoDef.hcl"
@@ -315,7 +315,7 @@ float3 Radiance(const Ray* ray, __constant char* pObjs, __constant int* pIndexTa
             if (hInfo.matType == 0) // light
             {
                 mat = *(__constant DiffuseMaterial*)(pObjs + hInfo.matIndex);
-                rad += mat.color;
+                rad += mat.color *preCi;
                 break;
             }
 
@@ -323,12 +323,6 @@ float3 Radiance(const Ray* ray, __constant char* pObjs, __constant int* pIndexTa
             float3 hitN = hInfoGeo.hitN;
             float3 wo = normalize(-currentRay.m_dir);
             float cosWo = dot(hitN, wo);
-
-            // Ignore backface hit;
-            if (cosWo <= 0.f)
-            {
-                break;
-            }
 
             __constant char* pMaterial = pObjs + hInfo.matIndex;
             if (hInfo.matType == 1) // Diffuse
@@ -394,7 +388,6 @@ float3 Radiance(const Ray* ray, __constant char* pObjs, __constant int* pIndexTa
                 SampleHemiSphere(u1, u2, &hitN, &wi);
                 wi = normalize(wi);
                 f = mat.color;
-                
             }
             else if (hInfo.matType == 2) // Metal
             {
@@ -415,6 +408,10 @@ float3 Radiance(const Ray* ray, __constant char* pObjs, __constant int* pIndexTa
             else if (hInfo.matType == 4) // Specular transmission
             {
                 f = TransmissionSampleF(u1, &trmMat, 1.f, &hitN, &wo, &wi, &pdf);
+                //f = (float3)(.9f);
+                currentRay.m_orig = hitP + wi * 0.1f;// EPSILON;
+                // TODO: temporary work around to avoid preCi multiply cosWi2nd
+                hitN = wi;
             }
             currentRay.m_dir = wi;
             cosWi2nd = dot(wi, hitN);
