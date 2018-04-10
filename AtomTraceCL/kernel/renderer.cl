@@ -315,7 +315,7 @@ float3 Radiance(const Ray* ray, __constant char* pObjs, __constant int* pIndexTa
             if (hInfo.matType == 0) // light
             {
                 mat = *(__constant DiffuseMaterial*)(pObjs + hInfo.matIndex);
-                rad += mat.color *preCi;
+                rad += mat.color;
                 break;
             }
 
