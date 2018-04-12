@@ -1,6 +1,10 @@
+
+// Materials
 #include "DiffuseMaterial.h"
-#include "Light.h"
 #include "Metal.h"
+#include "Transmission.h"
+
+#include "Light.h"
 #include "ObjectList.h"
 #include "Plane.h"
 #include "RenderObject.h"
