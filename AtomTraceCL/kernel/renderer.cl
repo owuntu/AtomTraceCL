@@ -426,10 +426,15 @@ float3 Radiance(const Ray* ray, __constant char* pObjs, __constant int* pIndexTa
     return rad;
 }
 
-__kernel void RenderKernel(__global uchar* pOutput, int width, int height,
+__kernel void RenderKernel(
+    __global uchar* pOutput,
                            __constant Camera* cam,
-                           __constant char* pObjs, __constant int* pIndexTable, int numObjs,
-                           __global uint* pSeeds, __global float* color, const uint sampleInc, uint currentSample)
+    __constant char* pObjs,
+    __constant int* pIndexTable,
+    __global uint* pSeeds,
+    __global float* color,
+    int width, int height, int numObjs, const uint sampleInc, uint currentSample
+)
 {
     int pid = get_global_id(0);
     int worksize = width*height;

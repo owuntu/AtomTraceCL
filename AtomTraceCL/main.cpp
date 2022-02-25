@@ -171,31 +171,33 @@ int main(int argc, char** argv)
     CheckError(error, "Create kernel");
 
     // Setup kernel parameters
-    error = kernel.setArg(0, pixelBuffer);
+    cl_uint parmIndex = 0;
+    error = kernel.setArg(parmIndex++, pixelBuffer);
     CheckError(error, "Set kernel args0");
 
-    error = kernel.setArg(1, IMAGE_WIDTH);
-    CheckError(error, "Set kernel args1");
-
-    error = kernel.setArg(2, IMAGE_HEIGHT);
-    CheckError(error, "Set kernel args2");
-
-    error = kernel.setArg(3, clCam);
+    error = kernel.setArg(parmIndex++, clCam);
     CheckError(error, "Set kernel args3");
 
-    error = kernel.setArg(4, clScene);
+    error = kernel.setArg(parmIndex++, clScene);
     CheckError(error, "Set clScene");
 
-    error = kernel.setArg(5, clIndexTable);
+    error = kernel.setArg(parmIndex++, clIndexTable);
     CheckError(error, "Set kernel args index table");
 
-    error = kernel.setArg(6, oList.m_numObj);
-    CheckError(error, "Set num obj");
-
-    error = kernel.setArg(7, clSeeds);
+    error = kernel.setArg(parmIndex++, clSeeds);
     CheckError(error, "Set kernel args7(clSeeds)");
 
-    error = kernel.setArg(8, clColor);
+    error = kernel.setArg(parmIndex++, clColor);
+    CheckError(error, "Set kernel args clColor");
+
+    error = kernel.setArg(parmIndex++, IMAGE_WIDTH);
+    CheckError(error, "Set kernel args1");
+
+    error = kernel.setArg(parmIndex++, IMAGE_HEIGHT);
+    CheckError(error, "Set kernel args2");
+
+    error = kernel.setArg(parmIndex++, oList.m_numObj);
+    CheckError(error, "Set num obj");
 
     InitGLFWWindow(IMAGE_WIDTH, IMAGE_HEIGHT);
 
@@ -206,7 +208,7 @@ int main(int argc, char** argv)
     unsigned int currentSample = 0;
     unsigned int sampleIncresment = 8;
     
-    error = kernel.setArg(9, sampleIncresment);
+    error = kernel.setArg(parmIndex++, sampleIncresment);
     CheckError(error, "Set kernel arg9 (sampleInc)");
 
     bool isFinished = false;
@@ -217,7 +219,7 @@ int main(int argc, char** argv)
         Timer::Tick tstart = Timer::GetCurrentTick();
         if (currentSample < 0xffffffff)
         {
-            error = kernel.setArg(10, currentSample);
+            error = kernel.setArg(parmIndex, currentSample);
             CheckError(error, "Set kernel args8 (currentSample)");
 
             currentSample += sampleIncresment;
