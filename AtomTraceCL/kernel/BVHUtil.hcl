@@ -20,13 +20,16 @@ bool IntersectBox(const Ray* pRAY, const Box* pBox, float t)
     float tmin = -FLT_MAX;
     float tmax = FLT_MAX;
 
+    float dir[3] = { pRAY->m_dir.x, pRAY->m_dir.y, pRAY->m_dir.z };
+    float orig[3] = { pRAY->m_orig.x, pRAY->m_orig.y, pRAY->m_orig.z };
+
     for (int i = 0; i < 3; ++i)
     {
         // Check parallel
-        if (pRAY->m_dir[i] != 0.f)
+        if (dir[i] != 0.f)
         {
-            float t1 = (pBox->b[i] - pRAY->m_orig[i]) / pRAY->m_dir[i];
-            float t2 = (pBox->b[i + 3] - pRAY->m_orig[i]) / pRAY->m_dir[i];
+            float t1 = (pBox->b[i] - orig[i]) / dir[i];
+            float t2 = (pBox->b[i + 3] - orig[i]) / dir[i];
             tmin = max(tmin, min(t1, t2));
             tmax = min(tmax, max(t1, t2));
         }
