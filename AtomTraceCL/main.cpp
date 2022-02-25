@@ -205,9 +205,10 @@ int main(int argc, char** argv)
     paramIndex++;
     error = kernel.setArg(paramIndex, IMAGE_HEIGHT);
     CheckError(error, "Set kernel args img height");
-    //paramIndex++;
-    //error = kernel.setArg(paramIndex, clSeeds);
-    //CheckError(error, "Set kernel args7(clSeeds)");
+    
+    paramIndex++;
+    error = kernel.setArg(paramIndex, clSeeds);
+    CheckError(error, "Set kernel args7(clSeeds)");
 
     //paramIndex++;
     //error = kernel.setArg(paramIndex, clColor);

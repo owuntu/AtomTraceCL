@@ -14,7 +14,7 @@
 
 typedef struct
 {
-    float4 color;
+    float3 color;
 }DiffuseMaterial;
 
 /* This is a description of a RenderObject that store into the scene
@@ -183,10 +183,6 @@ bool Intersect(__constant char* pObj, __constant const int* pIndexTable, int num
 
         if (objh.gtype == 1) // SPHERE
         {
-            //bHit = true;
-            //*pObjHead = objh;
-            //return true;
-
             tHit = IntersectSphere(&ray, &t);
 
             hitP = ray.m_orig + ray.m_dir * t;
@@ -293,7 +289,7 @@ float3 Radiance(const Ray* ray, __constant char* pObjs, __constant int* pIndexTa
     currentRay.m_orig = ray->m_orig;
     currentRay.m_dir = ray->m_dir;
     int d = 0;
-    float4 rad = 0.f;
+    float3 rad = 0.f;
     float3 preCi = (float3)(1.f);
     float cosWi2nd = 1.0f;
 
@@ -307,17 +303,17 @@ float3 Radiance(const Ray* ray, __constant char* pObjs, __constant int* pIndexTa
         float t = FLT_MAX;
         ObjectHeader hInfo;
         HitInfoGeo hInfoGeo;
-        //bool bHit = Intersect(pObjs, pIndexTable, numObjs, &currentRay, &hInfo, &hInfoGeo, false);
-        bool bHit = true;
+        bool bHit = Intersect(pObjs, pIndexTable, numObjs, &currentRay, &hInfo, &hInfoGeo, false);
+
         if (bHit)
         {
             //if (hInfo.matType == 0) // light
             {
-                mat = *(__constant DiffuseMaterial*)(pObjs + 120);// hInfo.matIndex);
+                mat = *(__constant DiffuseMaterial*)(pObjs + hInfo.matIndex);
                 //rad += mat.color.xyz;
                 rad.x += mat.color.x;
                 rad.y += mat.color.y;
-                rad.z += mat.color.z;
+                //rad.z += mat.color.z;
                 break;
             }
 #if 0
@@ -434,7 +430,8 @@ __kernel void RenderKernel(__global uchar* pOutput,
     __constant Camera* cam,
     __constant int* pIndexTable,
     int numObjs, int width, int height
-    //,__global uint* pSeeds, __global float* color, const uint sampleInc, uint currentSample
+    ,__global uint* pSeeds
+    //, __global float* color, const uint sampleInc, uint currentSample
 )
 {
     int pid = get_global_id(0);
@@ -444,8 +441,8 @@ __kernel void RenderKernel(__global uchar* pOutput,
         int px = pid % width;
         int py = pid / width;
 
-        //uint seed0 = pSeeds[pid];
-        //uint seed1 = pSeeds[worksize + pid];
+        uint seed0 = pSeeds[pid];
+        uint seed1 = pSeeds[worksize + pid];
 
         float3 haf = (float3)(0.5f);
         float3 rad = 0.0f;
@@ -455,14 +452,14 @@ __kernel void RenderKernel(__global uchar* pOutput,
             //Ray cRay = CastCamRay(px, py, cam, currentSample);
             Ray cRay = CastCamRay(px, py, cam, 0);
 
-            //float3 rad = Radiance(&cRay, pObjs, pIndexTable, numObjs, &seed0, &seed1);
+            rad = Radiance(&cRay, pObjs, pIndexTable, numObjs, &seed0, &seed1);
 
             //ObjectHeader objh = *(__constant ObjectHeader*)(pObjs + pIndexTable[i]);
             //ObjectHeader objh = *(__constant ObjectHeader*)(pObjs);
             //__constant char* pMat = (pObjs + objh.matIndex);
             
             //rad += (*(__constant DiffuseMaterial*)pMat).color.xyz;
-            rad += (cRay.m_dir.xyz * 0.5f + haf + pIndexTable[i]);
+            //rad += (cRay.m_dir.xyz * 0.5f + haf + pIndexTable[i]);
 #if 0
             float invNs = 1.0f / (currentSample + 1);
             float sNs = (float)currentSample * invNs;
@@ -477,7 +474,7 @@ __kernel void RenderKernel(__global uchar* pOutput,
         pOutput[pid * 3 + 1 ] = clamp(rad.y, 0.f, 1.0f) * 255;
         pOutput[pid * 3 + 2 ] = clamp(rad.z, 0.f, 1.0f) * 255;
 
-        //pSeeds[pid] = seed0;
-        //pSeeds[worksize + pid] = seed1;
+        pSeeds[pid] = seed0;
+        pSeeds[worksize + pid] = seed1;
     }
 }

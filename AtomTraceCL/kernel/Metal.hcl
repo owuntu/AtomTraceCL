@@ -6,8 +6,8 @@
 
 typedef struct
 {
-    float4 eta;
-    float4 kk;
+    float3 eta;
+    float3 kk;
     float exp;
 }Metal;
 
