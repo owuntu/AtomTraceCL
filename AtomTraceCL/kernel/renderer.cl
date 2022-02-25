@@ -35,10 +35,10 @@ struct
 
 typedef struct
 {
-    float4 pos;
-    float4 upLeftPix;
-    float4 dx; // camera right direction, per-pixel width
-    float4 dy; // camera up direction, per-pixel height
+    float3 pos;
+    float3 upLeftPix;
+    float3 dx; // camera right direction, per-pixel width
+    float3 dy; // camera up direction, per-pixel height
 }Camera;
 
 // fov is the vertial fov angle
@@ -46,11 +46,11 @@ Ray CastCamRay(int px, int py, __constant Camera* cam, const uint npp)
 {
     float fx = (float)px - 0.5f + Halton((int)npp, 2);
     float fy = (float)py - 0.5f + Halton((int)npp, 3);
-    float4 tar = cam->upLeftPix 
+    float3 tar = cam->upLeftPix 
                  + cam->dx * fx
                  - cam->dy * fy;
 
-    float4 orig = cam->pos;
+    float3 orig = cam->pos;
 
     Ray ray;
     ray.m_dir = tar.xyz - orig.xyz;
