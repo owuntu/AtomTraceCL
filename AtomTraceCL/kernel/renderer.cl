@@ -1,4 +1,4 @@
-#define MAX_DEPTH 6
+#define MAX_DEPTH 1
 
 #include "ConstantDef.hcl"
 #include "InfoDef.hcl"
@@ -14,13 +14,8 @@
 
 typedef struct
 {
-    float3 color;
+    float4 color;
 }DiffuseMaterial;
-
-typedef struct
-{
-    float3 emission;
-}Light;
 
 /* This is a description of a RenderObject that store into the scene
 struct
@@ -282,7 +277,7 @@ void SampleLight(__constant char* pObjs, const ObjectHeader* pObjHead, __constan
     if (!IntersectP(pObjs, pIndexTable, numObjs, &shadowRay, 1.0f-EPSILON, true))
     {
         // add light contribution
-        *pLd = light.color;
+        *pLd = light.color.xyz;
         *pCosWi = cosWi;
         *pWi = wi;
     }
@@ -294,7 +289,7 @@ float3 Radiance(const Ray* ray, __constant char* pObjs, __constant int* pIndexTa
     currentRay.m_orig = ray->m_orig;
     currentRay.m_dir = ray->m_dir;
     int d = 0;
-    float3 rad = (float3)(0.f);
+    float4 rad = 0.f;
     float3 preCi = (float3)(1.f);
     float cosWi2nd = 1.0f;
 
@@ -315,10 +310,13 @@ float3 Radiance(const Ray* ray, __constant char* pObjs, __constant int* pIndexTa
             if (hInfo.matType == 0) // light
             {
                 mat = *(__constant DiffuseMaterial*)(pObjs + hInfo.matIndex);
-                rad += mat.color;
+                //rad += mat.color.xyz;
+                rad.x += mat.color.x;
+                //rad.y += mat.color.y;
+                rad.z += mat.color.z;
                 break;
             }
-
+#if 0
             float3 hitP = hInfoGeo.hitP;
             float3 hitN = hInfoGeo.hitN;
             float3 wo = normalize(-currentRay.m_dir);
@@ -362,7 +360,7 @@ float3 Radiance(const Ray* ray, __constant char* pObjs, __constant int* pIndexTa
                     float3 f = (float3)(0.f);
                     if (hInfo.matType == 1) // Diffuse
                     {
-                        f = mat.color;
+                        f = mat.color.xyz;
                     }
                     else if (hInfo.matType == 2) // Metal
                     {
@@ -387,7 +385,7 @@ float3 Radiance(const Ray* ray, __constant char* pObjs, __constant int* pIndexTa
             {
                 SampleHemiSphere(u1, u2, &hitN, &wi);
                 wi = normalize(wi);
-                f = mat.color;
+                f = mat.color.xyz;
             }
             else if (hInfo.matType == 2) // Metal
             {
@@ -416,6 +414,7 @@ float3 Radiance(const Ray* ray, __constant char* pObjs, __constant int* pIndexTa
             currentRay.m_dir = wi;
             cosWi2nd = dot(wi, hitN);
             preCi *= cosWi2nd * f / pdf;
+#endif
         }
         else // miss
         {
@@ -423,7 +422,7 @@ float3 Radiance(const Ray* ray, __constant char* pObjs, __constant int* pIndexTa
         }
         ++d;
     }
-    return rad;
+    return rad.xyz;
 }
 
 __kernel void RenderKernel(__global uchar* pOutput, int width, int height,

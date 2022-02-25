@@ -6,18 +6,20 @@
 
 typedef struct
 {
-    float3 eta;
-    float3 kk;
+    float4 eta;
+    float4 kk;
     float exp;
 }Metal;
 
 // Return Color
 float3 FresnelCond(const float cosi, const float3* pEta, const float3* pK)
 {
-    float3 tmp_f = *pEta * *pEta + *pK * *pK;
+    float3 eta = (*pEta).xyz;
+    float3 k =(*pK).xyz;
+    float3 tmp_f = eta * eta + k * k;
     float cosi2 = cosi * cosi;
     float3 tmp = tmp_f * cosi2;
-    float3 r = 2.0f * *pEta * cosi;
+    float3 r = 2.0f * eta * cosi;
 
     float3 Rparl2 = (tmp - r + 1) /
         (tmp + r + 1);

@@ -37,7 +37,7 @@ namespace AtomTraceCL
             obj.SetMaterial(&wall);
             oList.AddObject(obj);
         }
-
+#if 0
         // front
         {
             RenderObject obj;
@@ -99,6 +99,7 @@ namespace AtomTraceCL
             obj.SetMaterial(&wall);
             oList.AddObject(obj);
         }
+#endif
     }
 
     bool LoadUnitTestObj(ObjectList& oList)
@@ -121,6 +122,7 @@ namespace AtomTraceCL
 
             oList.AddObject(obj);
         }
+        return true;
 #if 0
         // load teapot
         {
