@@ -150,8 +150,14 @@ int main(int argc, char** argv)
     clScene = cl::Buffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, oList.m_size, oList.m_pData);
     CheckError(error, "Create clScene");
 
-    cl::Buffer clIndexTable = cl::Buffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, oList.m_indexTable.size() * sizeof(int), &oList.m_indexTable[0]);
+    __int32* pTable = new int[oList.m_indexTable.size()];
+    for (std::size_t i = 0; i < oList.m_indexTable.size(); ++i)
+    {
+        *(pTable + i) = oList.m_indexTable[i];
+    }
+    cl::Buffer clIndexTable = cl::Buffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, oList.m_indexTable.size() * sizeof(__int32), pTable);
     CheckError(error, "Create clIndexTable");
+    delete[] pTable;
 
     unsigned __int32* pSeeds = new unsigned __int32[worksize * 2];
     for (int i = 0; i < worksize * 2; ++i)
@@ -170,32 +176,42 @@ int main(int argc, char** argv)
     cl::Kernel kernel = cl::Kernel(program, "RenderKernel", &error);
     CheckError(error, "Create kernel");
 
+    cl_uint paramIndex = 0;
     // Setup kernel parameters
-    error = kernel.setArg(0, pixelBuffer);
-    CheckError(error, "Set kernel args0");
+    error = kernel.setArg(paramIndex, pixelBuffer);
+    CheckError(error, "Set kernel args0 pixel buffer");
 
-    error = kernel.setArg(1, IMAGE_WIDTH);
-    CheckError(error, "Set kernel args1");
+    paramIndex++;
+    error = kernel.setArg(paramIndex, IMAGE_WIDTH);
+    CheckError(error, "Set kernel args img width");
 
-    error = kernel.setArg(2, IMAGE_HEIGHT);
-    CheckError(error, "Set kernel args2");
+    paramIndex++;
+    error = kernel.setArg(paramIndex, IMAGE_HEIGHT);
+    CheckError(error, "Set kernel args img height");
 
-    error = kernel.setArg(3, clCam);
-    CheckError(error, "Set kernel args3");
+    paramIndex++;
+    error = kernel.setArg(paramIndex, clCam);
+    CheckError(error, "Set kernel args cam");
 
-    error = kernel.setArg(4, clScene);
+    paramIndex++;
+    error = kernel.setArg(paramIndex, clScene);
     CheckError(error, "Set clScene");
 
-    error = kernel.setArg(5, clIndexTable);
+    paramIndex++;
+    error = kernel.setArg(paramIndex, clIndexTable);
     CheckError(error, "Set kernel args index table");
 
-    error = kernel.setArg(6, oList.m_numObj);
+    paramIndex++;
+    error = kernel.setArg(paramIndex, oList.m_numObj);
     CheckError(error, "Set num obj");
 
-    error = kernel.setArg(7, clSeeds);
-    CheckError(error, "Set kernel args7(clSeeds)");
+    //paramIndex++;
+    //error = kernel.setArg(paramIndex, clSeeds);
+    //CheckError(error, "Set kernel args7(clSeeds)");
 
-    error = kernel.setArg(8, clColor);
+    //paramIndex++;
+    //error = kernel.setArg(paramIndex, clColor);
+   // CheckError(error, "Set kernel args8(clColor)");
 
     InitGLFWWindow(IMAGE_WIDTH, IMAGE_HEIGHT);
 
@@ -205,9 +221,10 @@ int main(int argc, char** argv)
 
     unsigned int currentSample = 0;
     unsigned int sampleIncresment = 8;
-    
-    error = kernel.setArg(9, sampleIncresment);
-    CheckError(error, "Set kernel arg9 (sampleInc)");
+
+    //paramIndex++;
+    //error = kernel.setArg(paramIndex, sampleIncresment);
+   // CheckError(error, "Set kernel arg9 (sampleInc)");
 
     bool isFinished = false;
     Timer::Tick loopStart = Timer::GetCurrentTick();
@@ -217,8 +234,8 @@ int main(int argc, char** argv)
         Timer::Tick tstart = Timer::GetCurrentTick();
         if (currentSample < 0xffffffff)
         {
-            error = kernel.setArg(10, currentSample);
-            CheckError(error, "Set kernel args8 (currentSample)");
+            //error = kernel.setArg(paramIndex+1, currentSample);
+            //CheckError(error, "Set kernel args8 (currentSample)");
 
             currentSample += sampleIncresment;
 

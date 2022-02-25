@@ -35,10 +35,10 @@ struct
 
 typedef struct
 {
-    float3 pos;
-    float3 upLeftPix;
-    float3 dx; // camera right direction, per-pixel width
-    float3 dy; // camera up direction, per-pixel height
+    float4 pos;
+    float4 upLeftPix;
+    float4 dx; // camera right direction, per-pixel width
+    float4 dy; // camera up direction, per-pixel height
 }Camera;
 
 // fov is the vertial fov angle
@@ -46,16 +46,16 @@ Ray CastCamRay(int px, int py, __constant Camera* cam, const uint npp)
 {
     float fx = (float)px - 0.5f + Halton((int)npp, 2);
     float fy = (float)py - 0.5f + Halton((int)npp, 3);
-    float3 tar = cam->upLeftPix 
+    float4 tar = cam->upLeftPix 
                  + cam->dx * fx
                  - cam->dy * fy;
 
-    float3 orig = cam->pos;
+    float4 orig = cam->pos;
 
     Ray ray;
-    ray.m_dir = tar - orig;
+    ray.m_dir = tar.xyz - orig.xyz;
     //ray.m_dir = normalize(ray.m_dir);
-    ray.m_orig = orig;
+    ray.m_orig = orig.xyz;
     return ray;
 }
 
@@ -183,6 +183,10 @@ bool Intersect(__constant char* pObj, __constant const int* pIndexTable, int num
 
         if (objh.gtype == 1) // SPHERE
         {
+            //bHit = true;
+            //*pObjHead = objh;
+            //return true;
+
             tHit = IntersectSphere(&ray, &t);
 
             hitP = ray.m_orig + ray.m_dir * t;
@@ -208,7 +212,7 @@ bool Intersect(__constant char* pObj, __constant const int* pIndexTable, int num
             hitP = TransformFrom(&objh.transform, &(pHitInfoGeo->hitP));
             hitN = normalize(VectorTransformFrom(&objh.transform, &(pHitInfoGeo->hitN)));
         }
-        
+
         if (tHit)
         {
             bHit = true;
@@ -303,16 +307,16 @@ float3 Radiance(const Ray* ray, __constant char* pObjs, __constant int* pIndexTa
         float t = FLT_MAX;
         ObjectHeader hInfo;
         HitInfoGeo hInfoGeo;
-        bool bHit = Intersect(pObjs, pIndexTable, numObjs, &currentRay, &hInfo, &hInfoGeo, false);
-
+        //bool bHit = Intersect(pObjs, pIndexTable, numObjs, &currentRay, &hInfo, &hInfoGeo, false);
+        bool bHit = true;
         if (bHit)
         {
-            if (hInfo.matType == 0) // light
+            //if (hInfo.matType == 0) // light
             {
-                mat = *(__constant DiffuseMaterial*)(pObjs + hInfo.matIndex);
+                mat = *(__constant DiffuseMaterial*)(pObjs + 120);// hInfo.matIndex);
                 //rad += mat.color.xyz;
                 rad.x += mat.color.x;
-                //rad.y += mat.color.y;
+                rad.y += mat.color.y;
                 rad.z += mat.color.z;
                 break;
             }
@@ -426,9 +430,11 @@ float3 Radiance(const Ray* ray, __constant char* pObjs, __constant int* pIndexTa
 }
 
 __kernel void RenderKernel(__global uchar* pOutput, int width, int height,
-                           __constant Camera* cam,
-                           __constant char* pObjs, __constant int* pIndexTable, int numObjs,
-                           __global uint* pSeeds, __global float* color, const uint sampleInc, uint currentSample)
+
+    __constant Camera* cam , __constant char* pObjs
+    , __constant int* pIndexTable, int numObjs
+    //,__global uint* pSeeds, __global float* color, const uint sampleInc, uint currentSample
+)
 {
     int pid = get_global_id(0);
     int worksize = width*height;
@@ -437,27 +443,36 @@ __kernel void RenderKernel(__global uchar* pOutput, int width, int height,
         int px = pid % width;
         int py = pid / width;
 
-        uint seed0 = pSeeds[pid];
-        uint seed1 = pSeeds[worksize + pid];
+        //uint seed0 = pSeeds[pid];
+        //uint seed1 = pSeeds[worksize + pid];
 
-        for (int i = 0; i < sampleInc; ++i)
+        float3 rad = 0.0f;
+        //for (int i = 0; i < sampleInc; ++i)
+        for (int i = 0; i < numObjs; ++i)
         {
-            Ray cRay = CastCamRay(px, py, cam, currentSample);
+            //Ray cRay;// = CastCamRay(px, py, cam, currentSample);
 
-            float3 rad = Radiance(&cRay, pObjs, pIndexTable, numObjs, &seed0, &seed1);
+            //float3 rad = Radiance(&cRay, pObjs, pIndexTable, numObjs, &seed0, &seed1);
+
+            ObjectHeader objh = *(__constant ObjectHeader*)(pObjs + pIndexTable[i]);
+            __constant char* pMat = (pObjs + objh.matIndex);
+            
+            rad += (*(__constant DiffuseMaterial*)pMat).color.xyz;
+#if 0
             float invNs = 1.0f / (currentSample + 1);
             float sNs = (float)currentSample * invNs;
             color[pid * 3] = sNs * color[pid * 3] + rad.x * invNs;
             color[pid * 3 + 1] = sNs * color[pid * 3 + 1] + rad.y * invNs;
             color[pid * 3 + 2] = sNs * color[pid * 3 + 2] + rad.z * invNs;
             currentSample++;
+#endif
         }
         // Apply Gamma correction
-        pOutput[pid * 3] =      clamp(powr(color[pid*3],      1.f / 2.2f), 0.f, 1.0f) * 255;
-        pOutput[pid * 3 + 1 ] = clamp(powr(color[pid*3 + 1 ], 1.f / 2.2f), 0.f, 1.0f) * 255;
-        pOutput[pid * 3 + 2 ] = clamp(powr(color[pid*3 + 2 ], 1.f / 2.2f), 0.f, 1.0f) * 255;
+        pOutput[pid * 3] =      clamp(rad.x, 0.f, 1.0f) * 255;
+        pOutput[pid * 3 + 1 ] = clamp(rad.y, 0.f, 1.0f) * 255;
+        pOutput[pid * 3 + 2 ] = clamp(rad.z, 0.f, 1.0f) * 255;
 
-        pSeeds[pid] = seed0;
-        pSeeds[worksize + pid] = seed1;
+        //pSeeds[pid] = seed0;
+        //pSeeds[worksize + pid] = seed1;
     }
 }

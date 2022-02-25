@@ -117,7 +117,7 @@ namespace AtomTraceCL
             obj.Translate(1.0f, -22.f, 15.f);
 
             Light l0;
-            l0.SetEmission(AtomMathCL::Vector3(1.f));
+            l0.SetEmission(AtomMathCL::Vector3(0.0f, 1.0f, 0.8f));
             obj.SetMaterial(&l0);
 
             oList.AddObject(obj);
