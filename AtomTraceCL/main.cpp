@@ -182,20 +182,13 @@ int main(int argc, char** argv)
     CheckError(error, "Set kernel args0 pixel buffer");
 
     paramIndex++;
-    error = kernel.setArg(paramIndex, IMAGE_WIDTH);
-    CheckError(error, "Set kernel args img width");
-
-    paramIndex++;
-    error = kernel.setArg(paramIndex, IMAGE_HEIGHT);
-    CheckError(error, "Set kernel args img height");
+    error = kernel.setArg(paramIndex, clScene);
+    CheckError(error, "Set clScene");
 
     paramIndex++;
     error = kernel.setArg(paramIndex, clCam);
     CheckError(error, "Set kernel args cam");
 
-    paramIndex++;
-    error = kernel.setArg(paramIndex, clScene);
-    CheckError(error, "Set clScene");
 
     paramIndex++;
     error = kernel.setArg(paramIndex, clIndexTable);
@@ -205,6 +198,13 @@ int main(int argc, char** argv)
     error = kernel.setArg(paramIndex, oList.m_numObj);
     CheckError(error, "Set num obj");
 
+    paramIndex++;
+    error = kernel.setArg(paramIndex, IMAGE_WIDTH);
+    CheckError(error, "Set kernel args img width");
+
+    paramIndex++;
+    error = kernel.setArg(paramIndex, IMAGE_HEIGHT);
+    CheckError(error, "Set kernel args img height");
     //paramIndex++;
     //error = kernel.setArg(paramIndex, clSeeds);
     //CheckError(error, "Set kernel args7(clSeeds)");

@@ -429,10 +429,11 @@ float3 Radiance(const Ray* ray, __constant char* pObjs, __constant int* pIndexTa
     return rad.xyz;
 }
 
-__kernel void RenderKernel(__global uchar* pOutput, int width, int height,
-
-    __constant Camera* cam , __constant char* pObjs
-    , __constant int* pIndexTable, int numObjs
+__kernel void RenderKernel(__global uchar* pOutput,
+    __constant char* pObjs,
+    __constant Camera* cam,
+    __constant int* pIndexTable,
+    int numObjs, int width, int height
     //,__global uint* pSeeds, __global float* color, const uint sampleInc, uint currentSample
 )
 {
@@ -446,18 +447,22 @@ __kernel void RenderKernel(__global uchar* pOutput, int width, int height,
         //uint seed0 = pSeeds[pid];
         //uint seed1 = pSeeds[worksize + pid];
 
+        float3 haf = (float3)(0.5f);
         float3 rad = 0.0f;
         //for (int i = 0; i < sampleInc; ++i)
         for (int i = 0; i < numObjs; ++i)
         {
-            //Ray cRay;// = CastCamRay(px, py, cam, currentSample);
+            //Ray cRay = CastCamRay(px, py, cam, currentSample);
+            Ray cRay = CastCamRay(px, py, cam, 0);
 
             //float3 rad = Radiance(&cRay, pObjs, pIndexTable, numObjs, &seed0, &seed1);
 
-            ObjectHeader objh = *(__constant ObjectHeader*)(pObjs + pIndexTable[i]);
-            __constant char* pMat = (pObjs + objh.matIndex);
+            //ObjectHeader objh = *(__constant ObjectHeader*)(pObjs + pIndexTable[i]);
+            //ObjectHeader objh = *(__constant ObjectHeader*)(pObjs);
+            //__constant char* pMat = (pObjs + objh.matIndex);
             
-            rad += (*(__constant DiffuseMaterial*)pMat).color.xyz;
+            //rad += (*(__constant DiffuseMaterial*)pMat).color.xyz;
+            rad += (cRay.m_dir.xyz * 0.5f + haf + pIndexTable[i]);
 #if 0
             float invNs = 1.0f / (currentSample + 1);
             float sNs = (float)currentSample * invNs;
