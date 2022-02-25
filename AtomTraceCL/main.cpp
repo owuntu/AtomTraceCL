@@ -2,8 +2,8 @@
 #include <iostream>
 #include <iomanip>
 
-#define CL_HPP_TARGET_OPENCL_VERSION 200
-#include <CL\cl2.hpp> // main OpenCL include file 
+#define CL_HPP_TARGET_OPENCL_VERSION 300
+#include <CL\opencl.hpp> // main OpenCL include file 
 
 #include <glfw3.h>
 

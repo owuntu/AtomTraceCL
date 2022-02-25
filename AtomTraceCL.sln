@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.32126.315
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AtomMathCL", "AtomMathCL\AtomMathCL.vcxproj", "{9EE50054-7A2D-435A-8E31-D6B343AB48B8}"
 EndProject
@@ -74,5 +74,8 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{82105436-C728-496B-BBD2-39409BEE43A0} = {B21A5FB0-5906-49F2-AFAE-BDB86D3E6A68}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {C08763F5-B7E7-48F9-B801-EC6AA8A3518F}
 	EndGlobalSection
 EndGlobal
